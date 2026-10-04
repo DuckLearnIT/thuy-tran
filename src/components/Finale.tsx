@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef } from 'react'
 import gsap from 'gsap'
 import SplitChars from './SplitChars'
+import Wave from './Wave'
 import { cards } from '../data/cards'
 import useReducedMotion from '../hooks/useReducedMotion'
 
@@ -72,6 +73,9 @@ export default function Finale() {
       id="nhan-lenh"
       className="relative overflow-hidden bg-ink text-card min-h-svh flex flex-col"
     >
+      <div className="relative z-10 shrink-0 -mb-px bg-river pointer-events-none">
+        <Wave fill="var(--color-ink)" />
+      </div>
       <div
         aria-hidden="true"
         className="pointer-events-none absolute left-1/2 bottom-[-20vw] size-[90vw] -translate-x-1/2 rounded-full opacity-40"
