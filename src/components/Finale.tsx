@@ -1,9 +1,7 @@
 import { useLayoutEffect, useRef } from 'react'
 import gsap from 'gsap'
-import Wave from './Wave'
 import SplitChars from './SplitChars'
 import { cards } from '../data/cards'
-import { strategies } from '../data/strategies'
 import useReducedMotion from '../hooks/useReducedMotion'
 
 export default function Finale() {
@@ -74,10 +72,6 @@ export default function Finale() {
       id="nhan-lenh"
       className="relative overflow-hidden bg-ink text-card min-h-svh flex flex-col"
     >
-      <div className="absolute inset-x-0 top-0 -translate-y-[1px]">
-        <Wave fill={strategies[strategies.length - 1].bg} flip />
-      </div>
-
       <div
         aria-hidden="true"
         className="pointer-events-none absolute left-1/2 bottom-[-20vw] size-[90vw] -translate-x-1/2 rounded-full opacity-40"

@@ -7,6 +7,7 @@ const chapters = [
   { id: 'loi-lenh', label: 'Lời lệnh', number: '01' },
   { id: 'roles', label: 'Sáu nhân vật', number: '02' },
   { id: 'ke-sach', label: 'Bảy kế sách', number: '03' },
+  { id: 'dia-diem', label: 'Địa điểm', number: '04' },
 ]
 
 export default function Header() {

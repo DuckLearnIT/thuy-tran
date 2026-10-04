@@ -209,6 +209,90 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
   opacity: 0.14;
 }
 
+/* Square location cards: scroll, wave and selection use separate transform layers. */
+.places-section {
+  position: relative;
+  height: 100svh;
+  padding: 5rem clamp(1rem, 4vw, 4rem) 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  overflow: clip;
+  background: var(--color-ink);
+  color: var(--color-card);
+}
+.places-heading { width: 100%; }
+.places-heading p { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.2em; color: var(--color-ochre); }
+.places-heading h2 { font-size: clamp(2.4rem, 5vw, 4rem); margin-top: 0.8rem; }
+.places-board {
+  position: relative;
+  width: min(100%, calc((100svh - 16rem) * 1.5), 960px);
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: clamp(5px, 0.8vw, 10px);
+}
+.place-slot { position: relative; aspect-ratio: 1; min-width: 0; }
+.place-motion, .place-wave, .place-interaction { width: 100%; height: 100%; }
+.place-interaction { position: relative; transition: transform 0.5s var(--ease-out-expo); }
+.place-card, .place-details {
+  width: 100%;
+  height: 100%;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  border: 1px solid #d99a2b55;
+  border-radius: 3px;
+  box-shadow: 0 3px 0 #bba78a, 0 12px 22px #0003;
+}
+.place-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: background 0.25s, box-shadow 0.25s, filter 0.3s;
+}
+.places-board:has(.place-details) .place-card { filter: brightness(0.6); }
+.place-number { font-size: clamp(1.8rem, 5svh, 3.25rem); color: var(--color-vermilion); }
+.place-label { font-size: clamp(0.48rem, 0.85vw, 0.65rem); text-transform: uppercase; letter-spacing: 0.12em; }
+.place-details {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 18% 10% 8%;
+  border-color: var(--color-ochre);
+}
+.place-details h3 { font-size: clamp(0.8rem, 1.4vw, 1.2rem); color: var(--color-vermilion); }
+.place-details p { font-size: 0.55rem; line-height: 1.5; }
+.place-close { position: absolute; top: 0; right: 0; width: 28px; height: 28px; font-size: 1.2rem; cursor: pointer; }
+.place-close:hover { color: var(--color-vermilion); }
+.places-controls { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 1rem; font-size: 0.75rem; }
+.places-controls p { color: #f6e9d7b3; }
+.places-controls button { min-height: 44px; color: var(--color-ochre); cursor: pointer; text-decoration: underline; text-underline-offset: 5px; }
+@media (hover: hover) and (pointer: fine) {
+  .place-card:hover { background: var(--color-card); box-shadow: 0 3px 0 var(--color-ochre), 0 16px 26px #0005; }
+}
+@media (max-width: 640px) {
+  .places-section { gap: 1rem; }
+  .places-heading p { font-size: 0.6rem; letter-spacing: 0.15em; }
+  .places-board { grid-template-columns: repeat(4, minmax(0, 1fr)); width: min(100%, calc((100svh - 16rem) * 0.6667)); gap: 6px; }
+  .place-number { font-size: clamp(1.6rem, 4svh, 2.4rem); }
+  .place-card { gap: 0.25rem; }
+  .place-label { font-size: 0.45rem; }
+  .places-controls { font-size: 0.65rem; }
+  .places-controls p { max-width: 12rem; }
+}
+.places-reduced { height: auto; min-height: 100svh; gap: 2rem; padding-bottom: 3rem; }
+.places-reduced .places-board { width: min(100%, 960px); }
+@media (prefers-reduced-motion: reduce) {
+  .place-interaction, .place-card { transition: none; }
+}
+
 .nav-panel {
   position: absolute;
   inset: 0 0 auto;
@@ -283,7 +367,7 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
   pointer-events: none;
 }
 .nav-toggle:focus-visible { opacity: 1; pointer-events: auto; }
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .nav-inner { flex-wrap: wrap; gap: 0.75rem; padding-right: 6.5rem; }
   .nav-chapters { order: 3; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 0.25rem 1rem; }
   .nav-cta { margin-left: auto; }

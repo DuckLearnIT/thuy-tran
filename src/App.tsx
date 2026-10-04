@@ -6,6 +6,7 @@ import Cover from './components/Cover'
 import Manifesto from './components/Manifesto'
 import Roles from './components/Roles'
 import Strategies from './components/Strategies'
+import Locations from './components/Locations'
 import Finale from './components/Finale'
 import River from './components/River'
 import Curtain from './components/Curtain'
@@ -105,6 +106,7 @@ export default function App() {
           <Manifesto />
           <Roles />
           <Strategies />
+          <Locations />
           <Finale />
           <River />
         </div>

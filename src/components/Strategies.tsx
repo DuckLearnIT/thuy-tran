@@ -5,6 +5,8 @@ import { strategies as list } from '../data/strategies'
 import useReducedMotion from '../hooks/useReducedMotion'
 
 const n = list.length
+const carouselDuration = n - 1
+const chapterDuration = carouselDuration + 1.5
 
 function Lines({ s }: { s: (typeof list)[number] }) {
   return (
@@ -104,13 +106,14 @@ export default function Strategies() {
         scrollTrigger: {
           trigger: root.current,
           start: 'top top',
-          end: () => `+=${(n - 1) * window.innerHeight * 0.95}`,
+          end: () => `+=${chapterDuration * window.innerHeight * 0.95}`,
           pin: true,
           scrub: 0.6,
           anticipatePin: 1,
           invalidateOnRefresh: true,
           snap: {
-            snapTo: 1 / (n - 1),
+            snapTo: (progress) => progress * chapterDuration > carouselDuration + 0.02
+              ? progress : Math.round(progress * chapterDuration) / chapterDuration,
             duration: { min: 0.25, max: 0.6 },
             ease: 'power2.inOut',
           },
@@ -142,6 +145,12 @@ export default function Strategies() {
         )
       }
 
+      // Clear the strategy chapter before the location cards enter on the same ink backdrop.
+      tl.to('.ks-content', {
+        yPercent: -25, autoAlpha: 0, duration: 0.8, ease: 'power2.in',
+      }, carouselDuration + 0.25)
+        .to(root.current, { backgroundColor: '#231511', duration: 0.65 }, carouselDuration + 0.85)
+
       // Initial render at position 0
       renderStage(0)
     }, root)
@@ -152,7 +161,7 @@ export default function Strategies() {
   const jump = (j: number) => {
     const st = trigger.current
     if (!st) return
-    const p = j / (n - 1)
+    const p = j / chapterDuration
     window.scrollTo({ top: st.start + p * (st.end - st.start), behavior: 'smooth' })
   }
 
