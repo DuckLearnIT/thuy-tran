@@ -3,6 +3,7 @@ import nhaBinh from '../assets/nha-binh.webp'
 import thamQuan from '../assets/tham-quan.webp'
 import thuyenNhe from '../assets/thuyen-nhe.webp'
 import huongDao from '../assets/huong-dao.webp'
+import huongDaoLuc from '../assets/huong-dao-luc.webp'
 
 export type CardData = {
   id: string
@@ -76,7 +77,7 @@ export const cards: CardData[] = [
     skill: 'Thông Giang Đạt Lộ',
     text: 'Có thể chuyển bài Kế sách cho đồng đội ở bất kỳ đâu.',
     quote: 'Tri thủy tắc thông, thức địa tắc đạt.',
-    image: huongDao,
+    image: huongDaoLuc,
     bg: '#1a3a26',
     accent: '#cfe06a',
   },
