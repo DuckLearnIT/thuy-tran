@@ -29,6 +29,17 @@ export default function Header() {
   }
 
   return (
+    <>
+      <div inert={open} aria-hidden={open}
+        className="fixed inset-x-0 top-0 z-40 flex items-center justify-between px-[clamp(1rem,3vw,2.5rem)] py-4 text-white mix-blend-difference pointer-events-none">
+        <a href="#top" onClick={(event) => navigate(event, 'top')}
+          className="pointer-events-auto display !text-2xl !font-bold tracking-[0.04em]">Thủy Trận</a>
+        <a href="#nhan-lenh" onClick={(event) => navigate(event, 'nhan-lenh')}
+          className="pointer-events-auto group flex min-h-11 items-center gap-2 text-[0.8rem] font-medium tracking-[0.22em] uppercase">
+          <span>Nhận lệnh</span>
+          <span aria-hidden="true" className="inline-block size-2 rotate-45 bg-current transition-transform duration-500 group-hover:rotate-[225deg] group-hover:scale-150" />
+        </a>
+      </div>
     <header className="chapter-nav fixed inset-x-0 top-0 z-50 h-5"
       data-open={open} onPointerEnter={(event) => {
         if (event.pointerType !== 'touch' && !toggle.current?.contains(event.target as Node)) setOpen(true)
@@ -38,7 +49,7 @@ export default function Header() {
         if (event.pointerType !== 'touch' && !keyboardFocus) setOpen(false)
       }}
       onFocus={(event) => {
-        if (event.target !== toggle.current) setOpen(true)
+        if (event.currentTarget.querySelector('.nav-panel')?.contains(event.target)) setOpen(true)
       }}
       onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false) }}
       onKeyDown={(event) => {
@@ -69,5 +80,6 @@ export default function Header() {
         <div className="nav-stripe" aria-hidden="true" />
       </div>
     </header>
+    </>
   )
 }
