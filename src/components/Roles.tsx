@@ -3,6 +3,7 @@ import gsap from 'gsap'
 import SplitChars from './SplitChars'
 import { cards, type CardData } from '../data/cards'
 import useReducedMotion from '../hooks/useReducedMotion'
+import { strategies } from '../data/strategies'
 
 /* The skill badge is cropped straight out of each card's artwork. */
 function Badge({ image }: { image: string }) {
@@ -72,8 +73,12 @@ export default function Roles() {
       const ticks = gsap.utils.toArray<HTMLElement>('.tick')
 
       cardEls.forEach((el, i) => gsap.set(el, { ...pos(i), zIndex: n - i }))
+      // Hide the whole inactive panel as well as its characters: tall Vietnamese
+      // accents can still peek through a character mask after translation alone.
+      gsap.set(infos, { autoAlpha: 0 })
+      gsap.set(infos[0], { autoAlpha: 1 })
       infos.slice(1).forEach((el) => {
-        gsap.set(el.querySelectorAll('.ch'), { yPercent: 125 })
+        gsap.set(el.querySelectorAll('.ch'), { yPercent: 125, opacity: 0 })
         gsap.set(el.querySelectorAll('.info-rest'), { opacity: 0, y: 36 })
       })
       gsap.set(ticks, { scale: 0.7, opacity: 0.35 })
@@ -95,17 +100,30 @@ export default function Roles() {
         return () => window.removeEventListener('pointermove', move)
       })
 
+      let roleDuration = n - 1
+      let chapterDuration = roleDuration
       const tl = gsap.timeline({
         defaults: { ease: 'none' },
         scrollTrigger: {
           trigger: root.current,
           start: 'top top',
-          end: () => `+=${(n - 1) * window.innerHeight * 0.95}`,
+          end: () => `+=${(n - 1) * window.innerHeight * 0.95 * chapterDuration / roleDuration}`,
           pin: true,
           scrub: 0.6,
+          anticipatePin: 1,
           invalidateOnRefresh: true,
+          snap: {
+            snapTo: (progress: number) => {
+              const roleEnd = roleDuration / chapterDuration
+              // Keep the six original stops; do not snap through the chapter handoff.
+              return progress > roleEnd ? progress : gsap.utils.snap(roleEnd / (n - 1), progress)
+            },
+            duration: { min: 0.2, max: 0.6 },
+            ease: 'power2.inOut',
+          },
           onUpdate: (self) => {
-            const k = String(Math.round(self.progress * (n - 1)) + 1).padStart(2, '0')
+            const roleProgress = Math.min(1, self.progress * chapterDuration / roleDuration)
+            const k = String(Math.round(roleProgress * (n - 1)) + 1).padStart(2, '0')
             if (counter.current) counter.current.textContent = k
             if (bigNum.current) bigNum.current.textContent = k
           },
@@ -123,14 +141,32 @@ export default function Roles() {
           tl.to(cardEls[j], { ...pos(j - i), duration: 1, ease: 'power2.inOut' }, t)
         }
         tl.to(root.current, { backgroundColor: cards[i].bg, duration: 1 }, t)
-        tl.to(infos[i - 1].querySelectorAll('.ch'), { yPercent: -125, duration: 0.35, stagger: 0.015 }, t)
+        tl.to(infos[i - 1].querySelectorAll('.ch'), { yPercent: -125, opacity: 0, duration: 0.35, stagger: 0.015 }, t)
         tl.to(infos[i - 1].querySelectorAll('.info-rest'), { opacity: 0, y: -30, duration: 0.3 }, t)
-        tl.to(infos[i].querySelectorAll('.ch'), { yPercent: 0, duration: 0.4, stagger: 0.015 }, t + 0.5)
+        tl.set(infos[i - 1], { autoAlpha: 0 }, t + 0.5)
+        tl.set(infos[i], { autoAlpha: 1 }, t + 0.5)
+        tl.to(infos[i].querySelectorAll('.ch'), { yPercent: 0, opacity: 1, duration: 0.4, stagger: 0.015 }, t + 0.5)
         tl.to(infos[i].querySelectorAll('.info-rest'), { opacity: 1, y: 0, duration: 0.4, stagger: 0.05 }, t + 0.6)
         tl.to(root.current, { '--acc': cards[i].accent, duration: 1 }, t)
         tl.to(ticks[i - 1], { scale: 0.7, opacity: 0.35, duration: 0.4 }, t)
         tl.to(ticks[i], { scale: 1.5, opacity: 1, duration: 0.4 }, t + 0.5)
       }
+
+      // Finish reading the sixth role before handing the same blue surface to chapter 02.
+      roleDuration = tl.duration()
+      const exit = roleDuration + 0.45
+      tl.to(cardEls[n - 1], {
+        yPercent: -130, xPercent: 12, rotate: 8, opacity: 0,
+        duration: 0.85, ease: 'power2.in',
+      }, exit)
+      tl.to(infos[n - 1], { y: -30, autoAlpha: 0, duration: 0.55 }, exit)
+      tl.to('.roles-ui, .glow', { opacity: 0, duration: 0.55 }, exit)
+      tl.to(root.current, {
+        backgroundColor: strategies[0].bg, duration: 1.15, ease: 'power2.inOut',
+      }, exit + 0.4)
+      tl.to({}, { duration: 0.15 })
+      chapterDuration = tl.duration()
+      tl.scrollTrigger?.refresh()
     }, root)
     return () => ctx.revert()
   }, [reduced, n])
@@ -171,7 +207,7 @@ export default function Roles() {
       <span
         ref={bigNum}
         aria-hidden="true"
-        className="display text-outline pointer-events-none absolute bottom-[-0.12em] left-[1vw] text-[clamp(10rem,34vw,34rem)] leading-none opacity-25 max-lg:hidden"
+        className="roles-ui display text-outline pointer-events-none absolute bottom-[-0.12em] left-[1vw] text-[clamp(10rem,34vw,34rem)] leading-none opacity-25 max-lg:hidden"
         style={{ WebkitTextStroke: '1.5px var(--acc)' }}
       >
         01
@@ -188,7 +224,7 @@ export default function Roles() {
                 alt={`Lá bài ${c.role} — ${c.skill}`}
                 className="stack-card card-shadow absolute inset-0 w-full h-full rounded-[3%] object-cover will-change-transform"
                 draggable={false}
-                loading="lazy"
+                loading="eager"
               />
             ))}
             </div>
@@ -206,18 +242,18 @@ export default function Roles() {
       </div>
 
       {/* chapter rail */}
-      <div className="absolute left-[clamp(1rem,3vw,2.5rem)] top-1/2 z-20 hidden -translate-y-1/2 flex-col items-center gap-4 lg:flex">
+      <div className="roles-ui absolute left-[clamp(1rem,3vw,2.5rem)] top-1/2 z-20 hidden -translate-y-1/2 flex-col items-center gap-4 lg:flex">
         {cards.map((c) => (
           <span key={c.id} className="tick block size-2 rotate-45" style={{ background: 'var(--acc)' }} />
         ))}
       </div>
-      <p className="absolute left-[clamp(1rem,3vw,2.5rem)] top-16 lg:top-20 z-20 text-[0.74rem] font-medium tracking-[0.3em] text-card/80 lg:hidden">
+      <p className="roles-ui absolute left-[clamp(1rem,3vw,2.5rem)] top-16 lg:top-20 z-20 text-[0.74rem] font-medium tracking-[0.3em] text-card/80 lg:hidden">
         SÁU LÁ LỆNH
       </p>
-      <p className="absolute right-[clamp(1rem,3vw,2.5rem)] bottom-5 z-20 text-sm font-medium tracking-[0.2em] text-card/80">
+      <p className="roles-ui absolute right-[clamp(1rem,3vw,2.5rem)] bottom-5 z-20 text-sm font-medium tracking-[0.2em] text-card/80">
         <span ref={counter} className="text-card font-bold">01</span> / {String(n).padStart(2, '0')}
       </p>
-      <p className="absolute left-[clamp(1rem,3vw,2.5rem)] bottom-5 z-20 hidden text-[0.74rem] font-medium tracking-[0.25em] uppercase text-card/70 lg:block">
+      <p className="roles-ui absolute left-[clamp(1rem,3vw,2.5rem)] bottom-5 z-20 hidden text-[0.74rem] font-medium tracking-[0.25em] uppercase text-card/70 lg:block">
         Cuộn để chia bài
       </p>
     </section>

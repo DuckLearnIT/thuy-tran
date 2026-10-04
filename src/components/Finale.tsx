@@ -129,7 +129,7 @@ export default function Finale() {
                   } as React.CSSProperties
                 }
                 draggable={false}
-                loading="lazy"
+                loading="eager"
                 decoding="async"
               />
             </div>

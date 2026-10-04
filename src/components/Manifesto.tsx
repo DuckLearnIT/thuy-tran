@@ -1,25 +1,29 @@
 import { useLayoutEffect, useRef } from 'react'
 import gsap from 'gsap'
 import Wave from './Wave'
-import { byId, cards } from '../data/cards'
+import { cards } from '../data/cards'
 import useReducedMotion from '../hooks/useReducedMotion'
 
 const roles = [...new Set(cards.map((c) => c.role))]
-const line = 'Trên sông, không ai đi một mình. Một lệnh ban ra — thế trận tự tìm đường mà chảy.'
+const opening = 'Hoằng Thao là đứa trẻ khờ dại, đem quân từ xa đến, quân lính còn mỏi mệt, lại nghe Công Tiễn đã chết, không có người làm nội ứng, đã mất vía trước rồi.'
+const closing = 'Quân ta lấy sức còn khỏe địch với quân mỏi mệt, tất phá được.'
+const source = 'https://baotanglichsuquocgia.vn/vi/Articles/2002/68092/ky-niem-1075-nam-11-938-11-2013-chien-thang-bach-djang-lan-thu-nhat.html'
 
 export default function Manifesto() {
   const root = useRef<HTMLElement>(null)
   const reduced = useReducedMotion()
-  const card = byId('tham-quan')
 
   useLayoutEffect(() => {
     if (reduced) return
     const ctx = gsap.context(() => {
-      gsap.fromTo(
-        '.m-word',
-        { opacity: 0.14 },
+      const words = gsap.utils.toArray<HTMLElement>('.m-word')
+      // Initialize every word before creating the stagger, including the closing sentence.
+      gsap.set(words, { opacity: 0.14 })
+      gsap.to(
+        words,
         {
           opacity: 1,
+          duration: 0.5,
           stagger: 0.12,
           ease: 'none',
           scrollTrigger: {
@@ -31,25 +35,6 @@ export default function Manifesto() {
         },
       )
       gsap.fromTo(
-        '.m-card',
-        { yPercent: 18, rotate: 6 },
-        {
-          yPercent: -18,
-          rotate: -4,
-          ease: 'none',
-          scrollTrigger: { trigger: root.current, start: 'top bottom', end: 'bottom top', scrub: true },
-        },
-      )
-      gsap.fromTo(
-        '.m-arch',
-        { clipPath: 'inset(100% 0% 0% 0% round 50% 50% 0 0)' },
-        {
-          clipPath: 'inset(0% 0% 0% 0% round 50% 50% 0 0)',
-          ease: 'none',
-          scrollTrigger: { trigger: '.m-arch', start: 'top 95%', end: 'top 35%', scrub: true },
-        },
-      )
-      gsap.fromTo(
         '.m-track',
         { xPercent: 0 },
         {
@@ -58,11 +43,6 @@ export default function Manifesto() {
           scrollTrigger: { trigger: '.m-track', start: 'top bottom', end: 'bottom top', scrub: 0.8 },
         },
       )
-      gsap.to('.m-diamond', {
-        rotate: 225,
-        ease: 'none',
-        scrollTrigger: { trigger: root.current, start: 'top bottom', end: 'bottom top', scrub: true },
-      })
     }, root)
     return () => ctx.revert()
   }, [reduced])
@@ -70,38 +50,32 @@ export default function Manifesto() {
   return (
     <section
       ref={root}
-      className="manifesto-ground relative overflow-hidden pt-[clamp(6rem,14vw,12rem)] pb-[clamp(5rem,10vw,10rem)]"
+      id="loi-lenh"
+      aria-labelledby="loi-lenh-title"
+      className="manifesto-ground relative min-h-svh overflow-hidden pt-[clamp(6rem,8vw,8rem)] pb-[clamp(5rem,10vw,10rem)]"
     >
-      <div className="grid grid-cols-12 gap-x-4 items-start px-[clamp(1rem,3vw,2.5rem)]">
-        <p className="col-span-12 lg:col-span-2 text-[0.76rem] font-medium tracking-[0.25em] uppercase mb-10 lg:mb-0 lg:pt-4">
+      <div className="px-[clamp(1rem,3vw,2.5rem)]">
+        <p className="mb-10 text-[0.76rem] font-medium tracking-[0.25em] uppercase">
           <span className="text-vermilion">01</span> — Lời lệnh
         </p>
 
-        <h2 className="m-text col-span-12 lg:col-span-7 lg:col-start-3 display !font-semibold !leading-[1.02] text-[clamp(2.4rem,6.4vw,6.6rem)]">
-          {line.split(' ').map((w, i) => (
-            <span key={i} className="m-word inline-block mr-[0.22em]">
-              {w}
-            </span>
-          ))}
-        </h2>
-
-        {/* arch window with scout card */}
-        <div className="col-span-7 col-start-5 lg:col-span-3 lg:col-start-10 lg:-mt-24 mt-16 relative">
-          <div
-            className="m-arch relative w-full overflow-hidden rounded-t-[999px]"
-            style={{ background: 'linear-gradient(170deg,#e9a93a 0%,#c9782a 55%,#b5362b 100%)', aspectRatio: '3 / 4.2' }}
-          >
-            <img
-              src={card.image}
-              alt={`Lá bài ${card.role}`}
-              className="m-card absolute left-1/2 top-1/2 w-[128%] max-w-none -translate-x-1/2 -translate-y-[46%] rounded-[3%] card-shadow"
-              draggable={false}
-              loading="lazy"
-            />
-          </div>
-          <div className="m-diamond absolute -left-6 bottom-10 size-10 rotate-45 bg-vermilion" aria-hidden="true" />
+        <div className="m-text w-full">
+          <h2 id="loi-lenh-title" className="sr-only">Lời cổ động của Ngô Quyền</h2>
+          <blockquote className="display !font-semibold !leading-[1.08] text-[clamp(2rem,4.8vw,5.4rem)]">
+            <p>
+              {`“${opening} ${closing}”`.split(' ').map((word, i) => (
+                <span key={i} className="m-word inline-block mr-[0.22em]">{word}{' '}</span>
+              ))}
+            </p>
+          </blockquote>
+          <p className="mt-7 text-[0.8rem] font-medium tracking-[0.16em] uppercase">
+            <span className="text-vermilion">Ngô Quyền</span> · Bạch Đằng, 938
+          </p>
+          <a href={source} target="_blank" rel="noopener noreferrer"
+            className="mt-2 inline-block text-sm underline decoration-ink/35 underline-offset-4 transition-colors hover:text-vermilion">
+            Nguồn: Bảo tàng Lịch sử Quốc gia ↗
+          </a>
         </div>
-
       </div>
 
       {/* role marquee */}

@@ -1,9 +1,9 @@
 import * as THREE from 'three'
+import { preloadedImages } from '../preloadAssets'
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 
 export type BoxState = {
-  rootY: number
   elev: number
   yaw: number
   zoom: number
@@ -24,7 +24,6 @@ type Opts = {
   cover: string
   cards: string[]
   extra: string[]
-  onHover?: (i: number | null) => void
 }
 
 const W = 3
@@ -34,11 +33,10 @@ const HL = 0.66
 const WALL = 0.13
 const FLOOR = 0.1
 
-export function createBoxScene({ canvas, cover, cards, extra, onHover }: Opts) {
+export function createBoxScene({ canvas, cover, cards, extra }: Opts) {
   const n = cards.length
   const mid = (n - 1) / 2
   const state: BoxState = {
-    rootY: 0,
     elev: 1.12,
     yaw: -0.32,
     zoom: 1,
@@ -87,11 +85,21 @@ export function createBoxScene({ canvas, cover, cards, extra, onHover }: Opts) {
   scene.add(new THREE.HemisphereLight(0xfff4dc, 0x6a3a10, 0.5))
 
   const anis = renderer.capabilities.getMaxAnisotropy()
-  const loader = new THREE.TextureLoader()
+  const textureTasks: Promise<void>[] = []
+  let disposed = false
   const loadTex = (src: string, cb?: (t: THREE.Texture) => void) => {
-    const t = loader.load(src, cb)
+    const image = preloadedImages.get(src)
+    if (!image) throw new Error(`Artwork was not preloaded: ${src}`)
+    const t = new THREE.Texture(image)
     t.colorSpace = THREE.SRGBColorSpace
     t.anisotropy = anis
+    t.needsUpdate = true
+    // Run sizing callbacks once their card meshes have been constructed.
+    textureTasks.push(Promise.resolve().then(() => {
+      if (disposed) return
+      cb?.(t)
+      renderer.initTexture(t)
+    }))
     return t
   }
 
@@ -178,7 +186,6 @@ export function createBoxScene({ canvas, cover, cards, extra, onHover }: Opts) {
   // cards
   const cardMeshes: THREE.Mesh[] = []
   const cardGroups: THREE.Group[] = []
-  const hover = Array.from({ length: n }, () => 0)
   const CW = 2.0
   let CH = 2.9
   const GH = 2.9
@@ -196,7 +203,6 @@ export function createBoxScene({ canvas, cover, cards, extra, onHover }: Opts) {
     const front = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.5, alphaTest: 0.5 })
     const mesh = shadowed(new THREE.Mesh(geo, [side, side, side, side, front, new THREE.MeshStandardMaterial({ color: 0x0c2a52 })]))
     mesh.position.y = GH / 2
-    mesh.userData.i = i
     g.add(mesh)
     g.rotation.order = 'YXZ'
     root.add(g)
@@ -253,15 +259,9 @@ export function createBoxScene({ canvas, cover, cards, extra, onHover }: Opts) {
     xGroups.push(g)
   })
 
-  const ray = new THREE.Raycaster()
-  const ptr = new THREE.Vector2(9, 9)
-  const smooth = { x: 0, y: 0 }
-  const target = { x: 0, y: 0 }
-  let hovered: number | null = null
   let visible = true
   let raf = 0
   let aspect = 1
-  let hasPointer = false
   const look = new THREE.Vector3()
   const ease = (t: number) => 1 - Math.pow(1 - t, 3)
 
@@ -273,21 +273,19 @@ export function createBoxScene({ canvas, cover, cards, extra, onHover }: Opts) {
     for (let i = 0; i < n; i++) {
       const g = cardGroups[i]
       const f = ease(THREE.MathUtils.clamp(state.fan[i], 0, 1))
-      const h = hover[i]
       const d = i - mid
       const trayY = FLOOR + 0.04 + i * 0.02
       const airY = 0.5 + i * 0.02
-      g.scale.setScalar(sc * (1 + h * 0.07))
+      g.scale.setScalar(sc)
       g.position.set(
         d * 0.22 * f,
-        THREE.MathUtils.lerp(trayY, airY, r) - sw * 7.5 + h * 0.15,
-        THREE.MathUtils.lerp(CH / 2, 0, r) + i * 0.012 + h * 0.3,
+        THREE.MathUtils.lerp(trayY, airY, r) - sw * 7.5,
+        THREE.MathUtils.lerp(CH / 2, 0, r) + i * 0.012,
       )
       g.rotation.x = THREE.MathUtils.lerp(-Math.PI / 2, -0.1, r)
       g.rotation.y = 0
       g.rotation.z = -d * 0.15 * f
       g.visible = sw < 0.999
-      if (hovered !== null && hovered !== i) g.position.x += Math.sign(i - hovered) * 0.45 * hover[hovered] * f
     }
     const R = 3.7
     for (let j = 0; j < m; j++) {
@@ -312,25 +310,17 @@ export function createBoxScene({ canvas, cover, cards, extra, onHover }: Opts) {
   const frame = () => {
     raf = requestAnimationFrame(frame)
     if (!visible) return
-    smooth.x += (target.x - smooth.x) * 0.06
-    smooth.y += (target.y - smooth.y) * 0.06
-
-    for (let i = 0; i < n; i++) {
-      const want = hovered === i ? 1 : 0
-      hover[i] += (want - hover[i]) * 0.14
-    }
     place()
 
     lid.position.y = HB + 0.004 + state.lift
     sun.castShadow = state.lift < 3.5 && state.rise < 0.05
     base.position.y = -state.drop
-    root.position.y = state.rootY
     ;(ground.material as THREE.ShadowMaterial).opacity = 0.2 * (1 - Math.min(1, state.rise * 2))
     lid.rotation.x = state.lidTilt
     lid.rotation.y = state.lidTurn
 
-    const elev = state.elev + smooth.y * 0.08
-    const yaw = state.yaw + smooth.x * 0.16
+    const elev = state.elev
+    const yaw = state.yaw
     const fit = Math.max(12.5, 8.4 / aspect)
     const dist = fit / state.zoom
     look.set(0, 0.35 + THREE.MathUtils.lerp(0, 1.4, ease(THREE.MathUtils.clamp(state.rise, 0, 1))), 0)
@@ -340,42 +330,6 @@ export function createBoxScene({ canvas, cover, cards, extra, onHover }: Opts) {
     camera.updateProjectionMatrix()
     renderer.render(scene, camera)
   }
-
-  const setHover = (i: number | null) => {
-    if (i === hovered) return
-    hovered = i
-    if (onHover) {
-      canvas.style.cursor = i === null ? 'default' : 'pointer'
-      onHover(i)
-    }
-  }
-
-  const pick = () => {
-    if (!onHover || !hasPointer || state.fan[n - 1] < 0.85 || state.swap > 0.02) return setHover(null)
-    ray.setFromCamera(ptr, camera)
-    const hit = ray.intersectObjects(cardMeshes, false)[0]
-    setHover(hit ? (hit.object.userData.i as number) : null)
-  }
-
-  const onMove = (e: PointerEvent) => {
-    const r = canvas.getBoundingClientRect()
-    ptr.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1)
-    hasPointer = true
-    if (e.pointerType === 'mouse') {
-      target.x = ptr.x
-      target.y = ptr.y
-    }
-    pick()
-  }
-  const onLeave = () => {
-    hasPointer = false
-    target.x = 0
-    target.y = 0
-    setHover(null)
-  }
-  canvas.addEventListener('pointermove', onMove)
-  canvas.addEventListener('pointerdown', onMove)
-  canvas.addEventListener('pointerleave', onLeave)
 
   const resize = () => {
     const w = canvas.clientWidth
@@ -397,15 +351,20 @@ export function createBoxScene({ canvas, cover, cards, extra, onHover }: Opts) {
 
   frame()
 
+  const ready = Promise.all(textureTasks).then(async () => {
+    if (disposed) return
+    renderer.initTexture(backTex)
+    await renderer.compileAsync(scene, camera)
+  })
+
   return {
     state,
+    ready,
     dispose() {
+      disposed = true
       cancelAnimationFrame(raf)
       ro.disconnect()
       io.disconnect()
-      canvas.removeEventListener('pointermove', onMove)
-      canvas.removeEventListener('pointerdown', onMove)
-      canvas.removeEventListener('pointerleave', onLeave)
       scene.traverse((o) => {
         const m = o as THREE.Mesh
         if (m.geometry) m.geometry.dispose()

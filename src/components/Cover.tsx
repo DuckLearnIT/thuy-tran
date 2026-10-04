@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
+import Hero from './Hero'
 import cover from '../assets/bia-thuy-tran.webp'
 import { cards } from '../data/cards'
 import { strategies } from '../data/strategies'
@@ -8,58 +9,73 @@ import useReducedMotion from '../hooks/useReducedMotion'
 
 const alt = 'Bìa board game Thủy trận Bạch Đằng: thuyền nhẹ cầm cờ len giữa bãi cọc nhọn, chiến thuyền buồm đỏ phía xa'
 
-export default function Cover() {
+export default function Cover({ playIntro, onReady }: { playIntro: boolean; onReady: () => void }) {
   const root = useRef<HTMLElement>(null)
   const canvas = useRef<HTMLCanvasElement>(null)
   const reduced = useReducedMotion()
-  const [open, setOpen] = useState(false)
+  const [fallback, setFallback] = useState(false)
 
   useLayoutEffect(() => {
-    if (reduced || !canvas.current) return
-    const box = createBoxScene({
-      canvas: canvas.current,
-      cover,
-      cards: cards.map((c) => c.image),
-      extra: strategies.map((k) => k.image),
-    })
+    if (reduced || fallback) { onReady(); return }
+    if (!canvas.current) return
+    let box: ReturnType<typeof createBoxScene>
+    try {
+      box = createBoxScene({
+        canvas: canvas.current,
+        cover,
+        cards: cards.map((c) => c.image),
+        extra: strategies.map((k) => k.image),
+      })
+    } catch {
+      setFallback(true)
+      return
+    }
+    let cancelled = false
+    box.ready.then(() => { if (!cancelled) onReady() })
+      .catch(() => { if (!cancelled) setFallback(true) })
     const st = box.state
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: root.current,
           start: 'top top',
-          end: '+=820%',
+          end: '+=1000%',
+          invalidateOnRefresh: true,
           pin: true,
           scrub: 0.6,
-          onUpdate: (t) => setOpen(t.progress > 0.35),
         },
       })
-      // Hộp box từ từ đi lên từ phía dưới vào trung tâm màn hình
-      tl.fromTo(
-        canvas.current,
-        { y: '50vh', opacity: 0 },
-        { y: '0vh', opacity: 1, ease: 'power2.out', duration: 1.4 },
-        0
-      )
-      tl.fromTo(
-        st,
-        { rootY: -6, elev: 1.25, yaw: -0.4, zoom: 0.92 },
-        { rootY: 0, elev: 1.0, yaw: -0.25, zoom: 1, ease: 'power2.out', duration: 1.4 },
-        0
-      )
-      // Mở nắp hộp
-      tl.to(st, { lift: 7, lidTilt: -0.1, ease: 'power2.inOut', duration: 1.4 }, 1.4)
-      // Các lá bài nâng lên từ lòng hộp
-      tl.to(st, { rise: 1, elev: 0.3, yaw: 0, zoom: 1.25, shift: 0.9, ease: 'power2.inOut', duration: 1.4 }, 2.8)
-      // Đáy hộp chìm xuống
-      tl.to(st, { drop: 8, ease: 'power2.in', duration: 1.0 }, 4.0)
-      // 6 lá lệnh bài xòe ra
-      st.fan.forEach((_, i) => tl.to(st.fan, { [i]: 1, ease: 'power2.out', duration: 0.9 }, 4.6 + i * 0.1))
-      // Giới thiệu bên trái hiển thị
-      tl.fromTo('.bx-side', { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.7 }, 5.5)
-      tl.to({}, { duration: 1.0 })
+      // Keep the sun and box in one pinned viewport: no section boundary to cross.
+      const sun = root.current!.querySelector<HTMLElement>('.sun')!
+      const stage = root.current!
+      tl.to('.title-a', { xPercent: -65, opacity: 0, duration: 1, ease: 'power2.in' }, 0)
+        .to('.title-b', { xPercent: 65, opacity: 0, duration: 1, ease: 'power2.in' }, 0)
+        .to('.hero-fade', { y: -60, opacity: 0, duration: 0.65 }, 0)
+        .to('.fan', { yPercent: 110, opacity: 0, duration: 0.9, ease: 'power2.in' }, 0)
+        .to('.hero-bands', { yPercent: 100, duration: 0.8, ease: 'power2.in' }, 0.15)
+        .to(sun, {
+          x: () => stage.clientWidth / 2 - sun.offsetLeft - sun.offsetWidth / 2,
+          y: () => stage.clientHeight / 2 - sun.offsetTop - sun.offsetHeight / 2,
+          scale: () => Math.hypot(stage.clientWidth, stage.clientHeight) / sun.offsetWidth * 1.08,
+          duration: 1.6,
+          ease: 'power2.inOut',
+        }, 0.15)
+        .to('.sun-texture', { opacity: 0, duration: 0.6 }, 1.15)
+        .set('.hero-layer', { autoAlpha: 0 }, 1.75)
+        .fromTo(canvas.current, { yPercent: 110 }, {
+          yPercent: 0, duration: 1.4, ease: 'power2.out',
+        }, 1.75)
+        .fromTo(st, { elev: 1.3, yaw: -0.5, zoom: 0.9 }, {
+          elev: 1.0, yaw: -0.25, zoom: 1, ease: 'power2.out', duration: 1.4,
+        }, 1.75)
+      const reveal = 3.35
+      tl.to(st, { lift: 7, lidTilt: -0.1, ease: 'power2.inOut', duration: 1.4 }, reveal)
+      tl.to(st, { rise: 1, elev: 0.3, yaw: 0, zoom: 1.25, shift: 0.9, ease: 'power2.inOut', duration: 1.4 }, reveal + 1.2)
+      tl.to(st, { drop: 8, ease: 'power2.in', duration: 1 }, reveal + 2.4)
+      st.fan.forEach((_, i) => tl.to(st.fan, { [i]: 1, ease: 'power2.out', duration: 0.9 }, reveal + 3.2 + i * 0.1))
+      tl.fromTo('.bx-side', { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.6 }, reveal + 4.2)
+      tl.to({}, { duration: 0.6 })
       tl.to('.bx-side', { opacity: 0, x: -30, duration: 0.5 }, '>')
-      // Chuyển sang 7 kế sách
       const t0 = tl.duration() - 0.5
       tl.to(st, { swap: 1, zoom: 1.1, elev: 0.26, shift: 0, ease: 'power2.inOut', duration: 1.3 }, t0)
       st.fan2.forEach((_, i) => tl.to(st.fan2, { [i]: 1, ease: 'power2.out', duration: 0.9 }, t0 + 0.7 + i * 0.1))
@@ -68,16 +84,20 @@ export default function Cover() {
     }, root)
 
     return () => {
+      cancelled = true
       ctx.revert()
       box.dispose()
     }
-  }, [reduced])
+  }, [reduced, fallback, onReady])
 
-  if (reduced) {
+  if (reduced || fallback) {
     return (
-      <section className="bg-[#ffb627] px-4 py-16 text-ink" aria-label="Bìa hộp">
-        <img src={cover} alt={alt} className="mx-auto w-full max-w-xl" />
-      </section>
+      <>
+        <Hero playIntro={playIntro} />
+        <section className="bg-[#ffb627] px-4 py-16 text-ink" aria-label="Bìa hộp">
+          <img src={cover} alt={alt} className="mx-auto w-full max-w-xl" />
+        </section>
+      </>
     )
   }
 
@@ -87,7 +107,10 @@ export default function Cover() {
       className="relative h-svh overflow-hidden bg-[#ffb627] text-ink"
       aria-label="Hộp Thủy trận Bạch Đằng"
     >
-      <div className="bx-side absolute top-1/2 left-[clamp(1rem,3vw,2.5rem)] z-20 hidden max-w-[21rem] -translate-y-1/2 lg:block">
+      <div className="hero-layer absolute inset-0 z-10">
+        <Hero playIntro={playIntro} />
+      </div>
+      <div className="bx-side absolute top-1/2 left-[clamp(1rem,3vw,2.5rem)] z-20 hidden max-w-[19rem] -translate-y-1/2 lg:block">
         <p className="text-[0.76rem] font-medium tracking-[0.25em] uppercase">
           <span className="text-vermilion">00</span> — Trong hộp
         </p>
@@ -96,14 +119,7 @@ export default function Cover() {
           <br />
           <span className="text-vermilion">bảy kế sách.</span>
         </p>
-        <p className="mt-4 text-[1.05rem] leading-relaxed opacity-85 font-normal">
-          Mở nắp chiến trận Bạch Đằng — toàn bộ binh lực và mưu lược nằm trọn trong tay bạn.
-        </p>
       </div>
-
-      <p className="absolute right-[clamp(1rem,3vw,2.5rem)] bottom-[4svh] z-20 hidden text-right text-[0.76rem] font-medium tracking-[0.25em] uppercase md:block">
-        {open ? 'Cuộn tiếp để khám phá' : 'Cuộn để mở hộp'}
-      </p>
 
       <canvas ref={canvas} className="absolute inset-0 size-full touch-pan-y" role="img" aria-label={alt} />
       <p className="sr-only">

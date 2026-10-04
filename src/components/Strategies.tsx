@@ -33,6 +33,13 @@ export default function Strategies() {
     if (reduced) return
 
     const ctx = gsap.context(() => {
+      // Separate entrance motion from the carousel's card transforms and scroll stops.
+      gsap.fromTo('.ks-content', { yPercent: 55, autoAlpha: 0 }, {
+        yPercent: 0,
+        autoAlpha: 1,
+        ease: 'power2.out',
+        scrollTrigger: { trigger: root.current, start: 'top 85%', end: 'top top', scrub: 0.6 },
+      })
       const cards = gsap.utils.toArray<HTMLElement>('.ks-card')
       const proxy = { k: 0 }
       let lastActive = -1
@@ -88,7 +95,13 @@ export default function Strategies() {
           end: () => `+=${(n - 1) * window.innerHeight * 0.95}`,
           pin: true,
           scrub: 0.6,
+          anticipatePin: 1,
           invalidateOnRefresh: true,
+          snap: {
+            snapTo: 1 / (n - 1),
+            duration: { min: 0.25, max: 0.6 },
+            ease: 'power2.inOut',
+          },
         },
       })
       trigger.current = tl.scrollTrigger as ScrollTrigger
@@ -141,7 +154,7 @@ export default function Strategies() {
               <img
                 src={s.image}
                 alt={`Lá bài ${s.name}`}
-                loading="lazy"
+                loading="eager"
                 decoding="async"
                 className="card-shadow w-full rounded-[3%]"
               />
@@ -162,9 +175,10 @@ export default function Strategies() {
     <section
       ref={root}
       id="ke-sach"
-      className="relative h-svh overflow-hidden transition-colors duration-700 select-none"
+      className="relative h-svh overflow-hidden transition-[color] duration-700 select-none"
       style={{ background: list[0].bg, color: cur.fg }}
     >
+      <div className="ks-content absolute inset-0">
       {/* Giant outlined title behind the cards */}
       <div
         aria-hidden="true"
@@ -200,7 +214,7 @@ export default function Strategies() {
                 src={s.image}
                 alt={`Lá kế sách ${s.name}`}
                 draggable={false}
-                loading={i === 0 ? 'eager' : 'lazy'}
+                loading="eager"
                 decoding="async"
                 onClick={() => jump(i)}
                 className="ks-card card-shadow absolute inset-0 size-full rounded-[4%] object-cover cursor-pointer transition-[filter,box-shadow] duration-300 will-change-transform"
@@ -243,6 +257,7 @@ export default function Strategies() {
             </button>
           ))}
         </div>
+      </div>
       </div>
     </section>
   )
