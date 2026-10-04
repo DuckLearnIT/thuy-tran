@@ -35,11 +35,15 @@ export default function Strategies() {
     const ctx = gsap.context(() => {
       // Lift each wrapper in a left-to-right wave; the carousel owns the images.
       gsap.timeline({
-        scrollTrigger: { trigger: root.current, start: 'top 85%', end: 'top top', scrub: 0.6 },
+        scrollTrigger: { trigger: root.current, start: 'top 70%', end: 'top top', scrub: 0.6 },
       })
         .fromTo('.ks-content', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2 }, 0)
         .fromTo('.ks-wave', { yPercent: 100, autoAlpha: 0 }, {
-          yPercent: 0, autoAlpha: 1, duration: 0.8, stagger: 0.12, ease: 'power2.out',
+          yPercent: 0, autoAlpha: 1, duration: 1,
+          // Spread the three visible cards across the entire entrance. Offstage
+          // cards must not extend the timeline and rush the visible wave.
+          stagger: (index) => Math.min(index, 2) * 0.3,
+          ease: 'power1.inOut',
         }, 0)
         .fromTo('.ks-entry-label', { y: 32, autoAlpha: 0 }, {
           y: 0, autoAlpha: 1, duration: 0.65, ease: 'power2.out',
