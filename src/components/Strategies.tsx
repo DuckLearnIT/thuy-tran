@@ -33,13 +33,20 @@ export default function Strategies() {
     if (reduced) return
 
     const ctx = gsap.context(() => {
-      // Separate entrance motion from the carousel's card transforms and scroll stops.
-      gsap.fromTo('.ks-content', { yPercent: 55, autoAlpha: 0 }, {
-        yPercent: 0,
-        autoAlpha: 1,
-        ease: 'power2.out',
+      // Lift each wrapper in a left-to-right wave; the carousel owns the images.
+      gsap.timeline({
         scrollTrigger: { trigger: root.current, start: 'top 85%', end: 'top top', scrub: 0.6 },
       })
+        .fromTo('.ks-content', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2 }, 0)
+        .fromTo('.ks-wave', { yPercent: 100, autoAlpha: 0 }, {
+          yPercent: 0, autoAlpha: 1, duration: 0.8, stagger: 0.12, ease: 'power2.out',
+        }, 0)
+        .fromTo('.ks-entry-label', { y: 32, autoAlpha: 0 }, {
+          y: 0, autoAlpha: 1, duration: 0.65, ease: 'power2.out',
+        }, 0)
+        .fromTo('.ks-footer', { y: 40, autoAlpha: 0 }, {
+          y: 0, autoAlpha: 1, duration: 0.65, ease: 'power2.out',
+        }, 0.5)
       const cards = gsap.utils.toArray<HTMLElement>('.ks-card')
       const proxy = { k: 0 }
       let lastActive = -1
@@ -64,6 +71,7 @@ export default function Strategies() {
           el.style.transform = `translate3d(${xPercent}%, 0, ${zPx}px) rotateY(${rotY}deg) rotateZ(${rotZ}deg) scale(${scale})`
           el.style.opacity = `${opacity}`
           el.style.zIndex = `${zIndex}`
+          el.parentElement!.style.zIndex = `${zIndex}`
           el.style.filter = `brightness(${brightness})`
           el.style.pointerEvents = absD < 1.5 ? 'auto' : 'none'
         })
@@ -197,7 +205,7 @@ export default function Strategies() {
         </span>
       </div>
 
-      <p className="absolute left-[clamp(1rem,3vw,2.5rem)] top-16 lg:top-20 z-20 text-[0.76rem] font-medium tracking-[0.25em] uppercase opacity-90">
+      <p className="ks-entry-label absolute left-[clamp(1rem,3vw,2.5rem)] top-16 lg:top-20 z-20 text-[0.76rem] font-medium tracking-[0.25em] uppercase opacity-90">
         02 — Bảy kế sách
       </p>
 
@@ -209,8 +217,8 @@ export default function Strategies() {
             style={{ aspectRatio: '1500 / 2078' }}
           >
             {list.map((s, i) => (
+              <div key={s.id} className="ks-wave absolute inset-0 [transform-style:preserve-3d]">
               <img
-                key={s.id}
                 src={s.image}
                 alt={`Lá kế sách ${s.name}`}
                 draggable={false}
@@ -223,13 +231,14 @@ export default function Strategies() {
                   transform: 'translate3d(0, 0, 0)',
                 }}
               />
+              </div>
             ))}
           </div>
         </div>
       </div>
 
       {/* Strategy Information & Tab Switcher */}
-      <div className="absolute inset-x-0 bottom-0 z-20 flex flex-col gap-4 px-[clamp(1rem,3vw,2.5rem)] pb-6 lg:flex-row lg:items-end lg:justify-between lg:pb-10">
+      <div className="ks-footer absolute inset-x-0 bottom-0 z-20 flex flex-col gap-4 px-[clamp(1rem,3vw,2.5rem)] pb-6 lg:flex-row lg:items-end lg:justify-between lg:pb-10">
         <div key={cur.id} className="ks-info max-w-xl">
           <p className="text-[0.76rem] font-medium tracking-[0.25em] uppercase opacity-85">{cur.tag}</p>
           <h3 className="display mt-1 mb-3 text-[clamp(1.8rem,3.6vw,3.4rem)] !font-bold">{cur.name}</h3>
