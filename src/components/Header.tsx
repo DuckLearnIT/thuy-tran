@@ -5,7 +5,7 @@ import useReducedMotion from '../hooks/useReducedMotion'
 const chapters = [
   { id: 'top', label: 'Khởi trận', number: '00' },
   { id: 'loi-lenh', label: 'Lời lệnh', number: '01' },
-  { id: 'roles', label: 'Sáu lá lệnh', number: '02' },
+  { id: 'roles', label: 'Sáu nhân vật', number: '02' },
   { id: 'ke-sach', label: 'Bảy kế sách', number: '03' },
 ]
 

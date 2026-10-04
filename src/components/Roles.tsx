@@ -24,7 +24,7 @@ function Info({ card, index }: { card: CardData; index: number }) {
   return (
     <div className="info col-start-1 row-start-1" data-i={index}>
       <p className="info-rest text-[0.76rem] font-medium tracking-[0.25em] uppercase" style={{ color: card.accent }}>
-        {card.prefix ? `${card.prefix} · ` : ''}Kỹ năng
+        {card.prefix ? `${card.prefix} · ` : ''}Nhân vật
       </p>
       <h3
         className="display mt-3 text-[clamp(2.4rem,11vw,4.5rem)] lg:text-[clamp(4rem,8vw,9rem)] relative z-0"
@@ -248,7 +248,7 @@ export default function Roles() {
         ))}
       </div>
       <p className="roles-ui absolute left-[clamp(1rem,3vw,2.5rem)] top-16 lg:top-20 z-20 text-[0.74rem] font-medium tracking-[0.3em] text-card/80 lg:hidden">
-        SÁU LÁ LỆNH
+        SÁU NHÂN VẬT
       </p>
       <p className="roles-ui absolute right-[clamp(1rem,3vw,2.5rem)] bottom-5 z-20 text-sm font-medium tracking-[0.2em] text-card/80">
         <span ref={counter} className="text-card font-bold">01</span> / {String(n).padStart(2, '0')}
