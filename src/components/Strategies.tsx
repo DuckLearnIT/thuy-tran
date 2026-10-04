@@ -146,7 +146,7 @@ export default function Strategies() {
 
   if (reduced) {
     return (
-      <section className="bg-paper px-[clamp(1rem,3vw,2.5rem)] py-20 text-ink">
+      <section id="ke-sach" className="bg-paper px-[clamp(1rem,3vw,2.5rem)] py-20 text-ink">
         <h2 className="display text-[clamp(3rem,10vw,8rem)]">Bảy kế sách</h2>
         <div className="mt-10 grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
           {list.map((s) => (
