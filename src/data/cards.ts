@@ -2,8 +2,7 @@ import nhaTuong from '../assets/nha-tuong.webp'
 import nhaBinh from '../assets/nha-binh.webp'
 import thamQuan from '../assets/tham-quan.webp'
 import thuyenNhe from '../assets/thuyen-nhe.webp'
-import truyenLenhLam from '../assets/truyen-lenh-lam.webp'
-import truyenLenhLuc from '../assets/truyen-lenh-luc.webp'
+import huongDao from '../assets/huong-dao.webp'
 
 export type CardData = {
   id: string
@@ -60,24 +59,24 @@ export const cards: CardData[] = [
     accent: '#ec6a58',
   },
   {
-    id: 'truyen-lenh-lam',
-    role: 'Truyền Lệnh',
+    id: 'huong-dao-lam',
+    role: 'Hướng Đạo',
     prefix: 'Quân',
     skill: 'Nhất Lệnh Thông Quân',
     text: 'Có thể chuyển bài Kế sách cho đồng đội ở bất kỳ đâu.',
     quote: 'Nhất lệnh ký xuất, chư quân tương ứng.',
-    image: truyenLenhLam,
+    image: huongDao,
     bg: '#17386a',
     accent: '#9cc9f2',
   },
   {
-    id: 'truyen-lenh-luc',
-    role: 'Truyền Lệnh',
+    id: 'huong-dao-luc',
+    role: 'Hướng Đạo',
     prefix: 'Quân',
     skill: 'Thông Giang Đạt Lộ',
     text: 'Có thể chuyển bài Kế sách cho đồng đội ở bất kỳ đâu.',
     quote: 'Tri thủy tắc thông, thức địa tắc đạt.',
-    image: truyenLenhLuc,
+    image: huongDao,
     bg: '#1a3a26',
     accent: '#cfe06a',
   },
