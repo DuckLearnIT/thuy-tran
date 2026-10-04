@@ -78,6 +78,10 @@ export default function Locations() {
         }, 2.7)
         .to('.places-heading, .places-controls', { y: -20, autoAlpha: 0, duration: 0.35 }, 3.2)
         .to(board.current, { yPercent: -120, autoAlpha: 0, duration: 0.45, ease: 'power2.in' }, 3.55)
+        .to(root.current, {
+          backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--color-ink').trim(),
+          duration: 0.45,
+        }, 3.55)
       slots.forEach((slot, i) => {
         // Each tile completes its own lift before the wave advances diagonally.
         tl.fromTo(slot.querySelector('.place-wave'), { y: 0, scale: 1, rotation: 0 }, {

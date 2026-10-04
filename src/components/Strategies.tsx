@@ -145,11 +145,11 @@ export default function Strategies() {
         )
       }
 
-      // Clear the strategy chapter before the location cards enter on the same ink backdrop.
+      // Match the next chapter's backdrop after the strategy cards leave.
       tl.to('.ks-content', {
         yPercent: -25, autoAlpha: 0, duration: 0.8, ease: 'power2.in',
       }, carouselDuration + 0.25)
-        .to(root.current, { backgroundColor: '#231511', duration: 0.65 }, carouselDuration + 0.85)
+        .to(root.current, { backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--color-indigo').trim(), duration: 0.65 }, carouselDuration + 0.85)
 
       // Initial render at position 0
       renderStage(0)
