@@ -2,7 +2,7 @@ import nhaTuong from '../assets/nha-tuong.webp'
 import nhaBinh from '../assets/nha-binh.webp'
 import thamQuan from '../assets/tham-quan.webp'
 import thuyenNhe from '../assets/thuyen-nhe.webp'
-import huongDao from '../assets/huong-dao.webp'
+import truyenLenh from '../assets/truyen-lenh-lam.webp'
 import huongDaoLuc from '../assets/huong-dao-luc.webp'
 
 export type CardData = {
@@ -60,13 +60,13 @@ export const cards: CardData[] = [
     accent: '#ec6a58',
   },
   {
-    id: 'huong-dao-lam',
-    role: 'Hướng Đạo',
+    id: 'truyen-lenh-lam',
+    role: 'Truyền Lệnh',
     prefix: 'Quân',
     skill: 'Nhất Lệnh Thông Quân',
     text: 'Có thể chuyển bài Kế sách cho đồng đội ở bất kỳ đâu.',
     quote: 'Nhất lệnh ký xuất, chư quân tương ứng.',
-    image: huongDao,
+    image: truyenLenh,
     bg: '#17386a',
     accent: '#9cc9f2',
   },
