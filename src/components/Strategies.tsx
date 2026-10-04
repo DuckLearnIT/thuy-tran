@@ -149,7 +149,7 @@ export default function Strategies() {
       tl.to('.ks-content', {
         yPercent: -25, autoAlpha: 0, duration: 0.8, ease: 'power2.in',
       }, carouselDuration + 0.25)
-        .to(root.current, { backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--color-indigo').trim(), duration: 0.65 }, carouselDuration + 0.85)
+        .to(root.current, { backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--color-river').trim(), duration: 0.65 }, carouselDuration + 0.85)
 
       // Initial render at position 0
       renderStage(0)
