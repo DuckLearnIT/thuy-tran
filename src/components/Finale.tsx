@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import SplitChars from './SplitChars'
 import Wave from './Wave'
@@ -9,6 +9,20 @@ export default function Finale() {
   const root = useRef<HTMLElement>(null)
   const btn = useRef<HTMLAnchorElement>(null)
   const reduced = useReducedMotion()
+  const [departing, setDeparting] = useState(false)
+
+  const preorder = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || reduced) return
+    event.preventDefault()
+    if (departing) return
+    const href = event.currentTarget.href
+    setDeparting(true)
+    gsap.timeline({ onComplete: () => window.location.assign(href) })
+      .to(root.current!.querySelectorAll('.hand-slot'), {
+        yPercent: -120, rotation: (i) => (i - 2.5) * 8, scale: 0.85,
+        duration: 0.45, stagger: 0.025, ease: 'power2.in',
+      })
+  }
 
   useLayoutEffect(() => {
     if (reduced) return
@@ -97,10 +111,12 @@ export default function Finale() {
           </p>
           <a
             ref={btn}
-            href="#top"
+            href="?page=dat-truoc"
+            onClick={preorder}
+            aria-busy={departing}
             className="f-fade group relative inline-flex items-center gap-4 rounded-full bg-vermilion px-8 py-5 text-[0.82rem] font-medium tracking-[0.25em] uppercase text-card transition-colors duration-500 hover:bg-ochre hover:text-ink"
           >
-            Gia nhập hàng quân
+            {departing ? 'Ra quân…' : 'Đặt trước boardgame'}
             <span className="inline-block size-2 rotate-45 bg-current transition-transform duration-500 group-hover:rotate-[225deg]" />
           </a>
         </div>
