@@ -65,7 +65,7 @@ export default function Locations() {
           : 'translate(-50%, -50%)'
         plane.style.opacity = visible ? String(animated ? Math.min(1, (6 - Math.abs(d)) / 2) : 1) : '0'
         plane.style.visibility = visible ? 'visible' : 'hidden'
-        plane.style.zIndex = String(Math.round(100 - Math.abs(d) * 10))
+        plane.style.setProperty('--card-order', String(Math.round(100 - Math.abs(d) * 10)))
         plane.style.pointerEvents = visible && Math.abs(d) < 3 ? 'auto' : 'none'
         plane.style.setProperty('--card-light', String(0.65 + (depth + 1) * 0.175))
       })
@@ -110,12 +110,12 @@ export default function Locations() {
       tl.fromTo('.spiral-world', { yPercent: 160, rotation: -18, scale: 0.72, autoAlpha: 1 }, {
         yPercent: 0, rotation: 0, scale: 1, autoAlpha: 1, duration: entrance, ease: 'power2.out',
       }, 0)
-        .fromTo('.spiral-heading, .spiral-controls', { y: 60, autoAlpha: 1 }, {
+        .fromTo('.spiral-heading, .spiral-caption', { y: 60, autoAlpha: 1 }, {
           y: 0, autoAlpha: 1, duration: 0.45, ease: 'power2.out',
         }, 0.2)
         .to(proxy, { index: last, duration: journey, ease: 'none', onUpdate: () => paint(proxy.index) }, entrance)
         .to('.spiral-world', { yPercent: -75, rotation: 12, scale: 0.75, autoAlpha: 0, duration: 0.65, ease: 'power2.in' }, entrance + journey)
-        .to('.spiral-heading, .spiral-controls', { y: -20, autoAlpha: 0, duration: 0.4 }, entrance + journey + 0.25)
+        .to('.spiral-heading, .spiral-caption', { y: -20, autoAlpha: 0, duration: 0.4 }, entrance + journey + 0.25)
     }, root)
     return () => {
       trigger.current = null
@@ -156,7 +156,6 @@ export default function Locations() {
 
   const key = (event: React.KeyboardEvent) => {
     const target = event.target as HTMLElement
-    if (target.matches('input')) return
     const next = event.key === 'ArrowRight' ? active + 1 : event.key === 'ArrowLeft' ? active - 1
       : event.key === 'Home' ? 0 : event.key === 'End' ? last : null
     if (next === null) {
@@ -216,20 +215,9 @@ export default function Locations() {
           </div>)}
         </div>
       </div>
-      <div className="spiral-controls">
-        <div className="spiral-caption" aria-live="polite" aria-atomic="true">
-          <p><strong>{locations[active].number}</strong> <span>/ 24</span></p>
-          <span>{locations[active].name}</span>
-        </div>
-        <div className="spiral-browse">
-          <button type="button" aria-label="Địa điểm trước" onClick={() => choose(active - 1)} disabled={active === 0}>‹</button>
-          <input type="range" min="0" max={last} step="1" value={active} aria-label="Chọn địa điểm"
-            onChange={(event) => choose(Number(event.target.value))} />
-          <button type="button" aria-label="Địa điểm tiếp theo" onClick={() => choose(active + 1)} disabled={active === last}>›</button>
-          <button type="button" className="spiral-zoom" onClick={() => setExpanded((value) => !value)} disabled={animated && !available}>
-            {expanded ? 'Thu nhỏ' : 'Xem thẻ'}
-          </button>
-        </div>
+      <div className="spiral-caption" aria-live="polite" aria-atomic="true">
+        <p><strong>{locations[active].number}</strong> <span>/ 24</span></p>
+        <span>{locations[active].name}</span>
       </div>
     </section>
   )

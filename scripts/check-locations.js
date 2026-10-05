@@ -10,9 +10,6 @@
   const root = document.querySelector('#dia-diem')
   const scene = root.querySelector('.spiral-scene')
   const faces = [...root.querySelectorAll('.spiral-face')]
-  const range = root.querySelector('input[type="range"]')
-  const previous = root.querySelector('[aria-label="Địa điểm trước"]')
-  const next = root.querySelector('[aria-label="Địa điểm tiếp theo"]')
   const triggers = window.ScrollTrigger.getAll().filter((st) => st.trigger === root)
   const st = triggers[0]
   const staticScene = root.classList.contains('spiral-static')
@@ -31,14 +28,27 @@
     await settle(() => Math.abs(st.progress - progress) < 0.0005 && resting())
   }
   const pick = async (index) => {
-    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(range, String(index))
-    range.dispatchEvent(new Event('input', { bubbles: true }))
+    if (st) {
+      const snap = st.getTween(true)
+      if (snap) snap.kill()
+      await scrub((0.65 + index / 23 * 4) / st.animation.duration())
+    } else {
+      faces[selected()].dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }))
+      await settle(() => selected() === 0)
+      for (let i = 1; i <= index; i++) {
+        faces[selected()].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }))
+        await settle(() => selected() === i)
+      }
+    }
     await settle(() => selected() === index && resting())
   }
   check(faces.length === 24, 'Exactly 24 location cards')
   check(triggers.length === (staticScene ? 0 : 1), 'Only one chapter trigger, none for static scene')
   check(faces.every((face) => { const img = face.querySelector('img'); return img.complete && img.naturalWidth === img.naturalHeight && img.loading === 'eager' }), 'All square artwork is ready before browsing')
   check(getComputedStyle(scene).touchAction.includes('pan-y'), 'Vertical touch scrolling remains native')
+  check(!root.querySelector('input, .spiral-browse, .spiral-zoom'), 'Separate browsing controls are removed')
+  check(getComputedStyle(scene).maskImage === 'none', 'No horizontal fade band around the scene')
+  check(getComputedStyle(document.querySelector('.grain'), '::after').backgroundRepeat === 'no-repeat', 'Paper texture has no repeating tile edges')
   if (st) {
     check(st.end - st.start <= innerHeight * 4.21, 'Chapter stays within 4.2 screen lengths')
     await scrub(0)
@@ -62,12 +72,16 @@
     check(matrix(11).m41 < matrix(12).m41 && matrix(13).m41 > matrix(12).m41, 'Spiral wraps around the selected card')
   }
   else check(faces.filter((face) => getComputedStyle(face.parentElement).visibility === 'visible').length === 1, 'Static view presents one clear card')
-  next.click()
+  faces[12].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }))
   await settle(() => selected() === 13 && resting())
   await pick(23)
-  check(next.disabled && !previous.disabled, 'Last card clamps forward navigation')
+  faces[23].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }))
+  await settle(() => resting())
+  check(selected() === 23, 'Last card clamps forward navigation')
   await pick(0)
-  check(previous.disabled && !next.disabled, 'First card clamps backward navigation')
+  faces[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }))
+  await settle(() => resting())
+  check(selected() === 0, 'First card clamps backward navigation')
   await pick(12)
   faces[13].click()
   await settle(() => selected() === 13 && resting())

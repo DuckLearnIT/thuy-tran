@@ -8,7 +8,6 @@ import Roles from './components/Roles'
 import Strategies from './components/Strategies'
 import Locations from './components/Locations'
 import Finale from './components/Finale'
-import River from './components/River'
 import Curtain from './components/Curtain'
 import Cursor from './components/Cursor'
 import { preloadAssets } from './preloadAssets'
@@ -108,7 +107,6 @@ export default function App() {
           <Strategies />
           <Locations />
           <Finale />
-          <River />
         </div>
       )}
     </main>
