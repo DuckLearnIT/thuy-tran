@@ -164,9 +164,20 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
     transform 0.7s var(--ease-out-expo),
     filter 0.5s;
 }
-.hand-card:hover {
+.hand-pick:focus-visible .hand-card {
   transform: translateY(calc(var(--y, 0px) - 9%)) rotate(0deg) scale(1.05);
-  z-index: 20;
+}
+.hand-pick[aria-pressed='true'] .hand-card {
+  transform: translateY(-18%) rotate(0deg) scale(1.08);
+  filter: drop-shadow(0 0 12px #d99a2b55);
+}
+.hand[data-chosen='true'] .hand-pick[aria-pressed='false'] .hand-card { filter: brightness(0.7); }
+.hand-slot:focus-within { z-index: 21 !important; }
+.f-reading { min-height: 14rem; }
+@media (hover: hover) and (pointer: fine) {
+  .hand-pick:hover .hand-card { transform: translateY(calc(var(--y, 0px) - 9%)) rotate(0deg) scale(1.05); }
+  .hand-pick[aria-pressed='true']:hover .hand-card { transform: translateY(-20%) rotate(-2deg) scale(1.1); }
+  .hand-slot:hover { z-index: 22 !important; }
 }
 
 @media (prefers-reduced-motion: reduce) {
