@@ -1,183 +1,235 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { locations } from '../data/locations'
 import useReducedMotion from '../hooks/useReducedMotion'
 
-const cards = Array.from({ length: 24 }, (_, index) => String(index + 1).padStart(2, '0'))
-const overviewTime = 2.3
+const entrance = 0.65
+const journey = 4
+const duration = entrance + journey + 0.65
+const last = locations.length - 1
+const clamp = (index: number) => Math.max(0, Math.min(last, index))
+const slices = Array.from({ length: 7 }, (_, i) => {
+  const angle = ((i + 0.5) / 7 - 0.5) * 0.42
+  return {
+    left: `${(0.5 + Math.sin(angle) / 0.42) * 100}%`,
+    backgroundPosition: `${i / 6 * 100}% 0`,
+    transform: `translateX(-50%) translateZ(calc(var(--tile) * ${(1 - Math.cos(angle)) / 0.42})) rotateY(${-angle * 180 / Math.PI}deg)`,
+  }
+})
 
 export default function Locations() {
   const root = useRef<HTMLElement>(null)
-  const board = useRef<HTMLDivElement>(null)
+  const scene = useRef<HTMLDivElement>(null)
   const trigger = useRef<ScrollTrigger | null>(null)
-  const buttons = useRef<(HTMLButtonElement | null)[]>([])
-  const closeButton = useRef<HTMLButtonElement>(null)
-  const [selected, setSelected] = useState<number | null>(null)
-  const [hovered, setHovered] = useState<number | null>(null)
+  const render = useRef<(index: number) => void>(() => {})
+  const position = useRef(0)
+  const drag = useRef<{ id: number; x: number; y: number; index: number; target: number; moved: boolean } | null>(null)
+  const pendingFocus = useRef<number | null>(null)
+  const suppressClick = useRef(false)
+  const [active, setActive] = useState(0)
+  const [expanded, setExpanded] = useState(false)
   const [available, setAvailable] = useState(false)
-  const [columns, setColumns] = useState(() => window.matchMedia('(max-width: 640px)').matches ? 4 : 6)
-  const [shortScreen, setShortScreen] = useState(() => window.matchMedia('(max-height: 560px)').matches)
+  const [short, setShort] = useState(() => matchMedia('(max-height: 560px)').matches)
   const reduced = useReducedMotion()
-  const animated = !reduced && !shortScreen
+  const animated = !reduced && !short
 
   useEffect(() => {
-    const query = window.matchMedia('(max-width: 640px)')
-    const heightQuery = window.matchMedia('(max-height: 560px)')
-    const resize = () => {
-      setColumns(query.matches ? 4 : 6)
-      setShortScreen(heightQuery.matches)
-      setSelected(null)
-    }
-    query.addEventListener('change', resize)
-    heightQuery.addEventListener('change', resize)
-    return () => {
-      query.removeEventListener('change', resize)
-      heightQuery.removeEventListener('change', resize)
-    }
+    const media = matchMedia('(max-height: 560px)')
+    const change = () => setShort(media.matches)
+    media.addEventListener('change', change)
+    return () => media.removeEventListener('change', change)
   }, [])
 
   useLayoutEffect(() => {
-    if (!animated) return
-    setAvailable(false)
+    const planes = Array.from(scene.current!.querySelectorAll<HTMLElement>('.spiral-plane'))
+    const proxy = { index: position.current }
+    let previous = -1
+    let interactive = !animated
+    setAvailable(interactive)
+    const paint = (index: number) => {
+      position.current = index
+      const selected = Math.round(clamp(index))
+      const tile = planes[0].offsetWidth
+      const radius = Math.min(scene.current!.clientWidth * 0.32, tile * 1.32)
+      planes.forEach((plane, i) => {
+        const d = i - index
+        const angle = d * 0.88
+        const depth = Math.cos(angle)
+        const visible = animated ? Math.abs(d) < 6 : i === selected
+        const x = Math.sin(angle) * radius - d * tile * 0.045
+        const y = d * tile * 0.27 + Math.sin(angle) * tile * 0.09
+        const z = (depth - 1) * radius
+        plane.style.transform = animated
+          ? `translate(-50%, -50%) translate3d(${x}px, ${y}px, ${z}px) rotateY(${-Math.sin(angle) * 32}deg) rotateZ(${Math.sin(angle) * 8}deg)`
+          : 'translate(-50%, -50%)'
+        plane.style.opacity = visible ? String(animated ? Math.min(1, (6 - Math.abs(d)) / 2) : 1) : '0'
+        plane.style.visibility = visible ? 'visible' : 'hidden'
+        plane.style.zIndex = String(Math.round(100 - Math.abs(d) * 10))
+        plane.style.pointerEvents = visible && Math.abs(d) < 3 ? 'auto' : 'none'
+        plane.style.setProperty('--card-light', String(0.65 + (depth + 1) * 0.175))
+      })
+      if (selected !== previous) {
+        previous = selected
+        setActive(selected)
+        setExpanded(false)
+      }
+    }
+    render.current = paint
+    paint(position.current)
+    const resize = () => paint(position.current)
+    window.addEventListener('resize', resize)
     const ctx = gsap.context(() => {
-      const slots = Array.from(board.current!.children) as HTMLElement[]
-      // Measure the grid cells, never the transformed card layers.
-      const pileX = (i: number) => board.current!.clientWidth * ((Math.floor(i / 8) + 0.5) / 3)
-        - slots[i].offsetLeft - slots[i].offsetWidth / 2
-      const pileY = (i: number) => board.current!.clientHeight / 2
-        - slots[i].offsetTop - slots[i].offsetHeight / 2 + (i % 8 - 3.5) * 2
-      let interactive = false
+      if (!animated) return
+      proxy.index = 0
       const tl = gsap.timeline({
-        defaults: { ease: 'power2.inOut' },
         onUpdate: () => {
-          const next = tl.time() >= 1.35 && tl.time() < 2.7
+          // Browser scroll positions round to pixels at the two end cards.
+          const tolerance = duration / (innerHeight * 4.2)
+          const next = tl.time() >= entrance - tolerance && tl.time() <= entrance + journey + tolerance
           if (next !== interactive) {
             interactive = next
             setAvailable(next)
-            if (!next) { setSelected(null); setHovered(null) }
+            setExpanded(false)
           }
         },
         scrollTrigger: {
-          trigger: root.current, start: 'top top', end: () => `+=${window.innerHeight * 2.4}`,
-          pin: true, scrub: 0.65, anticipatePin: 1, invalidateOnRefresh: true,
+          trigger: root.current, start: 'top top', end: () => `+=${innerHeight * 4.2}`,
+          pin: true, scrub: 0.55, anticipatePin: 1, invalidateOnRefresh: true,
+          snap: {
+            snapTo: (progress) => {
+              const time = progress * duration
+              if (time < entrance || time > entrance + journey) return progress
+              return (entrance + Math.round((time - entrance) / journey * last) / last * journey) / duration
+            },
+            inertia: false, delay: 0.15, duration: { min: 0.15, max: 0.35 }, ease: 'power2.out',
+          },
         },
       })
       trigger.current = tl.scrollTrigger!
-      tl.fromTo('.places-heading, .places-controls', { y: 20, autoAlpha: 1 }, {
-        y: 0, autoAlpha: 1, duration: 0.45,
+      tl.fromTo('.spiral-world', { yPercent: 160, rotation: -18, scale: 0.72, autoAlpha: 1 }, {
+        yPercent: 0, rotation: 0, scale: 1, autoAlpha: 1, duration: entrance, ease: 'power2.out',
       }, 0)
-        .fromTo('.place-motion', {
-          x: pileX, y: pileY, rotation: (i) => (i % 8 - 3.5) * 1.8, scale: 0.95, autoAlpha: 0.75,
-        }, { autoAlpha: 1, duration: 0.25 }, 0)
-        .to('.place-motion', {
-          x: 0, y: 0, rotation: 0, scale: 1, autoAlpha: 1, duration: 0.7, ease: 'back.out(1.15)',
-          stagger: (i) => Math.floor(i / 8) * 0.12 + (i % 8) * 0.02,
-        }, 0.25)
-        .to('.place-motion', {
-          x: pileX, y: pileY, rotation: (i) => (i % 8 - 3.5) * 1.8, scale: 0.95,
-          duration: 0.55, stagger: (i) => (2 - Math.floor(i / 8)) * 0.08 + (i % 8) * 0.015,
-        }, 2.7)
-        .to('.places-heading, .places-controls', { y: -20, autoAlpha: 0, duration: 0.35 }, 3.2)
-        .to(board.current, { yPercent: -120, autoAlpha: 0, duration: 0.45, ease: 'power2.in' }, 3.55)
-      slots.forEach((slot, i) => {
-        // Each tile completes its own lift before the wave advances diagonally.
-        tl.fromTo(slot.querySelector('.place-wave'), { y: 0, scale: 1, rotation: 0 }, {
-          y: -18, scale: 1.06, rotation: 0.6, duration: 0.2, repeat: 1, yoyo: true, ease: 'sine.inOut',
-        }, 1.45 + (Math.floor(i / columns) + i % columns) * 0.045)
-      })
+        .fromTo('.spiral-heading, .spiral-controls', { y: 60, autoAlpha: 1 }, {
+          y: 0, autoAlpha: 1, duration: 0.45, ease: 'power2.out',
+        }, 0.2)
+        .to(proxy, { index: last, duration: journey, ease: 'none', onUpdate: () => paint(proxy.index) }, entrance)
+        .to('.spiral-world', { yPercent: -75, rotation: 12, scale: 0.75, autoAlpha: 0, duration: 0.65, ease: 'power2.in' }, entrance + journey)
+        .to('.spiral-heading, .spiral-controls', { y: -20, autoAlpha: 0, duration: 0.4 }, entrance + journey + 0.25)
     }, root)
-    return () => { trigger.current = null; ctx.revert() }
-  }, [columns, animated])
-
-  const dismiss = () => {
-    if (selected === null) return
-    buttons.current[selected]?.focus({ preventScroll: true })
-    setSelected(null)
-  }
+    return () => {
+      trigger.current = null
+      window.removeEventListener('resize', resize)
+      ctx.revert()
+    }
+  }, [animated])
 
   useEffect(() => {
-    if (selected === null) return
-    closeButton.current?.focus({ preventScroll: true })
-    const initialScroll = window.scrollY
-    const scroll = () => { if (Math.abs(window.scrollY - initialScroll) > 4) setSelected(null) }
-    const key = (event: KeyboardEvent) => { if (event.key === 'Escape') dismiss() }
-    window.addEventListener('scroll', scroll, { passive: true })
-    window.addEventListener('keydown', key)
-    return () => {
-      window.removeEventListener('scroll', scroll)
-      window.removeEventListener('keydown', key)
-    }
-  }, [selected])
+    if (pendingFocus.current !== active || (animated && !available)) return
+    let frame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(() => {
+        scene.current?.querySelectorAll<HTMLButtonElement>('.spiral-face')[active]?.focus({ preventScroll: true })
+        pendingFocus.current = null
+      })
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [active, available, animated])
 
-  const overview = () => {
+  const choose = (index: number, focus = false) => {
+    const next = clamp(index)
+    if (focus) pendingFocus.current = Math.round(next)
+    setExpanded(false)
     const st = trigger.current
-    if (st) window.scrollTo({ top: st.start + overviewTime / st.animation!.duration() * (st.end - st.start), behavior: 'instant' })
+    if (st) {
+      const snap = st.getTween(true)
+      if (snap) snap.kill()
+      const progress = (entrance + next / last * journey) / st.animation!.duration()
+      window.scrollTo({ top: st.start + progress * (st.end - st.start), behavior: 'instant' })
+    } else render.current(next)
+    if (focus) {
+      if (Math.round(next) === active && (!animated || available)) {
+        scene.current?.querySelectorAll<HTMLButtonElement>('.spiral-face')[active]?.focus({ preventScroll: true })
+        pendingFocus.current = null
+      }
+    }
   }
 
-  const moveFocus = (event: React.KeyboardEvent, index: number) => {
-    const steps: Record<string, number> = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -columns, ArrowDown: columns }
-    if (!(event.key in steps)) return
+  const key = (event: React.KeyboardEvent) => {
+    const target = event.target as HTMLElement
+    if (target.matches('input')) return
+    const next = event.key === 'ArrowRight' ? active + 1 : event.key === 'ArrowLeft' ? active - 1
+      : event.key === 'Home' ? 0 : event.key === 'End' ? last : null
+    if (next === null) {
+      if (event.key === 'Escape') setExpanded(false)
+      return
+    }
     event.preventDefault()
-    buttons.current[Math.max(0, Math.min(23, index + steps[event.key]))]?.focus({ preventScroll: true })
+    choose(next, target.matches('.spiral-face'))
   }
 
   return (
-    <section ref={root} id="dia-diem" className={`places-section${animated ? '' : ' places-reduced'}`} aria-labelledby="places-title">
-      <header className="places-heading">
+    <section ref={root} id="dia-diem" className={`spiral-section${animated ? '' : ' spiral-static'}`}
+      aria-labelledby="places-title" onKeyDown={key} data-expanded={expanded}>
+      <header className="spiral-heading">
         <p>03 — Hai mươi bốn địa điểm</p>
-        <h2 id="places-title" className="display">Bày thế trận.</h2>
+        <h2 id="places-title" className="display">Dọc miền thủy trận.</h2>
       </header>
-      <div ref={board} className="places-board" inert={animated && !available} role="group" aria-label="24 thẻ địa điểm">
-        {cards.map((number, index) => {
-          const col = index % columns
-          const row = Math.floor(index / columns)
-          const chosen = selected === index
-          const distance = hovered === null ? 3 : Math.max(Math.abs(col - hovered % columns), Math.abs(row - Math.floor(hovered / columns)))
-          const dx = selected === null ? 0 : col - selected % columns
-          const dy = selected === null ? 0 : row - Math.floor(selected / columns)
-          const neighbor = !chosen && selected !== null && Math.abs(dx) <= 1 && Math.abs(dy) <= 1
-          const shiftX = (col === 0 && dx < 0) || (col === columns - 1 && dx > 0) ? 0 : Math.sign(dx) * 55
-          const shiftY = (row === 0 && dy < 0) || (row === 24 / columns - 1 && dy > 0) ? 0 : Math.sign(dy) * 55
-          return (
-            <div key={number} className="place-slot" style={{ zIndex: chosen ? 50 : neighbor ? 1 : 2 }}>
-              <div className="place-motion"><div className="place-wave">
-                <div className="place-interaction" data-selected={chosen} style={{
-                  transformOrigin: `${col === 0 ? 'left' : col === columns - 1 ? 'right' : 'center'} ${row === 0 ? 'top' : row === 24 / columns - 1 ? 'bottom' : 'center'}`,
-                  transform: chosen ? 'scale(1.8)' : neighbor ? `translate(${shiftX}%, ${shiftY}%)` : 'none',
-                }}>
-                  <button ref={(node) => { buttons.current[index] = node }} type="button" className="place-card"
-                    data-peek={selected === null && !reduced ? Math.min(distance, 2) : 2}
-                    aria-label={`Địa điểm ${number}`} aria-expanded={chosen} aria-controls={chosen ? 'place-details' : undefined}
-                    onPointerEnter={(event) => { if (event.pointerType === 'mouse' && !reduced) setHovered(index) }}
-                    onPointerMove={(event) => {
-                      if (event.pointerType !== 'mouse' || reduced || selected !== null) return
-                      const rect = event.currentTarget.closest('.place-slot')!.getBoundingClientRect()
-                      event.currentTarget.style.setProperty('--tilt-x', `${(0.5 - (event.clientY - rect.top) / rect.height) * 10}deg`)
-                      event.currentTarget.style.setProperty('--tilt-y', `${((event.clientX - rect.left) / rect.width - 0.5) * 10}deg`)
-                    }}
-                    onPointerLeave={(event) => {
-                      setHovered(null)
-                      event.currentTarget.style.removeProperty('--tilt-x')
-                      event.currentTarget.style.removeProperty('--tilt-y')
-                    }}
-                    tabIndex={chosen ? -1 : 0} onClick={() => setSelected(index)} onKeyDown={(event) => moveFocus(event, index)}>
-                    <span className="display place-number">{number}</span>
-                    <span className="place-label">Địa điểm</span>
-                  </button>
-                  {chosen && <div id="place-details" className="place-details" role="region" aria-labelledby="place-name">
-                    <button ref={closeButton} type="button" className="place-close" aria-label="Đóng chi tiết địa điểm" onClick={dismiss}>×</button>
-                    <h3 id="place-name" className="display">Địa điểm {number}</h3>
-                    <p>Thẻ mẫu<br />Hình ảnh và nội dung sẽ được bổ sung.</p>
-                  </div>}
-                </div>
-              </div></div>
-            </div>
-          )
-        })}
+      <div ref={scene} className="spiral-scene" role="group" aria-label="24 thẻ địa điểm — kéo ngang để chọn"
+        inert={animated && !available} onPointerDown={(event) => {
+          if (event.button !== 0) return
+          suppressClick.current = false
+          drag.current = { id: event.pointerId, x: event.clientX, y: event.clientY, index: position.current, target: position.current, moved: false }
+        }} onPointerMove={(event) => {
+          const start = drag.current
+          if (!start || start.id !== event.pointerId) return
+          const dx = event.clientX - start.x
+          const dy = event.clientY - start.y
+          if (!start.moved) {
+            if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 8) { drag.current = null; return }
+            if (Math.abs(dx) < 8) return
+            start.moved = true
+            suppressClick.current = true
+            event.currentTarget.setPointerCapture(event.pointerId)
+            event.currentTarget.dataset.dragging = 'true'
+          }
+          start.target = clamp(start.index - dx / Math.max(45, event.currentTarget.clientWidth * 0.12))
+          choose(start.target)
+        }} onPointerUp={(event) => {
+          const start = drag.current
+          drag.current = null
+          event.currentTarget.dataset.dragging = 'false'
+          if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
+          if (start?.moved) choose(Math.round(start.target))
+        }} onPointerCancel={(event) => { drag.current = null; suppressClick.current = false; event.currentTarget.dataset.dragging = 'false' }}
+        onClickCapture={(event) => { if (suppressClick.current) { event.preventDefault(); event.stopPropagation(); suppressClick.current = false } }}>
+        <div className="spiral-world">
+          {locations.map((card, index) => <div className="spiral-plane" key={card.number} data-active={index === active}>
+            <button type="button" className="spiral-face" tabIndex={index === active ? 0 : -1}
+              aria-label={`Địa điểm ${card.number}: ${card.name}`} aria-current={index === active ? 'true' : undefined}
+              aria-expanded={index === active && expanded} onClick={() => index === active ? setExpanded((value) => !value) : choose(index)}>
+              <img className="spiral-source" src={card.image} alt={card.name} loading="eager" decoding="async" draggable={false} />
+              <span className="spiral-art" aria-hidden="true">
+                {slices.map((style, i) => <span className="spiral-slice" key={i} style={{ ...style, backgroundImage: `url(${card.image})` }} />)}
+              </span>
+              <span className="spiral-folio" aria-hidden="true">{card.number}</span>
+            </button>
+          </div>)}
+        </div>
       </div>
-      <div className="places-controls">
-        <p>Cuộn để bày bài · Chọn một thẻ để xem</p>
-        {animated && <button type="button" onClick={overview}>Xem toàn bộ <span aria-hidden="true">↗</span></button>}
+      <div className="spiral-controls">
+        <div className="spiral-caption" aria-live="polite" aria-atomic="true">
+          <p><strong>{locations[active].number}</strong> <span>/ 24</span></p>
+          <span>{locations[active].name}</span>
+        </div>
+        <div className="spiral-browse">
+          <button type="button" aria-label="Địa điểm trước" onClick={() => choose(active - 1)} disabled={active === 0}>‹</button>
+          <input type="range" min="0" max={last} step="1" value={active} aria-label="Chọn địa điểm"
+            onChange={(event) => choose(Number(event.target.value))} />
+          <button type="button" aria-label="Địa điểm tiếp theo" onClick={() => choose(active + 1)} disabled={active === last}>›</button>
+          <button type="button" className="spiral-zoom" onClick={() => setExpanded((value) => !value)} disabled={animated && !available}>
+            {expanded ? 'Thu nhỏ' : 'Xem thẻ'}
+          </button>
+        </div>
       </div>
     </section>
   )
