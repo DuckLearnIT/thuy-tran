@@ -98,8 +98,9 @@ export default function Preorder() {
           </section>
           <section className="po-order" aria-labelledby="order-title">
             <p className="po-eyebrow">Đặt trước Thủy Trận</p>
-            <h2 id="order-title" className="display">Hẹn một ván?</h2>
-            <p className="po-intro">Mang dòng sông về bàn chơi. Cùng nhau bày thế trận.</p>
+            <h2 id="order-title" className="display">Phiếu<br />ra quân.</h2>
+            <p className="po-stamp display">Sắp<br />mở</p>
+            <p className="po-intro">Một lời hẹn. Một ván Thủy Trận.</p>
             <form onSubmit={(event) => event.preventDefault()}>
               <fieldset className="po-quantity">
                 <legend>Số bộ game</legend>
@@ -109,9 +110,9 @@ export default function Preorder() {
                   <button type="button" aria-label="Tăng số bộ game" disabled={quantity === 99} onClick={() => setQuantity((value) => value + 1)}>+</button>
                 </div>
               </fieldset>
-              <label className="po-field">Tên của bạn<input name="name" autoComplete="name" required maxLength={100} placeholder="Tên người ra quân" /></label>
-              <label className="po-field">Email<input name="email" type="email" autoComplete="email" required maxLength={254} placeholder="ban@example.com" /></label>
-              <label className="po-field">Số điện thoại <span>(không bắt buộc)</span><input name="phone" type="tel" autoComplete="tel" maxLength={30} placeholder="Số để liên hệ khi mở đặt trước" /></label>
+              <label className="po-field"><span className="po-field-label"><span className="po-field-number" aria-hidden="true">01</span>Tên của bạn</span><input name="name" autoComplete="name" required maxLength={100} placeholder="Tên người ra quân" /></label>
+              <label className="po-field"><span className="po-field-label"><span className="po-field-number" aria-hidden="true">02</span>Email</span><input name="email" type="email" autoComplete="email" required maxLength={254} placeholder="ban@example.com" /></label>
+              <label className="po-field"><span className="po-field-label"><span className="po-field-number" aria-hidden="true">03</span>Số điện thoại</span><span className="po-optional">Không bắt buộc</span><input name="phone" type="tel" autoComplete="tel" maxLength={30} placeholder="Số điện thoại của bạn" /></label>
               <div className="po-price"><span>Giá đặt trước</span><strong>Sắp công bố</strong></div>
               <button className="po-submit" type="submit" disabled>Đặt trước — sắp mở <span aria-hidden="true">◆</span></button>
               <p className="po-status">Đây là bản xem trước. Chưa gửi đơn hay thanh toán. Giá và lịch giao sẽ được công bố khi mở đặt trước.</p>

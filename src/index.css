@@ -311,26 +311,34 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
 .po-open:hover { background: #efbb66; }
 .po-open:hover span { transform: translate(3px, -3px); }
 .po-contents { display: flex; justify-content: center; gap: 1.4rem; margin-top: 1.5rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; }
-.po-order { position: relative; padding: clamp(1.5rem, 3vw, 2.5rem); background: var(--color-card); box-shadow: 9px 12px 0 #a5c6b8; border-radius: 2px; }
-.po-order h2 { font-size: clamp(2.8rem, 4.2vw, 4rem); margin-top: 1.2rem; color: var(--color-vermilion); }
-.po-intro { margin-top: 1rem; max-width: 29ch; font-size: 0.95rem; }
+.po-order { position: relative; padding: clamp(1.5rem, 3vw, 2.5rem); background: var(--color-card); box-shadow: 2px 4px 8px #1a3a2612; border-radius: 2px; }
+.po-order::after { content: ''; position: absolute; bottom: 0; right: 0; width: 28px; height: 28px; background: linear-gradient(135deg, #d9c4a2 50%, var(--color-river) 50%); }
+.po-order h2 { font-size: clamp(3.4rem, 5vw, 4.6rem); margin-top: 1.4rem; color: var(--color-vermilion); }
+.po-stamp { position: absolute; top: 3.4rem; right: clamp(1.5rem, 3vw, 2.5rem); display: grid; place-content: center; width: 76px; height: 76px; border: 2px solid currentColor; border-radius: 50%; color: var(--color-vermilion); font-size: 1.5rem; text-align: center; transform: rotate(12deg); }
+.po-stamp::after { content: ''; position: absolute; inset: 5px; border: 1px dashed currentColor; border-radius: 50%; }
+.po-intro { margin-top: 0.8rem; font-size: 0.85rem; font-style: italic; }
 .po-quantity { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin: 1.5rem 0; border: 0; padding: 0; }
 .po-quantity legend { float: left; font-size: 0.82rem; }
 .po-quantity > div { display: flex; align-items: center; gap: 0.5rem; }
-.po-quantity button { width: 44px; height: 44px; border-radius: 50%; background: var(--color-paper); font-size: 1.4rem; cursor: pointer; transition: background 0.25s, transform 0.25s; }
+.po-quantity button { width: 44px; height: 44px; border-radius: 2px; background: var(--color-paper); font-size: 1.4rem; cursor: pointer; transition: background 0.25s, transform 0.25s; }
 .po-quantity button:hover:not(:disabled) { background: #efbb66; transform: rotate(12deg); }
 .po-quantity button:disabled { opacity: 0.4; cursor: default; }
-.po-quantity output { width: 3rem; text-align: center; font-variant-numeric: tabular-nums; }
-.po-quantity strong { display: block; font-family: var(--font-display); font-size: 2rem; line-height: 1; font-weight: 400; animation: po-count 0.3s var(--ease-out-expo); }
+.po-quantity output { width: 3.6rem; text-align: center; font-variant-numeric: tabular-nums; }
+.po-quantity strong { display: block; font-family: var(--font-display); font-size: 3rem; line-height: 1; font-weight: 400; color: var(--color-vermilion); animation: po-count 0.3s var(--ease-out-expo); }
 @keyframes po-count { from { transform: translateY(7px) rotate(-8deg); } to { transform: none; } }
-.po-field { display: block; margin-top: 0.9rem; font-size: 0.8rem; }
-.po-field > span { opacity: 0.65; }
-.po-field input { display: block; width: 100%; min-width: 0; height: 48px; margin-top: 0.4rem; padding: 0.7rem 0.9rem; border: 1px solid #23151128; border-radius: 2px; background: #fffcf680; font: inherit; font-size: 1rem; }
+.po-field { display: block; position: relative; margin-top: 1rem; padding: 0.75rem 0.9rem 0.1rem; font-size: 0.75rem; background: #ecdcc075; transition: background 0.3s, transform 0.3s var(--ease-out-expo); }
+.po-field-label { display: flex; align-items: center; gap: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; }
+.po-field-number { display: inline-grid; place-items: center; width: 1.5rem; font-family: var(--font-display); font-size: 1.25rem; line-height: 1; color: var(--color-vermilion); transition: transform 0.3s var(--ease-out-expo); }
+.po-optional { position: absolute; right: 0.9rem; top: 0.8rem; font-size: 0.6rem; color: #69594d; }
+.po-field input { display: block; width: 100%; min-width: 0; height: 48px; padding: 0.4rem 0 0.5rem 2.2rem; border: 0; border-radius: 0; background: transparent; font: inherit; font-size: 1.05rem; }
+.po-field:focus-within { background: #fff9ed; transform: translateX(-4px); box-shadow: 4px 0 0 var(--color-vermilion); }
+.po-field:focus-within .po-field-number { transform: rotate(-8deg) scale(1.2); }
 .po-field input::placeholder { color: #75665c; opacity: 1; }
-.po-field input:focus-visible { outline: 2px solid var(--color-bamboo); outline-offset: 2px; }
+.po-field:has(input:focus-visible) { outline: 2px solid var(--color-bamboo); outline-offset: 3px; }
+.po-field input:focus-visible { outline: none; }
 .po-price { display: flex; justify-content: space-between; gap: 1rem; margin: 1.5rem 0 1rem; font-size: 0.85rem; }
 .po-price strong { font-weight: 500; color: var(--color-vermilion); }
-.po-submit { display: flex; justify-content: space-between; align-items: center; gap: 1rem; width: 100%; min-height: 56px; border-radius: 999px; padding: 1rem 1.3rem; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; background: var(--color-vermilion); color: var(--color-card); cursor: not-allowed; opacity: 0.65; }
+.po-submit { display: flex; justify-content: space-between; align-items: center; gap: 1rem; width: 100%; min-height: 56px; border-radius: 2px; padding: 1rem 1.3rem; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; background: var(--color-vermilion); color: var(--color-card); cursor: not-allowed; opacity: 0.65; }
 .po-status { margin-top: 1rem; font-size: 0.75rem; line-height: 1.7; color: #69594d; }
 .po-wave { margin-bottom: -1px; pointer-events: none; }
 .po-footer { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 2rem clamp(1rem, 4vw, 4rem); background: var(--color-ink); color: var(--color-card); font-size: 0.75rem; }
@@ -349,11 +357,12 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
   .po-hand img { width: 100px; }
   .po-stage[data-open='true'] .po-lid { transform: translate(-24%, -10%) rotate(-24deg) rotateY(-20deg) scale(0.74); }
   .po-stage[data-open='true'] .po-hand img { transform: translate(calc(-50% + var(--x) * 0.8), -68%) rotate(var(--r)); }
-  .po-order { box-shadow: 5px 7px 0 #a5c6b8; }
+  .po-stamp { width: 64px; height: 64px; font-size: 1.25rem; }
+  .po-optional { position: static; display: block; padding-left: 2.2rem; margin-top: 0.2rem; }
   .po-footer { flex-direction: column; align-items: flex-start; gap: 0.25rem; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .po-box, .po-lid, .po-hand img, .po-sun, .po-open, .po-open span, .po-quantity button { transition: none; }
+  .po-box, .po-lid, .po-hand img, .po-sun, .po-open, .po-open span, .po-quantity button, .po-field, .po-field-number { transition: none; }
   .po-quantity strong { animation: none; }
 }
 .ks-browse[data-dragging='true'], .ks-browse[data-dragging='true'] .ks-card { cursor: grabbing; }
