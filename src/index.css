@@ -253,8 +253,16 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
   justify-content: center;
   gap: 0.5rem;
   cursor: pointer;
-  transition: background 0.25s, box-shadow 0.25s, filter 0.3s;
+  transition: transform 0.35s var(--ease-out-expo), background 0.25s, box-shadow 0.25s, filter 0.3s;
 }
+.place-card:active { transform: scale(0.96); }
+.place-details { animation: place-reveal 0.45s var(--ease-out-expo) both; }
+@keyframes place-reveal {
+  from { opacity: 0; transform: perspective(600px) rotateY(-12deg) scale(0.94); }
+  to { opacity: 1; transform: perspective(600px) rotateY(0) scale(1); }
+}
+.ks-browse { touch-action: pan-y; cursor: grab; }
+.ks-browse[data-dragging='true'], .ks-browse[data-dragging='true'] .ks-card { cursor: grabbing; }
 .places-board:has(.place-details) .place-card { filter: brightness(0.6); }
 .place-number { font-size: clamp(1.8rem, 5svh, 3.25rem); color: var(--color-vermilion); }
 .place-label { font-size: clamp(0.48rem, 0.85vw, 0.65rem); text-transform: uppercase; letter-spacing: 0.12em; }
@@ -278,6 +286,11 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
 @media (hover: hover) and (pointer: fine) {
   .place-card:hover { background: var(--color-card); box-shadow: 0 3px 0 var(--color-ochre), 0 16px 26px #0005; }
 }
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .place-card[data-peek='1'] { transform: translateY(-3px); }
+  .place-card[data-peek='0'] { transform: perspective(600px) translateY(-8px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)); }
+  .place-card[data-peek='0']:active { transform: translateY(-3px) scale(0.96); }
+}
 @media (max-width: 640px) {
   .places-section { gap: 1rem; }
   .places-heading p { font-size: 0.6rem; letter-spacing: 0.15em; }
@@ -292,6 +305,8 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
 .places-reduced .places-board { width: min(100%, 960px); }
 @media (prefers-reduced-motion: reduce) {
   .place-interaction, .place-card { transition: none; }
+  .place-details { animation: none; }
+  .place-card:active { transform: none; }
 }
 
 .nav-panel {

@@ -13,6 +13,7 @@ export default function Locations() {
   const buttons = useRef<(HTMLButtonElement | null)[]>([])
   const closeButton = useRef<HTMLButtonElement>(null)
   const [selected, setSelected] = useState<number | null>(null)
+  const [hovered, setHovered] = useState<number | null>(null)
   const [available, setAvailable] = useState(false)
   const [columns, setColumns] = useState(() => window.matchMedia('(max-width: 640px)').matches ? 4 : 6)
   const [shortScreen, setShortScreen] = useState(() => window.matchMedia('(max-height: 560px)').matches)
@@ -53,7 +54,7 @@ export default function Locations() {
           if (next !== interactive) {
             interactive = next
             setAvailable(next)
-            if (!next) setSelected(null)
+            if (!next) { setSelected(null); setHovered(null) }
           }
         },
         scrollTrigger: {
@@ -69,7 +70,7 @@ export default function Locations() {
           x: pileX, y: pileY, rotation: (i) => (i % 8 - 3.5) * 1.8, scale: 0.95, autoAlpha: 0.75,
         }, { autoAlpha: 1, duration: 0.25 }, 0)
         .to('.place-motion', {
-          x: 0, y: 0, rotation: 0, scale: 1, autoAlpha: 1, duration: 0.7,
+          x: 0, y: 0, rotation: 0, scale: 1, autoAlpha: 1, duration: 0.7, ease: 'back.out(1.15)',
           stagger: (i) => Math.floor(i / 8) * 0.12 + (i % 8) * 0.02,
         }, 0.25)
         .to('.place-motion', {
@@ -131,6 +132,7 @@ export default function Locations() {
           const col = index % columns
           const row = Math.floor(index / columns)
           const chosen = selected === index
+          const distance = hovered === null ? 3 : Math.max(Math.abs(col - hovered % columns), Math.abs(row - Math.floor(hovered / columns)))
           const dx = selected === null ? 0 : col - selected % columns
           const dy = selected === null ? 0 : row - Math.floor(selected / columns)
           const neighbor = !chosen && selected !== null && Math.abs(dx) <= 1 && Math.abs(dy) <= 1
@@ -144,7 +146,20 @@ export default function Locations() {
                   transform: chosen ? 'scale(1.8)' : neighbor ? `translate(${shiftX}%, ${shiftY}%)` : 'none',
                 }}>
                   <button ref={(node) => { buttons.current[index] = node }} type="button" className="place-card"
+                    data-peek={selected === null && !reduced ? Math.min(distance, 2) : 2}
                     aria-label={`Địa điểm ${number}`} aria-expanded={chosen} aria-controls={chosen ? 'place-details' : undefined}
+                    onPointerEnter={(event) => { if (event.pointerType === 'mouse' && !reduced) setHovered(index) }}
+                    onPointerMove={(event) => {
+                      if (event.pointerType !== 'mouse' || reduced || selected !== null) return
+                      const rect = event.currentTarget.closest('.place-slot')!.getBoundingClientRect()
+                      event.currentTarget.style.setProperty('--tilt-x', `${(0.5 - (event.clientY - rect.top) / rect.height) * 10}deg`)
+                      event.currentTarget.style.setProperty('--tilt-y', `${((event.clientX - rect.left) / rect.width - 0.5) * 10}deg`)
+                    }}
+                    onPointerLeave={(event) => {
+                      setHovered(null)
+                      event.currentTarget.style.removeProperty('--tilt-x')
+                      event.currentTarget.style.removeProperty('--tilt-y')
+                    }}
                     tabIndex={chosen ? -1 : 0} onClick={() => setSelected(index)} onKeyDown={(event) => moveFocus(event, index)}>
                     <span className="display place-number">{number}</span>
                     <span className="place-label">Địa điểm</span>

@@ -28,6 +28,9 @@ function Lines({ s }: { s: (typeof list)[number] }) {
 export default function Strategies() {
   const root = useRef<HTMLElement>(null)
   const trigger = useRef<ScrollTrigger | null>(null)
+  const drag = useRef<{ x: number; y: number; scroll: number; locked: boolean } | null>(null)
+  const dragged = useRef(false)
+  const [dragging, setDragging] = useState(false)
   const [active, setActive] = useState(0)
   const reduced = useReducedMotion()
 
@@ -155,13 +158,13 @@ export default function Strategies() {
       renderStage(0)
     }, root)
 
-    return () => ctx.revert()
+    return () => { trigger.current = null; ctx.revert() }
   }, [reduced])
 
   const jump = (j: number) => {
     const st = trigger.current
     if (!st) return
-    const p = j / chapterDuration
+    const p = Math.max(0, Math.min(n - 1, j)) / chapterDuration
     window.scrollTo({ top: st.start + p * (st.end - st.start), behavior: 'smooth' })
   }
 
@@ -219,11 +222,56 @@ export default function Strategies() {
       </div>
 
       <p className="ks-entry-label absolute left-[clamp(1rem,3vw,2.5rem)] top-16 lg:top-20 z-20 text-[0.76rem] font-medium tracking-[0.25em] uppercase opacity-90">
-        02 — Bảy kế sách
+        02 — Bảy kế sách · Kéo để đổi lá
       </p>
 
       {/* Spacious 3D Panoramic Stage */}
-      <div className="absolute inset-x-0 top-[12%] bottom-[28%] lg:bottom-[20%] z-10 flex items-center justify-center [perspective:1400px]">
+      <div className="ks-browse absolute inset-x-0 top-[12%] bottom-[28%] lg:bottom-[20%] z-10 flex items-center justify-center [perspective:1400px]"
+        role="group" aria-label="Bảy kế sách — kéo ngang hoặc dùng phím mũi tên để chọn lá" tabIndex={0} data-dragging={dragging}
+        onKeyDown={(event) => {
+          if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return
+          event.preventDefault()
+          jump(active + (event.key === 'ArrowRight' ? 1 : -1))
+        }}
+        onPointerDown={(event) => {
+          const st = trigger.current
+          if (event.button !== 0 || !st?.isActive || st.progress > carouselDuration / chapterDuration) return
+          dragged.current = false
+          drag.current = { x: event.clientX, y: event.clientY, scroll: window.scrollY, locked: false }
+        }}
+        onPointerMove={(event) => {
+          const start = drag.current
+          const st = trigger.current
+          if (!start || !st) return
+          const dx = event.clientX - start.x
+          const dy = event.clientY - start.y
+          if (!start.locked) {
+            if (Math.abs(dy) > 8 && Math.abs(dy) > Math.abs(dx)) { drag.current = null; return }
+            if (Math.abs(dx) < 8 || Math.abs(dx) <= Math.abs(dy)) return
+            start.locked = true
+            dragged.current = true
+            event.currentTarget.setPointerCapture(event.pointerId)
+            setDragging(true)
+          }
+          const segment = (st.end - st.start) / chapterDuration
+          const top = start.scroll - dx / (event.currentTarget.clientWidth * 0.35) * segment
+          window.scrollTo({ top: Math.max(st.start, Math.min(st.start + carouselDuration * segment, top)), behavior: 'instant' })
+        }}
+        onPointerUp={(event) => {
+          if (drag.current?.locked) {
+            const st = trigger.current!
+            jump(Math.round((window.scrollY - st.start) / (st.end - st.start) * chapterDuration))
+          }
+          drag.current = null
+          setDragging(false)
+          if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
+        }}
+        onPointerCancel={() => { drag.current = null; setDragging(false) }}
+        onPointerLeave={() => { if (!drag.current?.locked) drag.current = null }}
+        onLostPointerCapture={() => { drag.current = null; setDragging(false) }}
+        onClickCapture={(event) => {
+          if (dragged.current) { event.preventDefault(); event.stopPropagation(); dragged.current = false }
+        }}>
         <div className="ks-stage relative flex items-center justify-center [transform-style:preserve-3d]">
           <div
             className="relative w-[min(54vw,34svh)] sm:w-[min(44vw,38svh)] lg:w-[min(23vw,46svh)] max-w-[340px]"
@@ -266,7 +314,7 @@ export default function Strategies() {
               aria-selected={i === active}
               aria-label={s.name}
               onClick={() => jump(i)}
-              className="display grid size-9 place-items-center rounded-full border text-sm !font-bold transition-all duration-300 cursor-pointer"
+              className="display grid size-11 place-items-center rounded-full border text-sm !font-bold transition-all duration-300 cursor-pointer"
               style={{
                 borderColor: 'currentColor',
                 background: i === active ? 'currentColor' : 'transparent',
