@@ -82,9 +82,6 @@
   animation-direction: reverse;
   animation-delay: -1.1s;
 }
-.cu-water[data-paused='true'] .cu-water-wave {
-  animation-play-state: paused;
-}
 @keyframes cu-water-flow {
   to { transform: translateX(-50%); }
 }

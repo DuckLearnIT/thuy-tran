@@ -55,9 +55,8 @@ export default function Curtain({ ready, progress, failed, onRetry, onOpen, onCo
             {failed ? 'Chưa tải được tài nguyên' : ready ? 'Ra quân' : 'Đang chuẩn bị thế trận'}
           </p>
           <div className="cu-water relative mx-auto mt-7 h-10 w-64 max-w-[calc(100vw-3rem)] overflow-hidden" role="progressbar"
-            data-paused={failed || ready}
             aria-label="Nạp tài nguyên" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.floor(progress * 100)}>
-            <svg aria-hidden="true" viewBox="0 0 480 48" preserveAspectRatio="none" className="absolute inset-0 size-full text-card/15">
+            <svg aria-hidden="true" viewBox="0 0 480 48" preserveAspectRatio="none" className="cu-water-wave absolute inset-y-0 left-0 h-full w-[200%] text-card/15">
               <path fill="currentColor" d={waterline} />
             </svg>
             <div className="cu-water-current absolute inset-0" style={{ clipPath: `inset(0 ${(1 - progress) * 100}% 0 0)` }}>
