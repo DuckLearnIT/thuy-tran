@@ -45,20 +45,18 @@ export default function Locations() {
     const planes = Array.from(scene.current!.querySelectorAll<HTMLElement>('.spiral-plane'))
     const proxy = { index: position.current }
     let previous = -1
-    let tile = planes[0].offsetWidth
-    let radius = Math.min(scene.current!.clientWidth * 0.32, tile * 1.32)
     let interactive = !animated
     setAvailable(interactive)
     const paint = (index: number) => {
       position.current = index
       const selected = Math.round(clamp(index))
+      const tile = planes[0].offsetWidth
+      const radius = Math.min(scene.current!.clientWidth * 0.32, tile * 1.32)
       planes.forEach((plane, i) => {
         const d = i - index
         const angle = d * 0.88
         const depth = Math.cos(angle)
         const visible = animated ? Math.abs(d) < 6 : i === selected
-        plane.style.visibility = visible ? 'visible' : 'hidden'
-        if (!visible) { plane.style.pointerEvents = 'none'; return }
         const x = Math.sin(angle) * radius - d * tile * 0.045
         const y = d * tile * 0.27 + Math.sin(angle) * tile * 0.09
         const z = (depth - 1) * radius
@@ -66,6 +64,7 @@ export default function Locations() {
           ? `translate(-50%, -50%) translate3d(${x}px, ${y}px, ${z}px) rotateY(${-Math.sin(angle) * 32}deg) rotateZ(${Math.sin(angle) * 8}deg)`
           : 'translate(-50%, -50%)'
         plane.style.opacity = visible ? String(animated ? Math.min(1, (6 - Math.abs(d)) / 2) : 1) : '0'
+        plane.style.visibility = visible ? 'visible' : 'hidden'
         plane.style.setProperty('--card-order', String(Math.round(100 - Math.abs(d) * 10)))
         plane.style.pointerEvents = visible && Math.abs(d) < 3 ? 'auto' : 'none'
         plane.style.setProperty('--card-light', String(0.65 + (depth + 1) * 0.175))
@@ -78,11 +77,7 @@ export default function Locations() {
     }
     render.current = paint
     paint(position.current)
-    const resize = () => {
-      tile = planes[0].offsetWidth
-      radius = Math.min(scene.current!.clientWidth * 0.32, tile * 1.32)
-      paint(position.current)
-    }
+    const resize = () => paint(position.current)
     window.addEventListener('resize', resize)
     const ctx = gsap.context(() => {
       if (!animated) return
@@ -100,14 +95,14 @@ export default function Locations() {
         },
         scrollTrigger: {
           trigger: root.current, start: 'top top', end: () => `+=${innerHeight * 4.2}`,
-          pin: true, scrub: true, anticipatePin: 1, invalidateOnRefresh: true,
+          pin: true, scrub: 0.55, anticipatePin: 1, invalidateOnRefresh: true,
           snap: {
             snapTo: (progress) => {
               const time = progress * duration
               if (time < entrance || time > entrance + journey) return progress
               return (entrance + Math.round((time - entrance) / journey * last) / last * journey) / duration
             },
-            inertia: false, delay: 0.2, duration: { min: 0.16, max: 0.3 }, ease: 'power2.out',
+            inertia: false, delay: 0.15, duration: { min: 0.15, max: 0.35 }, ease: 'power2.out',
           },
         },
       })
@@ -146,7 +141,8 @@ export default function Locations() {
     setExpanded(false)
     const st = trigger.current
     if (st) {
-      st.getTween(true)?.kill()
+      const snap = st.getTween(true)
+      if (snap) snap.kill()
       const progress = (entrance + next / last * journey) / st.animation!.duration()
       window.scrollTo({ top: st.start + progress * (st.end - st.start), behavior: 'instant' })
     } else render.current(next)
@@ -180,7 +176,6 @@ export default function Locations() {
       <div ref={scene} className="spiral-scene" role="group" aria-label="24 thẻ địa điểm — kéo ngang để chọn"
         inert={animated && !available} onPointerDown={(event) => {
           if (event.button !== 0) return
-          trigger.current?.getTween(true)?.kill()
           suppressClick.current = false
           drag.current = { id: event.pointerId, x: event.clientX, y: event.clientY, index: position.current, target: position.current, moved: false }
         }} onPointerMove={(event) => {
@@ -190,7 +185,7 @@ export default function Locations() {
           const dy = event.clientY - start.y
           if (!start.moved) {
             if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 8) { drag.current = null; return }
-            if (Math.abs(dx) < 8 || Math.abs(dx) <= Math.abs(dy)) return
+            if (Math.abs(dx) < 8) return
             start.moved = true
             suppressClick.current = true
             event.currentTarget.setPointerCapture(event.pointerId)
@@ -205,8 +200,6 @@ export default function Locations() {
           if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
           if (start?.moved) choose(Math.round(start.target))
         }} onPointerCancel={(event) => { drag.current = null; suppressClick.current = false; event.currentTarget.dataset.dragging = 'false' }}
-        onPointerLeave={() => { if (!drag.current?.moved) drag.current = null }}
-        onLostPointerCapture={(event) => { drag.current = null; event.currentTarget.dataset.dragging = 'false' }}
         onClickCapture={(event) => { if (suppressClick.current) { event.preventDefault(); event.stopPropagation(); suppressClick.current = false } }}>
         <div className="spiral-world">
           {locations.map((card, index) => <div className="spiral-plane" key={card.number} data-active={index === active}>

@@ -32,7 +32,7 @@ export default function Finale() {
         duration: 1.2,
         ease: 'expo.out',
         stagger: 0.04,
-        scrollTrigger: { trigger: root.current, start: 'top 80%', end: 'top 20%', scrub: true },
+        scrollTrigger: { trigger: root.current, start: 'top 55%' },
       })
       gsap.from('.f-fade', {
         opacity: 0,
@@ -40,7 +40,7 @@ export default function Finale() {
         duration: 1,
         stagger: 0.12,
         ease: 'power3.out',
-        scrollTrigger: { trigger: root.current, start: 'top 75%', end: 'top 25%', scrub: true },
+        scrollTrigger: { trigger: root.current, start: 'top 45%' },
       })
       gsap.from('.hand-slot', {
         yPercent: 70,
@@ -50,7 +50,7 @@ export default function Finale() {
         duration: 1.5,
         ease: 'expo.out',
         stagger: 0.07,
-        scrollTrigger: { trigger: '.hand', start: 'top 100%', end: 'bottom bottom', scrub: true },
+        scrollTrigger: { trigger: '.hand', start: 'top 92%' },
       })
 
       // magnetic CTA
