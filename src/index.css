@@ -71,6 +71,23 @@
   --color-river: #c9e1d5;
 }
 
+.cu-water-current {
+  transition: clip-path 240ms ease-out;
+}
+.cu-water-wave {
+  animation: cu-water-flow 2.4s linear infinite;
+}
+.cu-water[data-paused='true'] .cu-water-wave {
+  animation-play-state: paused;
+}
+@keyframes cu-water-flow {
+  to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cu-water-current { transition: none; }
+  .cu-water-wave { animation: none; }
+}
+
 :root {
   --background: #ecdcc0;
   --foreground: #231511;
