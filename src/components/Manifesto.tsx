@@ -40,7 +40,7 @@ export default function Manifesto() {
         {
           xPercent: -33,
           ease: 'none',
-          scrollTrigger: { trigger: '.m-track', start: 'top bottom', end: 'bottom top', scrub: 0.8 },
+          scrollTrigger: { trigger: '.m-track', start: 'top bottom', end: 'bottom top', scrub: true },
         },
       )
     }, root)

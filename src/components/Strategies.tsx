@@ -40,7 +40,7 @@ export default function Strategies() {
     const ctx = gsap.context(() => {
       // Lift each wrapper in a left-to-right wave; the carousel owns the images.
       gsap.timeline({
-        scrollTrigger: { trigger: root.current, start: 'top 70%', end: 'top top', scrub: 0.6 },
+        scrollTrigger: { trigger: root.current, start: 'top 70%', end: 'top top', scrub: true },
       })
         .fromTo('.ks-content', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2 }, 0)
         .fromTo('.ks-wave', { yPercent: 100, autoAlpha: 0 }, {
@@ -111,15 +111,9 @@ export default function Strategies() {
           start: 'top top',
           end: () => `+=${chapterDuration * window.innerHeight * 0.95}`,
           pin: true,
-          scrub: 0.6,
+          scrub: true,
           anticipatePin: 1,
           invalidateOnRefresh: true,
-          snap: {
-            snapTo: (progress) => progress * chapterDuration > carouselDuration + 0.02
-              ? progress : Math.round(progress * chapterDuration) / chapterDuration,
-            duration: { min: 0.25, max: 0.6 },
-            ease: 'power2.inOut',
-          },
         },
       })
       trigger.current = tl.scrollTrigger as ScrollTrigger
@@ -132,7 +126,7 @@ export default function Strategies() {
           {
             k: i,
             duration: 1,
-            ease: 'power1.inOut',
+            ease: 'none',
             onUpdate: () => renderStage(proxy.k),
           },
           segStart,
@@ -141,6 +135,7 @@ export default function Strategies() {
           root.current,
           {
             backgroundColor: list[i].bg,
+            color: list[i].fg,
             duration: 1,
             ease: 'power1.inOut',
           },
@@ -199,8 +194,8 @@ export default function Strategies() {
     <section
       ref={root}
       id="ke-sach"
-      className="relative h-svh overflow-hidden transition-[color] duration-700 select-none"
-      style={{ background: list[0].bg, color: cur.fg }}
+      className="relative h-svh overflow-hidden select-none"
+      style={{ background: list[0].bg, color: list[0].fg }}
     >
       <div className="ks-content absolute inset-0">
       {/* Giant outlined title behind the cards */}

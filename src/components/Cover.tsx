@@ -42,7 +42,7 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
           end: '+=1000%',
           invalidateOnRefresh: true,
           pin: true,
-          scrub: 0.6,
+          scrub: true,
         },
       })
       // Keep the sun and box in one pinned viewport: no section boundary to cross.
@@ -91,13 +91,14 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
   }, [reduced, fallback, onReady])
 
   if (reduced || fallback) {
+    // Keep the pinned host node stable when motion preferences or WebGL change.
     return (
-      <>
+      <section ref={root} className="bg-[#ffb627] text-ink" aria-label="Hộp Thủy trận Bạch Đằng">
         <Hero playIntro={playIntro} />
         <section className="bg-[#ffb627] px-4 py-16 text-ink" aria-label="Bìa hộp">
           <img src={cover} alt={alt} className="mx-auto w-full max-w-xl" />
         </section>
-      </>
+      </section>
     )
   }
 

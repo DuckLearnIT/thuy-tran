@@ -109,18 +109,9 @@ export default function Roles() {
           start: 'top top',
           end: () => `+=${(n - 1) * window.innerHeight * 0.95 * chapterDuration / roleDuration}`,
           pin: true,
-          scrub: 0.6,
+          scrub: true,
           anticipatePin: 1,
           invalidateOnRefresh: true,
-          snap: {
-            snapTo: (progress: number) => {
-              const roleEnd = roleDuration / chapterDuration
-              // Keep the six original stops; do not snap through the chapter handoff.
-              return progress > roleEnd ? progress : gsap.utils.snap(roleEnd / (n - 1), progress)
-            },
-            duration: { min: 0.2, max: 0.6 },
-            ease: 'power2.inOut',
-          },
           onUpdate: (self) => {
             const roleProgress = Math.min(1, self.progress * chapterDuration / roleDuration)
             const k = String(Math.round(roleProgress * (n - 1)) + 1).padStart(2, '0')
@@ -172,8 +163,9 @@ export default function Roles() {
   }, [reduced, n])
 
   if (reduced) {
+    // Match the animated host so React never removes a node from GSAP's pin spacer.
     return (
-      <div id="roles">
+      <section ref={root} id="roles">
         {cards.map((c, i) => (
           <section
             key={c.id}
@@ -188,7 +180,7 @@ export default function Roles() {
             </div>
           </section>
         ))}
-      </div>
+      </section>
     )
   }
 
