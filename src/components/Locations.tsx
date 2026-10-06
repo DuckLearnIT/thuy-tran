@@ -203,7 +203,7 @@ export default function Locations() {
         onClickCapture={(event) => { if (suppressClick.current) { event.preventDefault(); event.stopPropagation(); suppressClick.current = false } }}>
         <div className="spiral-world">
           {locations.map((card, index) => <div className="spiral-plane" key={card.number} data-active={index === active}>
-            <button type="button" className="spiral-face" tabIndex={index === active ? 0 : -1}
+            <button type="button" className="spiral-face card-feel" tabIndex={index === active ? 0 : -1}
               aria-label={`Địa điểm ${card.number}: ${card.name}`} aria-current={index === active ? 'true' : undefined}
               aria-expanded={index === active && expanded} onClick={() => index === active ? setExpanded((value) => !value) : choose(index)}>
               <img className="spiral-source" src={card.image} alt={card.name} loading="eager" decoding="async" draggable={false} />

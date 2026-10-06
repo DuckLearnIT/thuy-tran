@@ -8,6 +8,7 @@ import Curtain from './Curtain'
 import Cursor from './Cursor'
 import SplitChars from './SplitChars'
 import Wave from './Wave'
+import useCardFeel from '../hooks/useCardFeel'
 
 export default function Preorder() {
   const root = useRef<HTMLElement>(null)
@@ -20,6 +21,7 @@ export default function Preorder() {
   const [failed, setFailed] = useState(false)
   const [opening, setOpening] = useState(false)
   const [unlocked, setUnlocked] = useState(false)
+  useCardFeel(root, unlocked)
   const onOpen = useCallback(() => setOpening(true), [])
   const onComplete = useCallback(() => setUnlocked(true), [])
   const validateField = (event: React.FocusEvent<HTMLInputElement> | React.ChangeEvent<HTMLInputElement>) => {
@@ -87,7 +89,7 @@ export default function Preorder() {
               }} onPointerLeave={(event) => event.currentTarget.style.removeProperty('--tilt')}>
                 <div className="po-box-base" aria-hidden="true" />
                 <div id="preorder-hand" className="po-hand" aria-hidden={!open}>
-                  {cards.map((card, i) => <img key={card.id} src={card.image} alt={`Nhân vật ${card.role}`}
+                  {cards.map((card, i) => <img key={card.id} className="card-feel" src={card.image} alt={`Nhân vật ${card.role}`}
                     style={{ '--i': i, '--r': `${(i - 2.5) * 12}deg`, '--x': `${(i - 2.5) * 37}px` } as React.CSSProperties}
                     loading="eager" decoding="async" draggable={false} />)}
                 </div>

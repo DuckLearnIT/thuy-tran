@@ -286,7 +286,7 @@ export default function Strategies() {
                 loading="eager"
                 decoding="async"
                 onClick={() => jump(i)}
-                className="ks-card card-shadow absolute inset-0 size-full rounded-[4%] object-cover cursor-pointer transition-[filter,box-shadow] duration-300 will-change-transform"
+                className="ks-card card-feel card-shadow absolute inset-0 size-full rounded-[4%] object-cover cursor-pointer will-change-transform"
                 style={{
                   aspectRatio: '1500 / 2078',
                   transform: 'translate3d(0, 0, 0)',

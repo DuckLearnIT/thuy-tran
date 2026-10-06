@@ -107,7 +107,7 @@ export default function Hero({ playIntro = true }: { playIntro?: boolean }) {
               key={f.id}
               src={c.image}
               alt={`Lá bài ${c.role}`}
-              className="hero-card card-shadow absolute inset-0 w-full h-full rounded-[3%] object-cover"
+              className="hero-card card-feel card-shadow absolute inset-0 w-full h-full rounded-[3%] object-cover"
               style={{
                 transform: `translate(${f.x}, ${f.y}) rotate(${f.r}deg)`,
                 zIndex: f.depth,

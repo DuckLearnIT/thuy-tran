@@ -135,7 +135,7 @@ export default function Finale() {
               <img
                 src={c.image}
                 alt={`Lá bài ${c.role} — ${c.skill}`}
-                className="hand-card card-shadow w-full rounded-[3%] cursor-pointer"
+                className="hand-card card-feel card-shadow w-full rounded-[3%] cursor-pointer"
                 style={
                   {
                     '--r': `${t * 5.5}deg`,

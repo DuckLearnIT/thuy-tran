@@ -222,7 +222,7 @@ export default function Roles() {
                 key={c.id}
                 src={c.image}
                 alt={`Lá bài ${c.role} — ${c.skill}`}
-                className="stack-card card-shadow absolute inset-0 w-full h-full rounded-[3%] object-cover will-change-transform"
+                className="stack-card card-feel card-shadow absolute inset-0 w-full h-full rounded-[3%] object-cover will-change-transform"
                 draggable={false}
                 loading="eager"
               />

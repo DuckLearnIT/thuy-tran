@@ -1,19 +1,64 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import useReducedMotion from '../hooks/useReducedMotion'
 
 const chapters = [
-  { id: 'top', label: 'Khởi trận', number: '00' },
-  { id: 'loi-lenh', label: 'Lời lệnh', number: '01' },
-  { id: 'roles', label: 'Sáu nhân vật', number: '02' },
-  { id: 'ke-sach', label: 'Bảy kế sách', number: '03' },
-  { id: 'dia-diem', label: 'Địa điểm', number: '04' },
+  { id: 'top', label: 'Khởi trận' },
+  { id: 'loi-lenh', label: 'Lời lệnh' },
+  { id: 'roles', label: 'Sáu nhân vật' },
+  { id: 'ke-sach', label: 'Bảy kế sách' },
+  { id: 'dia-diem', label: '24 địa điểm' },
 ]
 
 export default function Header() {
   const [open, setOpen] = useState(false)
+  const [active, setActive] = useState('top')
+  const root = useRef<HTMLElement>(null)
   const toggle = useRef<HTMLButtonElement>(null)
+  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const reduced = useReducedMotion()
+
+  const clearHover = () => { if (hoverTimer.current !== null) clearTimeout(hoverTimer.current) }
+  useEffect(() => () => clearHover(), [])
+
+  useEffect(() => {
+    let frame = 0
+    let stops: { id: string; top: number }[] = []
+    const update = () => {
+      frame = 0
+      const position = window.scrollY + innerHeight * 0.28
+      setActive(stops.filter((stop) => stop.top <= position).at(-1)?.id ?? 'top')
+    }
+    const measure = () => {
+      stops = [...chapters, { id: 'nhan-lenh' }].flatMap(({ id }) => {
+        const target = document.getElementById(id)
+        if (!target) return []
+        const pin = ScrollTrigger.getAll().find((st) => st.pin && (st.trigger === target || st.trigger?.contains(target)))
+        return [{ id, top: pin?.start ?? target.getBoundingClientRect().top + window.scrollY }]
+      })
+      update()
+    }
+    const scroll = () => { if (!frame) frame = requestAnimationFrame(update) }
+    measure()
+    ScrollTrigger.addEventListener('refresh', measure)
+    window.addEventListener('scroll', scroll, { passive: true })
+    window.addEventListener('resize', measure)
+    return () => {
+      cancelAnimationFrame(frame)
+      ScrollTrigger.removeEventListener('refresh', measure)
+      window.removeEventListener('scroll', scroll)
+      window.removeEventListener('resize', measure)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!open) return
+    const outside = (event: PointerEvent) => {
+      if (!root.current?.contains(event.target as Node)) { clearHover(); setOpen(false) }
+    }
+    document.addEventListener('pointerdown', outside)
+    return () => document.removeEventListener('pointerdown', outside)
+  }, [open])
 
   const navigate = (event: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
@@ -25,6 +70,7 @@ export default function Header() {
     const top = trigger?.start ?? target.getBoundingClientRect().top + window.scrollY
     window.history.pushState(null, '', `#${id}`)
     window.scrollTo({ top: Math.max(0, top), behavior: reduced ? 'instant' : 'smooth' })
+    clearHover()
     toggle.current?.focus({ preventScroll: true })
     setOpen(false)
   }
@@ -41,25 +87,28 @@ export default function Header() {
           <span aria-hidden="true" className="inline-block size-2 rotate-45 bg-current transition-transform duration-500 group-hover:rotate-[225deg] group-hover:scale-150" />
         </a>
       </div>
-    <header className="chapter-nav fixed inset-x-0 top-0 z-50 h-5"
+    <header ref={root} className="chapter-nav fixed inset-x-0 top-0 z-50 h-9"
       data-open={open} onPointerEnter={(event) => {
-        if (event.pointerType !== 'touch' && !toggle.current?.contains(event.target as Node)) setOpen(true)
+        clearHover()
+        if (event.pointerType !== 'touch' && !toggle.current?.contains(event.target as Node)) hoverTimer.current = setTimeout(() => setOpen(true), 100)
       }}
       onPointerLeave={(event) => {
         const keyboardFocus = event.currentTarget.contains(document.activeElement) && document.activeElement?.matches(':focus-visible')
-        if (event.pointerType !== 'touch' && !keyboardFocus) setOpen(false)
+        clearHover()
+        if (event.pointerType !== 'touch' && !keyboardFocus) hoverTimer.current = setTimeout(() => setOpen(false), 200)
       }}
       onFocus={(event) => {
+        clearHover()
         if (event.currentTarget.querySelector('.nav-panel')?.contains(event.target)) setOpen(true)
       }}
-      onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false) }}
+      onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) { clearHover(); setOpen(false) } }}
       onKeyDown={(event) => {
-        if (event.key === 'Escape') { toggle.current?.focus(); setOpen(false) }
+        if (event.key === 'Escape') { clearHover(); toggle.current?.focus(); setOpen(false) }
       }}>
       <button ref={toggle} type="button" className="nav-toggle" aria-controls="chapter-menu"
         aria-expanded={open} aria-label={open ? 'Đóng điều hướng' : 'Mở điều hướng'}
-        onClick={() => setOpen((value) => !value)}>
-        <span aria-hidden="true">◆</span><span>Menu</span>
+        onClick={() => { clearHover(); setOpen((value) => !value) }}>
+        <span aria-hidden="true">{open ? '×' : '◆'}</span><span>{open ? 'Đóng' : 'Menu'}</span>
       </button>
       <div id="chapter-menu" className="nav-panel" inert={!open} aria-hidden={!open}>
         <div className="nav-inner">
@@ -68,13 +117,14 @@ export default function Header() {
           <nav aria-label="Điều hướng chính" className="nav-chapters">
             {chapters.map((chapter, index) => (
               <a key={chapter.id} href={`#${chapter.id}`} onClick={(event) => navigate(event, chapter.id)}
+                aria-current={active === chapter.id ? 'location' : undefined}
                 className="nav-link" style={{ '--nav-order': index } as React.CSSProperties}>
-                <span className="nav-number">{chapter.number}</span>
+                <span className="nav-marker" aria-hidden="true">◆</span>
                 <span className="nav-label">{chapter.label}</span>
               </a>
             ))}
           </nav>
-          <a href="#nhan-lenh" onClick={(event) => navigate(event, 'nhan-lenh')} className="nav-cta">
+          <a href="#nhan-lenh" onClick={(event) => navigate(event, 'nhan-lenh')} className="nav-cta" aria-current={active === 'nhan-lenh' ? 'location' : undefined}>
             Nhận lệnh <span aria-hidden="true" className="nav-diamond" />
           </a>
         </div>

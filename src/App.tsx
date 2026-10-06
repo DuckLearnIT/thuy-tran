@@ -11,6 +11,7 @@ import Finale from './components/Finale'
 import Curtain from './components/Curtain'
 import Cursor from './components/Cursor'
 import { preloadAssets } from './preloadAssets'
+import useCardFeel from './hooks/useCardFeel'
 
 gsap.registerPlugin(ScrollTrigger)
 if (typeof window !== 'undefined') {
@@ -28,6 +29,7 @@ export default function App() {
   const [unlocked, setUnlocked] = useState(false)
   const [failed, setFailed] = useState(false)
   const experience = useRef<HTMLDivElement>(null)
+  useCardFeel(experience, unlocked)
   const onSceneReady = useCallback(() => setSceneReady(true), [])
   const onOpen = useCallback(() => setOpening(true), [])
   const onComplete = useCallback(() => setUnlocked(true), [])
