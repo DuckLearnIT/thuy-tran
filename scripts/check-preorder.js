@@ -28,7 +28,19 @@
   const email = root.querySelector('[name="email"]')
   email.value = 'invalid-email'
   check(email.validity.typeMismatch, 'Email uses native validation')
+  email.dispatchEvent(new FocusEvent('focusout', { bubbles: true }))
+  check(email.getAttribute('aria-invalid') === 'true' && getComputedStyle(document.querySelector('#po-email-error')).display !== 'none', 'Invalid email has a visible accessible error')
+  email.value = 'test@example.com'
+  email.dispatchEvent(new FocusEvent('focusout', { bubbles: true }))
+  check(email.getAttribute('aria-invalid') === 'false', 'Correcting email clears the error')
+  email.removeAttribute('aria-invalid')
   email.value = ''
+  const name = root.querySelector('[name="name"]')
+  name.value = '   '
+  name.dispatchEvent(new FocusEvent('focusout', { bubbles: true }))
+  check(name.validity.patternMismatch && name.getAttribute('aria-invalid') === 'true', 'Whitespace-only names are rejected')
+  name.value = ''
+  name.removeAttribute('aria-invalid')
   check(root.querySelector('[name="name"]').required && email.required, 'Contact fields are labelled and required')
   check(root.querySelector('.po-submit').disabled, 'Preview cannot create an order')
   const submit = new Event('submit', { bubbles: true, cancelable: true })

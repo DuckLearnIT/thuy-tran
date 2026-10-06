@@ -22,6 +22,12 @@ export default function Preorder() {
   const [unlocked, setUnlocked] = useState(false)
   const onOpen = useCallback(() => setOpening(true), [])
   const onComplete = useCallback(() => setUnlocked(true), [])
+  const validateField = (event: React.FocusEvent<HTMLInputElement> | React.ChangeEvent<HTMLInputElement>) => {
+    const input = event.currentTarget
+    if (event.type === 'blur' || input.hasAttribute('aria-invalid')) {
+      input.setAttribute('aria-invalid', String(!input.validity.valid))
+    }
+  }
 
   useEffect(() => {
     document.title = 'Đặt trước — Thủy Trận'
@@ -100,7 +106,7 @@ export default function Preorder() {
             <p className="po-eyebrow">Đặt trước Thủy Trận</p>
             <h2 id="order-title" className="display">Phiếu<br />ra quân.</h2>
             <p className="po-stamp display">Sắp<br />mở</p>
-            <p className="po-intro">Một lời hẹn. Một ván Thủy Trận.</p>
+            <p className="po-intro">Các ô có dấu * là bắt buộc.</p>
             <form onSubmit={(event) => event.preventDefault()}>
               <fieldset className="po-quantity">
                 <legend>Số bộ game</legend>
@@ -110,8 +116,8 @@ export default function Preorder() {
                   <button type="button" aria-label="Tăng số bộ game" disabled={quantity === 99} onClick={() => setQuantity((value) => value + 1)}>+</button>
                 </div>
               </fieldset>
-              <label className="po-field"><span className="po-field-label"><span className="po-field-number" aria-hidden="true">01</span>Tên của bạn</span><input name="name" autoComplete="name" required maxLength={100} placeholder="Tên người ra quân" /></label>
-              <label className="po-field"><span className="po-field-label"><span className="po-field-number" aria-hidden="true">02</span>Email</span><input name="email" type="email" autoComplete="email" required maxLength={254} placeholder="ban@example.com" /></label>
+              <label className="po-field"><span className="po-field-label"><span className="po-field-number" aria-hidden="true">01</span>Tên của bạn <span className="po-required" aria-hidden="true">*</span></span><input name="name" aria-label="Tên của bạn" aria-describedby="po-name-error" autoComplete="name" required pattern={'.*\\S.*'} maxLength={100} placeholder="Nhập họ và tên" onBlur={validateField} onChange={validateField} /><span id="po-name-error" className="po-error" aria-live="polite">Nhập tên của bạn.</span></label>
+              <label className="po-field"><span className="po-field-label"><span className="po-field-number" aria-hidden="true">02</span>Email <span className="po-required" aria-hidden="true">*</span></span><input name="email" aria-label="Email" aria-describedby="po-email-error" type="email" autoComplete="email" required maxLength={254} placeholder="Nhập email của bạn" onBlur={validateField} onChange={validateField} /><span id="po-email-error" className="po-error" aria-live="polite">Nhập email hợp lệ, ví dụ ban@example.com.</span></label>
               <label className="po-field"><span className="po-field-label"><span className="po-field-number" aria-hidden="true">03</span>Số điện thoại</span><span className="po-optional">Không bắt buộc</span><input name="phone" type="tel" autoComplete="tel" maxLength={30} placeholder="Số điện thoại của bạn" /></label>
               <div className="po-price"><span>Giá đặt trước</span><strong>Sắp công bố</strong></div>
               <button className="po-submit" type="submit" disabled>Đặt trước — sắp mở <span aria-hidden="true">◆</span></button>
