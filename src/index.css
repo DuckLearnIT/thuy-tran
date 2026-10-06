@@ -295,16 +295,16 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
 .po-title { font-size: clamp(4rem, 7.8vw, 7.5rem); margin-top: 1.3rem; color: var(--color-bamboo); }
 .po-title > span { display: block; }
 .po-title > span:last-child { color: var(--color-vermilion); padding-left: 9%; }
-.po-stage { position: relative; height: 370px; display: flex; justify-content: center; align-items: center; margin-top: 1rem; }
-.po-sun { position: absolute; width: 310px; aspect-ratio: 1; border-radius: 50%; background: #efbb66; transition: transform 0.9s var(--ease-out-expo); }
+.po-stage { position: relative; height: 460px; display: flex; justify-content: center; align-items: center; margin-top: 1rem; }
+.po-sun { position: absolute; width: min(100%, 380px); aspect-ratio: 1; border-radius: 50%; background: #efbb66; transition: transform 0.9s var(--ease-out-expo); }
 .po-stage[data-open='true'] .po-sun { transform: scale(1.08) translateX(10px); }
-.po-box { position: relative; width: 205px; aspect-ratio: 3 / 4; perspective: 900px; transform: rotate(-7deg) rotateY(var(--tilt, 0deg)); transition: transform 0.4s var(--ease-out-expo); }
+.po-box { position: relative; width: clamp(225px, 25vw, 290px); aspect-ratio: 3 / 4; perspective: 900px; transform: rotate(-7deg) rotateY(var(--tilt, 0deg)); transition: transform 0.4s var(--ease-out-expo); }
 .po-box-base { position: absolute; inset: 12px -12px -12px 12px; border-radius: 3px; background: var(--color-vermilion); box-shadow: 14px 22px 28px -10px #23151155, inset 0 0 0 10px #d99a2b; }
 .po-lid { position: absolute; inset: 0; z-index: 7; width: 100%; border: 0; padding: 0; background: var(--color-card); border-radius: 3px; box-shadow: 6px 9px 0 #b99262, 10px 15px 18px -9px #23151160; cursor: pointer; transform-origin: 20% 60%; transition: transform 0.85s var(--ease-out-expo), box-shadow 0.85s; }
 .po-lid img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
-.po-stage[data-open='true'] .po-lid { transform: translate(-44%, -10%) rotate(-24deg) rotateY(-20deg) scale(0.83); box-shadow: 4px 6px 0 #b99262, 10px 20px 25px -10px #23151155; }
+.po-stage[data-open='true'] .po-lid { transform: translate(-24%, -8%) rotate(-22deg) rotateY(-20deg) scale(0.8); box-shadow: 4px 6px 0 #b99262, 10px 20px 25px -10px #23151155; }
 .po-hand { position: absolute; inset: 0; pointer-events: none; }
-.po-hand img { position: absolute; left: 50%; top: 45%; width: 115px; border-radius: 5px; box-shadow: 0 10px 18px -8px #23151166; transform: translate(-50%, -30%) rotate(0deg) scale(0.75); transition: transform 0.8s var(--ease-out-expo); }
+.po-hand img { position: absolute; left: 50%; top: 45%; width: 140px; border-radius: 5px; box-shadow: 0 10px 18px -8px #23151166; transform: translate(-50%, -30%) rotate(0deg) scale(0.75); transition: transform 0.8s var(--ease-out-expo); }
 .po-stage[data-open='true'] .po-hand img { z-index: calc(8 + var(--i)); transform: translate(calc(-50% + var(--x)), -68%) rotate(var(--r)); transition-delay: calc(var(--i) * 45ms); }
 .po-open { position: absolute; bottom: 0; min-height: 44px; padding: 0.4rem 1rem; display: flex; gap: 1.5rem; align-items: center; font-size: 0.82rem; cursor: pointer; background: var(--color-card); border-radius: 999px; transition: background 0.3s; }
 .po-open span { font-size: 1.5rem; transition: transform 0.5s var(--ease-out-expo); }
@@ -326,20 +326,19 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
 .po-quantity output { width: 3.6rem; text-align: center; font-variant-numeric: tabular-nums; }
 .po-quantity strong { display: block; font-family: var(--font-display); font-size: 3rem; line-height: 1; font-weight: 400; color: var(--color-vermilion); animation: po-count 0.3s var(--ease-out-expo); }
 @keyframes po-count { from { transform: translateY(7px) rotate(-8deg); } to { transform: none; } }
-.po-field { display: block; position: relative; margin-top: 1.1rem; padding: 0; font-size: 0.75rem; cursor: text; }
+.po-field { display: block; position: relative; margin-top: 1rem; padding: 0.75rem 0.9rem 0.1rem; font-size: 0.75rem; background: #ecdcc075; cursor: text; outline: 1px solid transparent; transition: background 0.2s, outline-color 0.2s, box-shadow 0.2s; }
 .po-field-label { display: flex; align-items: center; gap: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; }
 .po-field-number { display: inline-grid; place-items: center; width: 1.5rem; font-family: var(--font-display); font-size: 1.25rem; line-height: 1; color: var(--color-vermilion); transition: transform 0.3s var(--ease-out-expo); }
-.po-optional { position: absolute; right: 0; top: 0.2rem; font-size: 0.6rem; color: #69594d; }
-.po-field input { display: block; width: 100%; min-width: 0; height: 52px; margin-top: 0.55rem; padding: 0.75rem 0.9rem; border: 1px solid #8b7965; border-radius: 2px; background: #fffaf0; font: inherit; font-size: 1.05rem; caret-color: var(--color-vermilion); cursor: text; transition: border-color 0.2s, box-shadow 0.2s; }
-.po-field input:hover { border-color: var(--color-ink); }
-.po-field input:focus { border-color: var(--color-bamboo); box-shadow: 0 0 0 2px var(--color-bamboo); }
+.po-optional { position: absolute; right: 0.9rem; top: 0.8rem; font-size: 0.6rem; color: #69594d; }
+.po-field input { display: block; width: 100%; min-width: 0; height: 48px; padding: 0.4rem 0 0.5rem 2.2rem; border: 0; border-radius: 0; background: transparent; font: inherit; font-size: 1.05rem; caret-color: var(--color-vermilion); cursor: text; }
+.po-field:hover { background: #f3e2c9; outline-color: #8b7965; }
+.po-field:focus-within { background: #fff9ed; outline: 2px solid var(--color-bamboo); outline-offset: 2px; box-shadow: 4px 0 0 var(--color-vermilion); }
 .po-field:focus-within .po-field-number { transform: rotate(-8deg) scale(1.2); }
 .po-field input::placeholder { color: #75665c; opacity: 1; }
 .po-field input:focus-visible { outline: none; }
 .po-required { color: var(--color-vermilion); font-size: 1rem; }
-.po-error { display: none; margin-top: 0.4rem; font-size: 0.75rem; color: #982b22; letter-spacing: 0; text-transform: none; }
-.po-field input[aria-invalid='true'] { border-color: #982b22; }
-.po-field input[aria-invalid='true']:focus { box-shadow: 0 0 0 2px #982b22; }
+.po-error { display: none; padding: 0 0 0.6rem 2.2rem; font-size: 0.75rem; color: #982b22; letter-spacing: 0; text-transform: none; }
+.po-field:has(input[aria-invalid='true']) { outline-color: #982b22; box-shadow: 4px 0 0 #982b22; }
 .po-field input[aria-invalid='true'] + .po-error { display: block; }
 .po-price { display: flex; justify-content: space-between; gap: 1rem; margin: 1.5rem 0 1rem; font-size: 0.85rem; }
 .po-price strong { font-weight: 500; color: var(--color-vermilion); }
@@ -356,18 +355,20 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
   .po-back { font-size: 0.72rem; }
   .po-layout { grid-template-columns: 1fr; gap: 2.5rem; max-width: 540px; padding-top: 1rem; }
   .po-title { font-size: clamp(4rem, 15vw, 6rem); }
-  .po-stage { height: 330px; }
-  .po-box { width: 185px; }
-  .po-sun { width: 270px; }
-  .po-hand img { width: 100px; }
-  .po-stage[data-open='true'] .po-lid { transform: translate(-24%, -10%) rotate(-24deg) rotateY(-20deg) scale(0.74); }
-  .po-stage[data-open='true'] .po-hand img { transform: translate(calc(-50% + var(--x) * 0.8), -68%) rotate(var(--r)); }
+  .po-stage { height: 380px; }
+  .po-box { width: min(60vw, 220px); }
+  .po-sun { width: min(100%, 310px); }
+  .po-hand img { width: clamp(100px, 29vw, 115px); }
+  .po-stage[data-open='true'] .po-lid { transform: translate(-8%, -10%) rotate(-16deg) rotateY(-20deg) scale(0.72); }
+  .po-stage[data-open='true'] .po-hand img { transform: translate(calc(-50% + var(--x) * 0.65), -68%) rotate(var(--r)); }
+  .po-contents { gap: 0.75rem; font-size: 0.6rem; }
+  .po-contents span { white-space: nowrap; }
   .po-stamp { width: 64px; height: 64px; font-size: 1.25rem; }
   .po-optional { position: static; display: block; padding-left: 2.2rem; margin-top: 0.2rem; }
   .po-footer { flex-direction: column; align-items: flex-start; gap: 0.25rem; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .po-box, .po-lid, .po-hand img, .po-sun, .po-open, .po-open span, .po-quantity button, .po-field input, .po-field-number { transition: none; }
+  .po-box, .po-lid, .po-hand img, .po-sun, .po-open, .po-open span, .po-quantity button, .po-field, .po-field-number { transition: none; }
   .po-quantity strong { animation: none; }
 }
 .ks-browse[data-dragging='true'], .ks-browse[data-dragging='true'] .ks-card { cursor: grabbing; }
