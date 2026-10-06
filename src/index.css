@@ -75,7 +75,12 @@
   transition: clip-path 240ms ease-out;
 }
 .cu-water-wave {
-  animation: cu-water-flow 2.4s linear infinite;
+  animation: cu-water-flow 1.8s linear infinite;
+}
+.cu-water-wave-back {
+  animation-duration: 3.2s;
+  animation-direction: reverse;
+  animation-delay: -1.1s;
 }
 .cu-water[data-paused='true'] .cu-water-wave {
   animation-play-state: paused;
