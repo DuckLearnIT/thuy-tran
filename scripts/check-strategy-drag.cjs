@@ -6,7 +6,8 @@ const vm = require('node:vm')
 const ts = require('typescript')
 const refs = []
 const jsx = (type, props) => ({ type, props })
-const st = { start: 100, end: 850, progress: 0, isActive: true }
+let cancelled = 0
+const st = { start: 100, end: 850, progress: 0, isActive: true, getTween: () => ({ kill() { cancelled++ } }) }
 const window = { scrollY: 100, scrollTo({ top }) { this.scrollY = top } }
 const moduleMock = { exports: {} }
 const mocks = {
@@ -29,6 +30,7 @@ let captured = false
 const target = { clientWidth: 1000, setPointerCapture() { captured = true }, hasPointerCapture() { return captured }, releasePointerCapture() { captured = false } }
 const event = (x, y) => ({ button: 0, clientX: x, clientY: y, pointerId: 1, currentTarget: target })
 stage.onPointerDown(event(500, 200))
+assert.equal(cancelled, 1, 'A new press immediately cancels an existing automatic snap')
 stage.onPointerMove(event(150, 200))
 assert.equal(window.scrollY, 200, 'One card-width drag advances one chapter segment')
 assert.equal(captured, true, 'Horizontal drag captures its pointer')

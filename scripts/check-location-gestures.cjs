@@ -22,7 +22,8 @@ const source = fs.readFileSync('src/components/Locations.tsx', 'utf8')
 const js = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true } }).outputText
 vm.runInNewContext(js, { module: moduleMock, exports: moduleMock.exports, require: name => mocks[name], window, matchMedia: () => ({ matches: false }) })
 const tree = moduleMock.exports.default()
-refs[2].current = { start: 100, end: 850, animation: { duration: () => 5.3 } }
+let cancelled = 0
+refs[2].current = { start: 100, end: 850, animation: { duration: () => 5.3 }, getTween: () => ({ kill() { cancelled++ } }) }
 const find = node => node?.props?.className === 'spiral-scene' ? node.props
   : [node?.props?.children].flat().filter(Boolean).map(find).find(Boolean)
 const stage = find(tree)
@@ -30,6 +31,7 @@ let captured = false
 const target = { clientWidth: 1000, dataset: {}, setPointerCapture() { captured = true }, hasPointerCapture() { return captured }, releasePointerCapture() { captured = false } }
 const event = (x, y) => ({ button: 0, clientX: x, clientY: y, pointerId: 1, currentTarget: target })
 stage.onPointerDown(event(500, 200))
+assert.equal(cancelled, 1, 'A new press immediately cancels an existing automatic snap')
 stage.onPointerMove(event(502, 220))
 stage.onPointerMove(event(100, 220))
 assert.equal(window.scrollY, 100, 'Vertical touch is left to native scrolling')

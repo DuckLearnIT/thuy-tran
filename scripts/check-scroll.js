@@ -11,8 +11,20 @@
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
   check(triggers.length === (reduced ? 0 : 10), 'All ten scroll animations are present, or removed for reduced motion')
   const report = []
+  const cardChapters = new Set(['roles', 'ke-sach', 'dia-diem'])
   for (const st of triggers) {
-    check(st.vars.scrub === true && !st.vars.snap, 'Direct progress mapping with no unsolicited snap')
+    check(st.vars.scrub === true, 'Direct progress mapping while input is active')
+    const snap = st.vars.snap
+    check(!!snap === !!(st.pin && cardChapters.has(st.trigger.id)), 'Only card chapters assist with alignment')
+    if (snap) {
+      check(snap.inertia === false && snap.delay >= .2 && snap.duration.max <= .3, 'Alignment waits for idle input and does not project momentum')
+      for (const progress of [.01, .11, .37, .65, .91, .99]) {
+        const target = snap.snapTo(progress)
+        check(target >= 0 && target <= 1 && Math.abs(snap.snapTo(target) - target) < 1e-6, 'Card stops are bounded and stable')
+      }
+      check(snap.snapTo(.99) === .99, 'Chapter exit stays free of card snapping')
+      if (st.trigger.id === 'dia-diem') check(snap.snapTo(.01) === .01, 'Location entrance stays free of card snapping')
+    }
     let lag = 0
     for (const progress of [0, .001, .11, .37, .371, .372, .91, 1, .999, .65, .371, .37, .11, 0]) {
       scrollTo({ top: Math.round(st.start + progress * (st.end - st.start)), behavior: 'instant' })
@@ -30,9 +42,16 @@
     if (st.pin) {
       scrollTo({ top: Math.round(st.start + .37 * (st.end - st.start)), behavior: 'instant' })
       await settle()
-      const stopped = scrollY, until = performance.now() + 1300
+      const stopped = scrollY
+      const target = snap ? st.start + snap.snapTo((stopped - st.start) / (st.end - st.start)) * (st.end - st.start) : stopped
+      const until = performance.now() + 1300
       while (performance.now() < until) await frame()
-      check(scrollY === stopped, 'Stopping does not start a second scroll animation')
+      check(Math.abs(scrollY - target) <= 1, snap ? 'After stopping, align with the nearest card' : 'Non-card chapters never auto-scroll after stopping')
+      if (snap) {
+        const aligned = scrollY, until = performance.now() + 500
+        while (performance.now() < until) await frame()
+        check(scrollY === aligned, 'A completed card snap stays still')
+      }
       for (const top of [st.start - 2, st.start + 2, st.end - 2, st.end + 2, st.end - 2, st.start - 2]) {
         scrollTo({ top, behavior: 'instant' })
         await settle()

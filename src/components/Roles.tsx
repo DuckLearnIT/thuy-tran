@@ -112,6 +112,14 @@ export default function Roles() {
           scrub: true,
           anticipatePin: 1,
           invalidateOnRefresh: true,
+          snap: {
+            snapTo: (progress: number) => {
+              const roleEnd = roleDuration / chapterDuration
+              return progress > roleEnd ? progress : gsap.utils.snap(roleEnd / (n - 1), progress)
+            },
+            // Settle on the nearest card after input stops, without projecting momentum.
+            inertia: false, delay: 0.2, duration: { min: 0.16, max: 0.3 }, ease: 'power2.out',
+          },
           onUpdate: (self) => {
             const roleProgress = Math.min(1, self.progress * chapterDuration / roleDuration)
             const k = String(Math.round(roleProgress * (n - 1)) + 1).padStart(2, '0')

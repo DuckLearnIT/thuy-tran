@@ -114,6 +114,11 @@ export default function Strategies() {
           scrub: true,
           anticipatePin: 1,
           invalidateOnRefresh: true,
+          snap: {
+            snapTo: (progress) => progress * chapterDuration > carouselDuration
+              ? progress : Math.round(progress * chapterDuration) / chapterDuration,
+            inertia: false, delay: 0.2, duration: { min: 0.16, max: 0.3 }, ease: 'power2.out',
+          },
         },
       })
       trigger.current = tl.scrollTrigger as ScrollTrigger
@@ -159,6 +164,7 @@ export default function Strategies() {
   const jump = (j: number) => {
     const st = trigger.current
     if (!st) return
+    st.getTween(true)?.kill()
     const p = Math.max(0, Math.min(n - 1, j)) / chapterDuration
     window.scrollTo({ top: st.start + p * (st.end - st.start), behavior: 'smooth' })
   }
@@ -231,6 +237,7 @@ export default function Strategies() {
         onPointerDown={(event) => {
           const st = trigger.current
           if (event.button !== 0 || !st?.isActive || st.progress > carouselDuration / chapterDuration) return
+          st.getTween(true)?.kill()
           dragged.current = false
           drag.current = { x: event.clientX, y: event.clientY, scroll: window.scrollY, locked: false }
         }}

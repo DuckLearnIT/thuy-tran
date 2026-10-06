@@ -101,6 +101,14 @@ export default function Locations() {
         scrollTrigger: {
           trigger: root.current, start: 'top top', end: () => `+=${innerHeight * 4.2}`,
           pin: true, scrub: true, anticipatePin: 1, invalidateOnRefresh: true,
+          snap: {
+            snapTo: (progress) => {
+              const time = progress * duration
+              if (time < entrance || time > entrance + journey) return progress
+              return (entrance + Math.round((time - entrance) / journey * last) / last * journey) / duration
+            },
+            inertia: false, delay: 0.2, duration: { min: 0.16, max: 0.3 }, ease: 'power2.out',
+          },
         },
       })
       trigger.current = tl.scrollTrigger!
@@ -138,6 +146,7 @@ export default function Locations() {
     setExpanded(false)
     const st = trigger.current
     if (st) {
+      st.getTween(true)?.kill()
       const progress = (entrance + next / last * journey) / st.animation!.duration()
       window.scrollTo({ top: st.start + progress * (st.end - st.start), behavior: 'instant' })
     } else render.current(next)
@@ -171,6 +180,7 @@ export default function Locations() {
       <div ref={scene} className="spiral-scene" role="group" aria-label="24 thẻ địa điểm — kéo ngang để chọn"
         inert={animated && !available} onPointerDown={(event) => {
           if (event.button !== 0) return
+          trigger.current?.getTween(true)?.kill()
           suppressClick.current = false
           drag.current = { id: event.pointerId, x: event.clientX, y: event.clientY, index: position.current, target: position.current, moved: false }
         }} onPointerMove={(event) => {
