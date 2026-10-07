@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import gsap from 'gsap'
 import useReducedMotion from '../hooks/useReducedMotion'
 
 const chapters = [
@@ -28,6 +29,18 @@ export default function Header() {
       frame = 0
       const position = window.scrollY + innerHeight * 0.28
       setActive(stops.filter((stop) => stop.top <= position).at(-1)?.id ?? 'top')
+      if (window.scrollY < 24) setOpen(false)
+      // The pinned cover owns the morph; static/reduced-motion pages dock instantly.
+      if (!ScrollTrigger.getAll().some(st => st.pin && st.trigger?.querySelector('#top'))) {
+        const brand = document.querySelector<HTMLElement>('.site-brand')!
+        const docked = window.scrollY > 24
+        const scale = Math.min(innerWidth * (innerWidth > innerHeight ? 0.56 : 0.84), innerHeight * 0.68, 760) / brand.offsetWidth
+        gsap.set('.site-cta, .chapter-nav', { autoAlpha: docked ? 1 : 0 })
+        gsap.set(brand, { autoAlpha: 1, scale: docked ? 1 : scale, color: docked ? '#f6e9d7' : '#231511',
+          x: docked ? 0 : (innerWidth - brand.offsetWidth * scale) / 2 - brand.offsetLeft,
+          y: docked ? 0 : document.querySelector<HTMLElement>('.hero-copy')!.offsetTop - brand.offsetHeight * scale - 16 - brand.offsetTop })
+        gsap.set('.site-header', { mixBlendMode: docked ? 'difference' : 'normal' })
+      }
     }
     const measure = () => {
       stops = [...chapters, { id: 'nhan-lenh' }].flatMap(({ id }) => {
@@ -49,7 +62,7 @@ export default function Header() {
       window.removeEventListener('scroll', scroll)
       window.removeEventListener('resize', measure)
     }
-  }, [])
+  }, [reduced])
 
   useEffect(() => {
     if (!open) return
@@ -78,11 +91,11 @@ export default function Header() {
   return (
     <>
       <div inert={open} aria-hidden={open}
-        className="fixed inset-x-0 top-0 z-40 flex items-center justify-between px-[clamp(1rem,3vw,2.5rem)] py-4 text-white mix-blend-difference pointer-events-none">
+        className="site-header fixed inset-x-0 top-0 z-40 flex items-center justify-between px-[clamp(1rem,3vw,2.5rem)] py-4 text-white pointer-events-none">
         <a href="#top" onClick={(event) => navigate(event, 'top')}
-          className="pointer-events-auto display !text-2xl !font-bold tracking-[0.04em]">Thủy Trận</a>
+          className="site-brand pointer-events-auto display !text-2xl !font-bold tracking-[0.04em]">Thủy Trận</a>
         <a href="#nhan-lenh" onClick={(event) => navigate(event, 'nhan-lenh')}
-          className="pointer-events-auto group flex min-h-11 items-center gap-2 text-[0.8rem] font-medium tracking-[0.22em] uppercase">
+          className="site-cta pointer-events-auto group flex min-h-11 items-center gap-2 text-[0.8rem] font-medium tracking-[0.22em] uppercase">
           <span>Nhận lệnh</span>
           <span aria-hidden="true" className="inline-block size-2 rotate-45 bg-current transition-transform duration-500 group-hover:rotate-[225deg] group-hover:scale-150" />
         </a>

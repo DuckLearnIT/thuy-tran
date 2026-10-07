@@ -28,4 +28,12 @@ Animation in: nhân vật đi lên theo lớp, tên game mở ra qua mask. Point
 
 ## Điều chỉnh sau phản hồi
 
-Người dùng thấy phần chân làm đội hình lạc khỏi cảnh. Hero hiện dùng lại sáu tranh bán thân gốc, đặt sau một dải sóng tiền cảnh. Nền giấy phía dưới sóng dành riêng cho tên game. Nhân vật xuất hiện theo thứ tự vị trí từ trái sang phải; khi cuộn, sóng dâng rồi rời màn hình trước khi mặt trời chuyển sang hộp. Không tạo ảnh mới hoặc chỉnh bảng màu.
+Người dùng đề xuất bố cục gợi điểm chạm tay trong bức tranh Creation of Adam. Hero hiện dùng sáu tư thế tay vươn vào mặt trời nhỏ ở giữa: ba phía trái, ba phía phải; hai người ở trên và hai người ở dưới tạo đường nhìn vào tâm. Imagegen chỉnh từng tranh nguồn riêng, giữ phục trang, bảng màu và chất liệu đa giác. Bản gốc được giữ riêng; bản WebP mới nằm trong src/assets/hero/reach. Không áp dụng filter hoặc chỉnh saturation/contrast sau khi tạo ảnh.
+
+Tên Thủy Trận lớn xuất hiện ngay từ đầu bên dưới mặt trời, màu mực trên nền giấy; dưới tên là “Sáu nhân vật. Một ý chí. Cùng xoay chuyển thế trận.” Tay được neo theo một khung chung, có khoảng nhỏ trước mép mặt trời. Nhân vật tiến vào từ hai phía, độ sâu theo con trỏ rất nhẹ để giữ hình tượng sắp chạm. Sóng thu thành đường nước nhỏ ở chân trang mở đầu.
+
+Khi cuộn, chính phần tử tên thu về logo góc trên; nút Nhận lệnh và menu xuất hiện sau khi logo về vị trí. Nhân vật và đường nước rời cảnh; mặt trời phủ viewport trước khi hộp đi lên theo cơ chế hiện có. Cuộn ngược khôi phục cảnh và chữ lớn. Reduced motion dùng cảnh tĩnh, logo về góc ngay khi cuộn; giữ nguyên khung DOM của các phần ghim để chuyển chế độ không làm mất trang.
+
+Mỗi nhân vật có dáng ngồi/quỳ gọn với tà áo hoàn chỉnh, tay và đạo cụ nằm trong khung ảnh. Không dùng clip-path hoặc gradient để giấu phần thân bị cắt. Khung chung được giới hạn theo cả chiều rộng và chiều cao màn hình; chữ và lời dẫn có khoảng trống riêng phía dưới.
+
+Prompt và chế độ built-in được lưu trong hero-sun-reach-generation.json. PNG nhân vật được chuyển lossless sang WebP, không chỉnh màu. Các bản PNG nguồn vẫn được giữ riêng.

@@ -173,7 +173,7 @@ export default function Roles() {
 
   if (reduced) {
     return (
-      <div id="roles">
+      <section ref={root} id="roles">
         {cards.map((c, i) => (
           <section
             key={c.id}
@@ -188,7 +188,7 @@ export default function Roles() {
             </div>
           </section>
         ))}
-      </div>
+      </section>
     )
   }
 

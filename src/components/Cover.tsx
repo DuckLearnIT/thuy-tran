@@ -48,36 +48,47 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
       // Keep the sun and box in one pinned viewport: no section boundary to cross.
       const sun = root.current!.querySelector<HTMLElement>('.sun')!
       const stage = root.current!
+      const brand = document.querySelector<HTMLElement>('.site-brand')!
+      const header = document.querySelector<HTMLElement>('.site-header')!
+      const navigation = document.querySelectorAll('.site-cta, .chapter-nav')
+      const titleScale = () => Math.min(stage.clientWidth * (stage.clientWidth > stage.clientHeight ? 0.56 : 0.84), stage.clientHeight * 0.68, 760) / brand.offsetWidth
+      const titleX = () => (stage.clientWidth - brand.offsetWidth * titleScale()) / 2 - brand.offsetLeft
+      const titleY = () => stage.querySelector<HTMLElement>('.hero-copy')!.offsetTop - brand.offsetHeight * titleScale() - 16 - brand.offsetTop
       // Explicit starts also restore the scene after resizing mid-transition.
       tl.set('.hero-layer', { autoAlpha: 1 }, 0)
-        .fromTo('.title-a', { xPercent: 0, opacity: 1 }, { xPercent: -65, opacity: 0, duration: 1, ease: 'power2.in' }, 0)
-        .fromTo('.title-b', { xPercent: 0, opacity: 1 }, { xPercent: 65, opacity: 0, duration: 1, ease: 'power2.in' }, 0)
-        .fromTo('.hero-fade', { y: 0, opacity: 1 }, { y: -60, opacity: 0, duration: 0.65 }, 0)
-        .fromTo('.hero-person', { x: 0, y: 0, xPercent: -50, yPercent: 0, rotation: 0 }, {
-          xPercent: -50,
-          y: () => stage.clientHeight * 1.1,
+        .set(navigation, { autoAlpha: 0 }, 0)
+        .set(header, { mixBlendMode: 'normal' }, 0)
+        .set(brand, { x: titleX, y: titleY, scale: titleScale, autoAlpha: 1, color: '#231511' }, 0)
+        .fromTo(brand, { x: titleX, y: titleY, scale: titleScale }, { x: 0, y: 0, scale: 1, duration: 0.75, ease: 'power2.inOut', immediateRender: false }, 0.65)
+        .to(navigation, { autoAlpha: 1, duration: 0.25 }, 1.4)
+        .set(header, { mixBlendMode: 'difference' }, 1.4)
+        .set(brand, { color: '#f6e9d7' }, 1.4)
+        .fromTo('.hero-fade', { y: 0, opacity: 1 }, { y: -60, opacity: 0, duration: 0.65 }, 0.65)
+        .fromTo('.hero-person', { x: 0, y: 0, xPercent: 0, yPercent: 0, rotation: 0 }, {
+          xPercent: 0,
+          y: () => stage.clientHeight * 1.6,
           x: (_index, element) => Number(element.dataset.exit) * stage.clientWidth * 0.2,
           rotation: (_index, element) => Number(element.dataset.exit) * 12,
           duration: 0.95, stagger: { amount: 0.2 }, ease: 'power2.in',
-        }, 0)
-        .fromTo('.hero-tide', { yPercent: 0 }, { yPercent: -38, duration: 0.65, ease: 'power2.inOut' }, 0)
-        .to('.hero-tide', { yPercent: 110, duration: 0.75, ease: 'power2.in' }, 0.7)
+        }, 0.65)
+        .fromTo('.hero-tide', { yPercent: 0 }, { yPercent: -38, duration: 0.65, ease: 'power2.inOut' }, 0.65)
+        .to('.hero-tide', { yPercent: 110, duration: 0.75, ease: 'power2.in' }, 1.2)
         .fromTo(sun, { x: 0, y: 0, scale: 1 }, {
           x: () => stage.clientWidth / 2 - sun.offsetLeft - sun.offsetWidth / 2,
           y: () => stage.clientHeight / 2 - sun.offsetTop - sun.offsetHeight / 2,
           scale: () => Math.hypot(stage.clientWidth, stage.clientHeight) / sun.offsetWidth * 1.08,
           duration: 1.6,
           ease: 'power2.inOut',
-        }, 0.15)
-        .fromTo('.sun-texture', { opacity: 1 }, { opacity: 0, duration: 0.6 }, 1.15)
-        .set('.hero-layer', { autoAlpha: 0 }, 1.75)
+        }, 0.65)
+        .fromTo('.sun-texture', { opacity: 1 }, { opacity: 0, duration: 0.6 }, 1.65)
+        .set('.hero-layer', { autoAlpha: 0 }, 2.25)
         .fromTo(canvas.current, { yPercent: 110 }, {
           yPercent: 0, duration: 1.4, ease: 'power2.out',
-        }, 1.75)
+        }, 2.25)
         .fromTo(st, { elev: 1.3, yaw: -0.5, zoom: 0.9 }, {
           elev: 1.0, yaw: -0.25, zoom: 1, ease: 'power2.out', duration: 1.4,
-        }, 1.75)
-      const reveal = 3.35
+        }, 2.25)
+      const reveal = 3.85
       tl.to(st, { lift: 7, lidTilt: -0.1, ease: 'power2.inOut', duration: 1.4 }, reveal)
       tl.to(st, { rise: 1, elev: 0.3, yaw: 0, zoom: 1.25, shift: 0.9, ease: 'power2.inOut', duration: 1.4 }, reveal + 1.2)
       tl.to(st, { drop: 8, ease: 'power2.in', duration: 1 }, reveal + 2.4)
@@ -101,12 +112,12 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
 
   if (reduced || fallback) {
     return (
-      <>
+      <section ref={root} className="relative bg-[#ffb627] text-ink" aria-label="Hộp Thủy trận Bạch Đằng">
         <Hero playIntro={playIntro} />
         <section className="bg-[#ffb627] px-4 py-16 text-ink" aria-label="Bìa hộp">
           <img src={cover} alt={alt} className="mx-auto w-full max-w-xl" />
         </section>
-      </>
+      </section>
     )
   }
 

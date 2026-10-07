@@ -1,0 +1,49 @@
+{
+  "mode": "built-in image_gen",
+  "date": "2026-10-07",
+  "prompt": "Edit this character illustration for a website hero. Preserve this exact man’s identity, face, hairstyle, costume, muted original ink/ochre palette and angular Vietnamese historical boardgame painted-paper style. Preserve the extended reaching arm with relaxed pointing index finger, complete five-finger hand, gaze facing inward. Recompose as a COMPLETE compact kneeling/seated figure, with both legs naturally folded underneath and concealed in long draped costume, a finished natural cloth hem and unobtrusive footwear. This is a poised reaching fresco figure, not a standing soldier with exposed legs. Complete the other arm and the ENTIRE held prop (including the entire flag and its pole if present). Fit ALL anatomy, fingertips, cloth, staff/flag/oar entirely inside a landscape 3:2 canvas with generous transparent margin on EVERY side. No waist cutoff, no cropped limbs or props, no rectangular bottom edge, no vignette, NO GLOW or shadows outside silhouette, NO background, NO saturation/contrast boosts. Keep original pose direction and reaching gesture, but shrink/reposition within the canvas as needed to fit the entire compact figure and prop. Single character only, transparent RGBA background.",
+  "assets": [
+    {
+      "id": "tham-quan",
+      "path": "C:/Users/Duck/.codex/generated_images/01a104ca-a0e5-7022-8f70-4980d38a5c7e/exec-e9e18a36-147f-4a1d-96d5-7f375eefdfe0.png",
+      "source": "C:/Users/Duck/.codex/generated_images/01a104ca-a0e5-7022-8f70-4980d38a5c7e/exec-e9e18a36-147f-4a1d-96d5-7f375eefdfe0.png",
+      "generated": "C:/Users/Duck/.codex/generated_images/01a104ca-a0e5-7022-8f70-4980d38a5c7e/exec-6ae69266-dd7c-48eb-8245-d1408fcfa44c.png",
+      "output": "src/assets/hero/reach/tham-quan.webp"
+    },
+    {
+      "id": "nha-tuong",
+      "path": "C:/Users/Duck/.codex/generated_images/01a104ca-a0e5-7022-8f70-4980d38a5c7e/exec-2b19cf22-c084-4a06-85cd-fa72c829d336.png",
+      "source": "C:/Users/Duck/.codex/generated_images/01a104ca-a0e5-7022-8f70-4980d38a5c7e/exec-2b19cf22-c084-4a06-85cd-fa72c829d336.png",
+      "generated": "C:/Users/Duck/.codex/generated_images/01a104ca-a0e5-7022-8f70-4980d38a5c7e/exec-c14c46c6-50be-4672-93e6-07e2e6eee805.png",
+      "output": "src/assets/hero/reach/nha-tuong.webp"
+    },
+    {
+      "id": "nha-binh",
+      "path": "C:/Users/Duck/.codex/generated_images/01a104ca-a0e5-7022-8f70-4980d38a5c7e/exec-e3d8c9fb-7c0e-4065-9023-67a7e95fe729.png",
+      "source": "C:/Users/Duck/.codex/generated_images/01a104ca-a0e5-7022-8f70-4980d38a5c7e/exec-e3d8c9fb-7c0e-4065-9023-67a7e95fe729.png",
+      "generated": "C:/Users/Duck/.codex/generated_images/01a104ca-a0e5-7022-8f70-4980d38a5c7e/exec-de27b3b8-4e2c-4388-8099-86a5bd6f50d4.png",
+      "output": "src/assets/hero/reach/nha-binh.webp"
+    },
+    {
+      "id": "huong-dao",
+      "path": "C:/Users/Duck/.codex/generated_images/01a104ca-a0e5-7022-8f70-4980d38a5c7e/exec-689582ea-37c2-4e7e-a5a6-95501d3faee9.png",
+      "source": "C:/Users/Duck/.codex/generated_images/01a104ca-a0e5-7022-8f70-4980d38a5c7e/exec-689582ea-37c2-4e7e-a5a6-95501d3faee9.png",
+      "generated": "C:/Users/Duck/.codex/generated_images/01a104ca-a0e5-7022-8f70-4980d38a5c7e/exec-997e392e-5ae3-4dfe-8112-372ffb7f1592.png",
+      "output": "src/assets/hero/reach/huong-dao.webp"
+    },
+    {
+      "id": "truyen-lenh",
+      "path": "C:/Users/Duck/.codex/generated_images/01a104ca-a0e5-7022-8f70-4980d38a5c7e/exec-1d2acb81-a5e1-4dca-9767-3afb5a820048.png",
+      "source": "C:/Users/Duck/.codex/generated_images/01a104ca-a0e5-7022-8f70-4980d38a5c7e/exec-1d2acb81-a5e1-4dca-9767-3afb5a820048.png",
+      "generated": "C:/Users/Duck/.codex/generated_images/01a104ca-a0e5-7022-8f70-4980d38a5c7e/exec-c4c95858-dcee-4dc5-8ccf-048d39b4a348.png",
+      "output": "src/assets/hero/reach/truyen-lenh.webp"
+    },
+    {
+      "id": "thuyen-nhe",
+      "path": "C:/Users/Duck/.codex/generated_images/01a104ca-a0e5-7022-8f70-4980d38a5c7e/exec-df92c93b-c955-44e1-a125-8853c77c5f3a.png",
+      "source": "C:/Users/Duck/.codex/generated_images/01a104ca-a0e5-7022-8f70-4980d38a5c7e/exec-df92c93b-c955-44e1-a125-8853c77c5f3a.png",
+      "generated": "C:/Users/Duck/.codex/generated_images/01a104ca-a0e5-7022-8f70-4980d38a5c7e/exec-f6733904-6b21-4959-ae93-a19d67e664ae.png",
+      "output": "src/assets/hero/reach/thuyen-nhe.webp"
+    }
+  ]
+}
