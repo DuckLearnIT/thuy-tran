@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Phác thảo hero — Mặt trời giữa hai bờ · Thủy Trận</title>
+  <style>
+    @font-face { font-family: Yellost; src: url('../src/assets/fonts/NVN-Yellost-Regular-VH.woff2') }
+    @font-face { font-family: Futura; src: url('../src/assets/fonts/SFUFuturaBook.woff2') }
+    * { box-sizing: border-box }
+    html { background: #ecdcc0; color: #231511; font-family: Futura, sans-serif }
+    body { margin: 0 }
+    a { color: inherit; text-underline-offset: .3em }
+    a:focus-visible, summary:focus-visible { outline: 2px solid #b5362b; outline-offset: 5px }
+    .journey { height: 340svh }
+    .stage { --spread: 0; --grow: 1; --sink: 0px; --fold: 0deg; --copy: 1; --box-y: 130svh; position: sticky; top: 0; height: 100svh; overflow: hidden; isolation: isolate; background: #eee0c5 }
+    header { position: absolute; z-index: 6; inset: 0 0 auto; padding: 22px clamp(20px, 3vw, 48px); display: flex; justify-content: space-between; align-items: center }
+    header a { text-decoration: none }
+    .brand { font-family: Yellost, serif; font-size: 30px; text-transform: uppercase }
+    .cta { min-height: 44px; display: flex; align-items: center; gap: 12px; font-size: 12px; letter-spacing: .16em; text-transform: uppercase }
+    .cta i { width: 7px; height: 7px; background: currentColor; rotate: 45deg }
+    .sun { position: absolute; z-index: -1; top: 49%; left: 50%; width: min(31vw, 50svh); aspect-ratio: 1; border-radius: 50%; background: #ffb627; transform: translate(-50%, -50%) scale(var(--grow)) }
+    .sun::after { content: ''; position: absolute; inset: 0; border-radius: inherit; opacity: var(--copy); background: radial-gradient(circle at 35% 30%, #fbd479 0%, #efb341 50%, #dd9733 100%) }
+    .kicker { position: absolute; top: 18%; inset-inline: 20px; margin: 0; text-align: center; font-size: 12px; letter-spacing: .24em; text-transform: uppercase; opacity: var(--copy) }
+    h1 { position: absolute; top: 49%; left: 7%; right: 7%; margin: 0; display: flex; justify-content: space-between; transform: translateY(-50%); font-family: Yellost, serif; font-weight: 400; font-size: clamp(128px, 15vw, 252px); line-height: 1; text-transform: uppercase }
+    .word { display: block; transform: translateX(calc(var(--side) * var(--spread) * 1vw)); opacity: var(--copy) }
+    .word:first-child { --side: -1 }
+    .word:last-child { --side: 1; color: #b5362b }
+    .fan { position: absolute; top: 49%; left: 50%; width: min(15.2vw, 24svh); aspect-ratio: 1500/2078; perspective: 1000px; transform: translate(-50%, -50%) translateY(var(--sink)) rotateX(var(--fold)); visibility: var(--fan-visible, visible) }
+    .card { position: absolute; inset: 0; width: 100%; border-radius: 3%; box-shadow: 0 20px 30px -18px #23151170; transform: translateX(var(--x)) rotate(var(--r)); transition: translate .3s ease, rotate .3s ease }
+    .card:first-child { --x: -30%; --r: -12deg }
+    .card:nth-child(2) { --x: 30%; --r: 12deg }
+    .card:last-child { --x: 0%; --r: -3deg }
+    .copy { position: absolute; bottom: 19%; inset-inline: 20px; margin: 0; text-align: center; font-size: clamp(16px, 1.45vw, 21px); line-height: 1.5; opacity: var(--copy) }
+    .scroll { position: absolute; bottom: 10%; inset-inline: 20px; text-align: center; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; opacity: var(--copy) }
+    .scroll i { display: block; margin: 15px auto 0; width: 6px; height: 6px; background: #b5362b; rotate: 45deg; animation: flow 1.8s ease-in-out infinite }
+    .river { position: absolute; bottom: -1px; left: 0; width: 100%; height: 7svh; transform: translateY(var(--sink)); }
+    .box { position: absolute; z-index: 2; top: 50%; left: 50%; width: min(340px, 40vw); transform: translate(-50%, -50%) translateY(var(--box-y)) rotate(-6deg); box-shadow: 16px 22px 0 #b87b28, 25px 45px 70px -25px #7b471480; border-radius: 3px }
+    .notes { max-width: 820px; padding: 48px 24px 80px; margin: auto; font-size: 17px; line-height: 1.7 }
+    summary { cursor: pointer; font-size: 22px }
+    .notes h2 { font-size: 22px; margin-top: 32px }
+    @keyframes flow { 50% { translate: 0 7px } }
+    @media (hover: hover) and (pointer: fine) { .card:hover { translate: 0 -9px; rotate: 2deg } }
+    @media (max-width: 760px) {
+      header { padding-top: 16px }
+      .brand { font-size: 24px }
+      .cta { font-size: 10px }
+      .kicker { top: 16%; font-size: 9px; letter-spacing: .16em }
+      h1 { top: 27%; left: 9%; right: 9%; font-size: clamp(64px, 20vw, 150px); gap: 20px; justify-content: center }
+      .sun { top: 53%; width: min(75vw, 37svh) }
+      .fan { top: 53%; width: min(39vw, 23svh) }
+      .copy { bottom: 17%; max-width: 280px; margin-inline: auto; font-size: 15px }
+      .scroll { bottom: 9%; font-size: 9px }
+      .river { height: 5svh }
+      .box { width: min(60vw, 280px) }
+    }
+    @media (prefers-reduced-motion: reduce) { .scroll i { animation: none } .card { transition: none } }
+    @media print { .journey { height: 100vh } .stage { position: relative; height: 100vh } .notes { display: none } }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="journey">
+      <section class="stage" aria-label="Bản phác thảo hero Thủy Trận">
+        <header>
+          <a class="brand" href="../#top">Thủy Trận</a>
+          <a class="cta" href="../?page=dat-truoc">Nhận lệnh <i aria-hidden="true"></i></a>
+        </header>
+        <div class="sun" aria-hidden="true"></div>
+        <p class="kicker">Boardgame chiến thuật hợp tác · Việt Nam</p>
+        <h1 aria-label="Thủy Trận"><span class="word">Thủy</span><span class="word">Trận</span></h1>
+        <div class="fan">
+          <img class="card" src="../src/assets/nha-tuong.webp" alt="Lá bài Nha Tướng" draggable="false">
+          <img class="card" src="../src/assets/tham-quan.webp" alt="Lá bài Thám Quân" draggable="false">
+          <img class="card" src="../src/assets/thuyen-nhe.webp" alt="Lá bài Thuyền Nhẹ" draggable="false">
+        </div>
+        <p class="copy">Sáu nhân vật. Một dòng sông.<br>Cùng xoay chuyển thế trận.</p>
+        <div class="scroll">Cuộn để ra quân<i aria-hidden="true"></i></div>
+        <svg class="river" viewBox="0 0 1440 70" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0 28C240 1 400 62 680 30S1100 2 1440 27V70H0Z" fill="#15345f"/>
+          <path d="M0 42C240 15 400 76 680 44S1100 16 1440 41V70H0Z" fill="#b5362b"/>
+          <path d="M0 56C240 29 400 90 680 58S1100 30 1440 55V70H0Z" fill="#d99a2b"/>
+        </svg>
+        <img class="box" src="../src/assets/bia-thuy-tran.webp" alt="Bìa hộp Thủy Trận xuất hiện sau khi mặt trời phủ màn hình">
+      </section>
+    </div>
+    <details class="notes" open>
+      <summary>Phác thảo riêng — Mặt trời giữa hai bờ</summary>
+      <p>Tên game nằm ở hai bờ, thẻ và mặt trời tạo thành một điểm nhìn ở giữa. Mọi chữ đều đọc trọn, thẻ nằm gọn trong màn hình. Bản này dùng tài nguyên hiện có để thử tỷ lệ và nhịp chuyển cảnh; hero chính vẫn giữ nguyên.</p>
+      <h2>Nhịp chuyển cảnh</h2>
+      <p>Hai nửa tên game rời sang hai phía. Cụm thẻ nghiêng và hạ khỏi khung. Mặt trời mở rộng từ chính tâm của bố cục, phủ kín màn hình, rồi bìa hộp đi lên. Khi đưa vào trang chính, tiếp tục dùng cảnh hộp 3D và timeline trong Cover.tsx.</p>
+      <h2>Tham khảo và chọn lọc</h2>
+      <ul>
+        <li><a href="https://floema.com/en">Floema</a>: lấy sự tập trung của tiêu đề và lời mời cuộn, giảm các đoạn chữ cạnh tranh với nhau.</li>
+        <li><a href="https://ponpon-mania.com/">Ponpon Mania</a>: lấy cách đặt trải nghiệm minh họa làm điểm nhớ, dùng một lời mời bắt đầu ngắn.</li>
+        <li><a href="https://sondaven.com/en">Son Daven</a>: lấy sự gắn kết giữa ngôn ngữ thị giác và câu chuyện văn hóa. Phần thông tin đầu trang của mẫu này dày hơn nhu cầu Thủy Trận.</li>
+        <li><a href="https://www.shopify.com/editions/winter2026">The Renaissance Edition</a>: lấy cách gom câu chuyện vào một cảnh; không mang hệ thống danh mục dày của mẫu vào hero game.</li>
+      </ul>
+      <p>Các mẫu được chọn từ <a href="https://www.awwwards.com/websites/sites_of_the_month/">Awwwards Site of the Month</a>, nghiên cứu ngày 07/10/2026. Các nhận xét trên là đánh giá thiết kế cho Thủy Trận, không phải tuyên bố của các website tham khảo.</p>
+      <p><a href="../#top">Trở về hero hiện tại ↗</a></p>
+    </details>
+  </main>
+  <script>
+    const stage = document.querySelector('.stage');
+    const sun = document.querySelector('.sun');
+    const journey = document.querySelector('.journey');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+    const clamp = value => Math.max(0, Math.min(1, value));
+    let frame = 0;
+    function paint() {
+      frame = 0;
+      const p = clamp(-journey.getBoundingClientRect().top / (journey.offsetHeight - innerHeight));
+      const opening = clamp(p / .55);
+      const eased = opening * opening * (3 - 2 * opening);
+      const coverScale = Math.hypot(stage.clientWidth, stage.clientHeight) / sun.offsetWidth * 1.2;
+      stage.style.setProperty('--grow', reduced.matches ? (p >= .55 ? coverScale : 1) : 1 + (coverScale - 1) * eased);
+      stage.style.setProperty('--spread', reduced.matches ? 0 : opening * 38);
+      stage.style.setProperty('--copy', clamp(1 - opening * 2.6));
+      stage.style.setProperty('--sink', reduced.matches ? '0px' : `${opening * innerHeight * .9}px`);
+      stage.style.setProperty('--fold', reduced.matches ? '0deg' : `${opening * 42}deg`);
+      stage.style.setProperty('--fan-visible', p >= .5 ? 'hidden' : 'visible');
+      const boxProgress = reduced.matches ? Number(p >= .56) : clamp((p - .56) / .32);
+      stage.style.setProperty('--box-y', `${(1 - boxProgress) * innerHeight * 1.3}px`);
+    }
+    const schedule = () => { if (!frame) frame = requestAnimationFrame(paint); };
+    addEventListener('scroll', schedule, { passive: true });
+    addEventListener('resize', schedule);
+    reduced.addEventListener('change', schedule);
+    paint();
+    // Runnable geometry check: the growing circle must cover the most distant corner.
+    console.assert(Math.hypot(stage.clientWidth, stage.clientHeight) * .6 >= Math.hypot(stage.clientWidth / 2, stage.clientHeight * .51), 'Sun must cover all four corners');
+  </script>
+</body>
+</html>
