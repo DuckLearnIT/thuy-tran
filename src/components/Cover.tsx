@@ -48,19 +48,27 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
       // Keep the sun and box in one pinned viewport: no section boundary to cross.
       const sun = root.current!.querySelector<HTMLElement>('.sun')!
       const stage = root.current!
-      tl.to('.title-a', { xPercent: -65, opacity: 0, duration: 1, ease: 'power2.in' }, 0)
-        .to('.title-b', { xPercent: 65, opacity: 0, duration: 1, ease: 'power2.in' }, 0)
-        .to('.hero-fade', { y: -60, opacity: 0, duration: 0.65 }, 0)
-        .to('.fan', { yPercent: 110, opacity: 0, duration: 0.9, ease: 'power2.in' }, 0)
-        .to('.hero-bands', { yPercent: 100, duration: 0.8, ease: 'power2.in' }, 0.15)
-        .to(sun, {
+      // Explicit starts also restore the scene after resizing mid-transition.
+      tl.set('.hero-layer', { autoAlpha: 1 }, 0)
+        .fromTo('.title-a', { xPercent: 0, opacity: 1 }, { xPercent: -65, opacity: 0, duration: 1, ease: 'power2.in' }, 0)
+        .fromTo('.title-b', { xPercent: 0, opacity: 1 }, { xPercent: 65, opacity: 0, duration: 1, ease: 'power2.in' }, 0)
+        .fromTo('.hero-fade', { y: 0, opacity: 1 }, { y: -60, opacity: 0, duration: 0.65 }, 0)
+        .fromTo('.hero-person', { x: 0, xPercent: -50, yPercent: 0, rotation: 0 }, {
+          xPercent: -50,
+          yPercent: 200,
+          x: (_index, element) => Number(element.dataset.exit) * stage.clientWidth * 0.2,
+          rotation: (_index, element) => Number(element.dataset.exit) * 12,
+          duration: 0.95, stagger: { amount: 0.2 }, ease: 'power2.in',
+        }, 0)
+        .fromTo('.hero-bands', { yPercent: 0 }, { yPercent: 100, duration: 0.8, ease: 'power2.in' }, 0.15)
+        .fromTo(sun, { x: 0, y: 0, scale: 1 }, {
           x: () => stage.clientWidth / 2 - sun.offsetLeft - sun.offsetWidth / 2,
           y: () => stage.clientHeight / 2 - sun.offsetTop - sun.offsetHeight / 2,
           scale: () => Math.hypot(stage.clientWidth, stage.clientHeight) / sun.offsetWidth * 1.08,
           duration: 1.6,
           ease: 'power2.inOut',
         }, 0.15)
-        .to('.sun-texture', { opacity: 0, duration: 0.6 }, 1.15)
+        .fromTo('.sun-texture', { opacity: 1 }, { opacity: 0, duration: 0.6 }, 1.15)
         .set('.hero-layer', { autoAlpha: 0 }, 1.75)
         .fromTo(canvas.current, { yPercent: 110 }, {
           yPercent: 0, duration: 1.4, ease: 'power2.out',
