@@ -1,5 +1,16 @@
 // Run in the localhost browser console. Tests the rendered sun-to-box handoff.
 (async () => {
+  // Check settled artwork, rather than an intermediate loading/entrance frame.
+  const deadline = performance.now() + 20000
+  while (document.querySelector('[role="progressbar"]') || [...document.querySelectorAll('.hero-person-intro')].some(el => {
+    const transform = getComputedStyle(el).transform
+    if (transform === 'none') return false
+    const matrix = new DOMMatrix(transform)
+    return Math.abs(matrix.f) > 0.5 || Math.abs(matrix.b) > 0.001
+  })) {
+    if (performance.now() > deadline) throw new Error('Hero entrance did not settle')
+    await new Promise(requestAnimationFrame)
+  }
   const results = []
   const check = (name, passed) => {
     results.push({ name, passed })
@@ -13,6 +24,16 @@
   check('Both words fit the viewport', [...hero.querySelectorAll('.hero-title .ch')].every(ch => {
     const rect = ch.getBoundingClientRect()
     return rect.left >= -1 && rect.right <= viewportWidth + 1
+  }))
+  const wave = hero.querySelector('.hero-tide path')
+  const waveSpace = wave.getScreenCTM().inverse()
+  check('The foreground wave covers every portrait bottom edge', images.every(image => {
+    const rect = image.getBoundingClientRect()
+    if (rect.bottom >= innerHeight) return true
+    return [0.25, 0.5, 0.75].every(fraction => {
+      const x = rect.left + rect.width * fraction
+      return x < 0 || x > viewportWidth || wave.isPointInFill(new DOMPoint(x, rect.bottom - 1).matrixTransform(waveSpace))
+    })
   }))
 
   const trigger = window.ScrollTrigger.getAll().find(t => t.trigger?.querySelector?.('#top'))
@@ -35,6 +56,8 @@
     await seek(0)
     window.ScrollTrigger.refresh()
     const initialPositions = [...hero.querySelectorAll('.hero-person')].map(p => p.getBoundingClientRect())
+    const tide = hero.querySelector('.hero-tide')
+    const initialTideTop = tide.getBoundingClientRect().top
     const cast = hero.querySelector('.hero-cast').getBoundingClientRect()
     check('Characters remain centered on their layout anchors', [...hero.querySelectorAll('.hero-person')]
       .every((p, i) => Math.abs(initialPositions[i].left + initialPositions[i].width / 2 - cast.left - p.offsetLeft) < 1))
@@ -47,6 +70,7 @@
       .every(([x, y]) => Math.hypot(x - cx, y - cy) <= sun.width / 2))
     check('Characters leave before the box enters', [...hero.querySelectorAll('.hero-person')]
       .every(p => p.getBoundingClientRect().top >= stage.height))
+    check('Foreground wave leaves before the box enters', tide.getBoundingClientRect().top >= stage.height)
     await seek(entrance.startTime() + entrance.duration())
     check('Box reaches the viewport', Math.abs(canvas.getBoundingClientRect().top) < 2)
     check('Hero gives way to the box', getComputedStyle(hero.parentElement).visibility === 'hidden')
@@ -61,6 +85,7 @@
         const rect = p.getBoundingClientRect()
         return Math.abs(rect.top - initialPositions[i].top) < 1 && Math.abs(rect.left - initialPositions[i].left) < 1
       }))
+    check('Reverse restores the foreground wave', Math.abs(tide.getBoundingClientRect().top - initialTideTop) < 1)
   } finally {
     window.scrollTo(0, originalScroll)
     window.ScrollTrigger.update()

@@ -1,9 +1,9 @@
-import nhaBinh from '../assets/hero/full-body/nha-binh.webp'
-import thamQuan from '../assets/hero/full-body/tham-quan.webp'
-import nhaTuong from '../assets/hero/full-body/nha-tuong.webp'
-import huongDao from '../assets/hero/full-body/huong-dao.webp'
-import truyenLenh from '../assets/hero/full-body/truyen-lenh.webp'
-import thuyenNhe from '../assets/hero/full-body/thuyen-nhe.webp'
+import nhaBinh from '../assets/hero/nha-binh.webp'
+import thamQuan from '../assets/hero/tham-quan.webp'
+import nhaTuong from '../assets/hero/nha-tuong.webp'
+import huongDao from '../assets/hero/huong-dao.webp'
+import truyenLenh from '../assets/hero/truyen-lenh.webp'
+import thuyenNhe from '../assets/hero/thuyen-nhe.webp'
 
 // Back to front. The artwork is separate from the printed character cards.
 export const heroCast = [

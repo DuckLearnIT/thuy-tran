@@ -218,43 +218,44 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
     radial-gradient(70% 80% at 68% 45%, #f7eacb 0%, transparent 72%),
     linear-gradient(150deg, #efe1c9, #e9d4ae);
 }
-.hero-scene { --hero-world: min(80vw, 105svh); --hero-sun: min(66vw, 86svh); }
-.hero-scene .sun { position: absolute; z-index: 0; left: calc(50% - var(--hero-sun) / 2); top: 8svh; width: var(--hero-sun); aspect-ratio: 1; border-radius: 50%; background: #ffb627; }
+.hero-scene { --hero-world: min(100vw, 140svh); --hero-sun: min(60vw, 70svh); }
+.hero-scene .sun { position: absolute; z-index: 0; left: calc(50% - var(--hero-sun) / 2); top: 10svh; width: var(--hero-sun); aspect-ratio: 1; border-radius: 50%; background: #ffb627; }
 .hero-scene .sun-texture { position: absolute; inset: 0; border-radius: inherit; background: radial-gradient(circle at 34% 30%, #f9cf68, #edaf35 56%, #d78b2b); }
-.hero-kicker { position: absolute; z-index: 12; left: 5%; top: 13%; margin: 0; max-width: 28%; font-size: clamp(10px, .8vw, 13px); font-weight: 500; letter-spacing: .18em; text-transform: uppercase; }
-.hero-scene .hero-title { position: absolute; z-index: 12; bottom: 12%; left: 5%; right: 5%; display: flex; justify-content: center; gap: 2vw; margin: 0; font-size: min(22vw, 34svh, 270px); line-height: .91; letter-spacing: .005em; }
-.hero-scene .hero-title .ch { -webkit-text-stroke: .014em var(--color-paper); paint-order: stroke fill; }
+.hero-kicker { position: absolute; z-index: 12; left: 5%; top: 13%; margin: 0; max-width: 25%; font-size: clamp(10px, .8vw, 13px); font-weight: 500; letter-spacing: .18em; text-transform: uppercase; }
+.hero-scene .hero-title { position: absolute; z-index: 12; bottom: 9%; left: 5%; right: 5%; display: flex; justify-content: center; gap: 2vw; margin: 0; font-size: min(21vw, 27svh, 270px); line-height: .91; letter-spacing: .005em; }
 .hero-scene .title-a, .hero-scene .title-b { display: block; }
 .hero-scene .title-b { color: var(--color-vermilion); }
-.hero-cast { position: absolute; z-index: 2; top: 8svh; left: calc(50% - var(--hero-world) / 2); width: var(--hero-world); aspect-ratio: 3/2; }
-.hero-person { --left: 50; --top: 0; --height: 85; position: absolute; top: calc(var(--top) * 1%); left: calc(var(--left) * 1%); height: calc(var(--height) * 1%); aspect-ratio: 1/2; transform: translateX(-50%); }
+.hero-cast { position: absolute; z-index: 2; top: 12svh; left: calc(50% - var(--hero-world) / 2); width: var(--hero-world); aspect-ratio: 2/1; }
+.hero-person { --left: 50; --top: 0; --height: 85; position: absolute; top: calc(var(--top) * 1%); left: calc(var(--left) * 1%); height: calc(var(--height) * 1%); aspect-ratio: 3/4; transform: translateX(-50%); }
 .hero-person-depth, .hero-person-intro { width: 100%; height: 100%; }
 .hero-portrait { display: block; width: 100%; height: 100%; object-fit: contain; user-select: none; }
-.hero-person[data-character='tham-quan'] { --left: 19; --top: 9; --height: 86; z-index: 3; }
-.hero-person[data-character='nha-tuong'] { --left: 50; --top: -11; --height: 120; z-index: 4; }
-.hero-person[data-character='truyen-lenh-lam'] { --left: 82; --top: 9; --height: 85; z-index: 5; }
-.hero-person[data-character='nha-binh'] { --left: 7; --top: 27; --height: 80; z-index: 6; }
-.hero-person[data-character='thuyen-nhe'] { --left: 39; --top: 23; --height: 95; z-index: 7; }
-.hero-person[data-character='huong-dao-luc'] { --left: 84; --top: 35; --height: 73; z-index: 8; }
+.hero-person[data-character='tham-quan'] { --left: 26; --top: 8; --height: 83; z-index: 3; }
+.hero-person[data-character='nha-tuong'] { --left: 50; --top: -6; --height: 100; z-index: 4; }
+.hero-person[data-character='truyen-lenh-lam'] { --left: 73; --top: 8; --height: 83; z-index: 5; }
+.hero-person[data-character='nha-binh'] { --left: 10; --top: 32; --height: 72; z-index: 6; }
+.hero-person[data-character='thuyen-nhe'] { --left: 43; --top: 25; --height: 84; z-index: 7; }
+.hero-person[data-character='huong-dao-luc'] { --left: 90; --top: 18; --height: 76; z-index: 8; }
 .hero-copy { position: absolute; z-index: 40; left: 5%; bottom: 6%; max-width: 75%; }
 .hero-copy p { margin: 0; font-size: clamp(12px, 1vw, 16px); line-height: 1.4; }
 .hero-copy p br { display: none; }
 .hero-scroll { position: absolute; z-index: 40; bottom: 6%; right: 5%; display: flex; gap: .8rem; align-items: center; font-size: 10px; letter-spacing: .15em; text-transform: uppercase; color: var(--color-ink); }
 .hero-scroll svg { animation: hero-current 1.8s ease-in-out infinite; }
-.hero-bands { position: absolute; z-index: 30; inset: auto 0 -1px; height: 6svh; overflow: hidden; pointer-events: none; }
+.hero-tide { position: absolute; z-index: 8; inset: auto 0 -1px; height: 50svh; pointer-events: none; }
+.hero-tide svg { display: block; width: 116%; height: 100%; margin-left: -8%; }
 @keyframes hero-current { 50% { translate: 0 5px; } }
 @media (max-aspect-ratio: 1/1) {
-  .hero-scene { --hero-world: min(112vw, 50svh); --hero-sun: min(90vw, 68svh); }
+  .hero-scene { --hero-world: min(100vw, 70svh); --hero-sun: min(94vw, 62svh); }
   .hero-kicker { top: 12%; left: 6%; max-width: 88%; font-size: 9px; letter-spacing: .13em; }
-  .hero-scene .hero-title { bottom: 17%; left: 6%; right: 6%; gap: .12em; font-size: min(23vw, 12svh, 150px); }
+  .hero-scene .hero-title { bottom: 15%; left: 6%; right: 6%; gap: .12em; font-size: min(23vw, 14svh, 150px); }
   .hero-scene .sun { top: 18svh; }
-  .hero-cast { top: 16svh; aspect-ratio: 3/4; }
-  .hero-person[data-character='tham-quan'] { --left: 18; --top: 7; --height: 67; }
-  .hero-person[data-character='nha-tuong'] { --left: 50; --top: 0; --height: 78; }
-  .hero-person[data-character='truyen-lenh-lam'] { --left: 84; --top: 7; --height: 67; }
-  .hero-person[data-character='nha-binh'] { --left: 12; --top: 24; --height: 68; }
-  .hero-person[data-character='thuyen-nhe'] { --left: 48; --top: 21; --height: 83; }
-  .hero-person[data-character='huong-dao-luc'] { --left: 84; --top: 46; --height: 54; }
+  .hero-cast { top: 16svh; aspect-ratio: 1; }
+  .hero-tide { height: calc(84svh - var(--hero-world) * .48); }
+  .hero-person[data-character='tham-quan'] { --left: 16; --top: 8; --height: 66; }
+  .hero-person[data-character='nha-tuong'] { --left: 50; --top: 0; --height: 84; }
+  .hero-person[data-character='truyen-lenh-lam'] { --left: 84; --top: 8; --height: 66; }
+  .hero-person[data-character='nha-binh'] { --left: 12; --top: 33; --height: 60; }
+  .hero-person[data-character='thuyen-nhe'] { --left: 50; --top: 25; --height: 72; }
+  .hero-person[data-character='huong-dao-luc'] { --left: 88; --top: 21; --height: 58; }
   .hero-copy { bottom: 9%; left: 6%; }
   .hero-scroll { right: 6%; bottom: 9%; }
   .hero-scroll span { display: none; }

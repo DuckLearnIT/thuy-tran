@@ -25,3 +25,7 @@ Animation in: nhân vật đi lên theo lớp, tên game mở ra qua mask. Point
 - WebP giữ màu và alpha của PNG được chọn; đối chiếu bảng màu với tranh Trans, không có filter tăng saturation hoặc contrast.
 - Mặt trời phủ mọi góc trước khi hộp đi lên; cuộn ngược khôi phục đúng cảnh.
 - Preload, reduced motion và WebGL fallback vẫn hoạt động.
+
+## Điều chỉnh sau phản hồi
+
+Người dùng thấy phần chân làm đội hình lạc khỏi cảnh. Hero hiện dùng lại sáu tranh bán thân gốc, đặt sau một dải sóng tiền cảnh. Nền giấy phía dưới sóng dành riêng cho tên game. Nhân vật xuất hiện theo thứ tự vị trí từ trái sang phải; khi cuộn, sóng dâng rồi rời màn hình trước khi mặt trời chuyển sang hộp. Không tạo ảnh mới hoặc chỉnh bảng màu.

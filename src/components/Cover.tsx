@@ -53,14 +53,15 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
         .fromTo('.title-a', { xPercent: 0, opacity: 1 }, { xPercent: -65, opacity: 0, duration: 1, ease: 'power2.in' }, 0)
         .fromTo('.title-b', { xPercent: 0, opacity: 1 }, { xPercent: 65, opacity: 0, duration: 1, ease: 'power2.in' }, 0)
         .fromTo('.hero-fade', { y: 0, opacity: 1 }, { y: -60, opacity: 0, duration: 0.65 }, 0)
-        .fromTo('.hero-person', { x: 0, xPercent: -50, yPercent: 0, rotation: 0 }, {
+        .fromTo('.hero-person', { x: 0, y: 0, xPercent: -50, yPercent: 0, rotation: 0 }, {
           xPercent: -50,
-          yPercent: 200,
+          y: () => stage.clientHeight * 1.1,
           x: (_index, element) => Number(element.dataset.exit) * stage.clientWidth * 0.2,
           rotation: (_index, element) => Number(element.dataset.exit) * 12,
           duration: 0.95, stagger: { amount: 0.2 }, ease: 'power2.in',
         }, 0)
-        .fromTo('.hero-bands', { yPercent: 0 }, { yPercent: 100, duration: 0.8, ease: 'power2.in' }, 0.15)
+        .fromTo('.hero-tide', { yPercent: 0 }, { yPercent: -38, duration: 0.65, ease: 'power2.inOut' }, 0)
+        .to('.hero-tide', { yPercent: 110, duration: 0.75, ease: 'power2.in' }, 0.7)
         .fromTo(sun, { x: 0, y: 0, scale: 1 }, {
           x: () => stage.clientWidth / 2 - sun.offsetLeft - sun.offsetWidth / 2,
           y: () => stage.clientHeight / 2 - sun.offsetTop - sun.offsetHeight / 2,
