@@ -51,28 +51,31 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
       const brand = document.querySelector<HTMLElement>('.site-brand')!
       const header = document.querySelector<HTMLElement>('.site-header')!
       const navigation = document.querySelectorAll('.site-cta, .chapter-nav')
-      const titleScale = () => Math.min(stage.clientWidth * (stage.clientWidth > stage.clientHeight ? 0.56 : 0.84), stage.clientHeight * 0.68, 760) / brand.offsetWidth
+      const titleScale = () => Math.min(stage.clientWidth * (stage.clientWidth > stage.clientHeight ? 0.78 : 0.9), stage.clientHeight * 0.78, 900) / brand.offsetWidth
       const titleX = () => (stage.clientWidth - brand.offsetWidth * titleScale()) / 2 - brand.offsetLeft
       const titleY = () => stage.querySelector<HTMLElement>('.hero-copy')!.offsetTop - brand.offsetHeight * titleScale() - 16 - brand.offsetTop
       // Explicit starts also restore the scene after resizing mid-transition.
       tl.set('.hero-layer', { autoAlpha: 1 }, 0)
         .set(navigation, { autoAlpha: 0 }, 0)
         .set(header, { mixBlendMode: 'normal' }, 0)
-        .set(brand, { x: titleX, y: titleY, scale: titleScale, autoAlpha: 1, color: '#231511' }, 0)
+        .set(brand, { x: titleX, y: titleY, scale: titleScale, autoAlpha: 1, color: '#9c2923', '--brand-outline': '0.6px' }, 0)
         .fromTo(brand, { x: titleX, y: titleY, scale: titleScale }, { x: 0, y: 0, scale: 1, duration: 0.75, ease: 'power2.inOut', immediateRender: false }, 0.65)
         .to(navigation, { autoAlpha: 1, duration: 0.25 }, 1.4)
         .set(header, { mixBlendMode: 'difference' }, 1.4)
-        .set(brand, { color: '#f6e9d7' }, 1.4)
+        .set(brand, { color: '#f6e9d7', '--brand-outline': '0px' }, 1.4)
         .fromTo('.hero-fade', { y: 0, opacity: 1 }, { y: -60, opacity: 0, duration: 0.65 }, 0.65)
-        .fromTo('.hero-person', { x: 0, y: 0, xPercent: 0, yPercent: 0, rotation: 0 }, {
-          xPercent: 0,
-          y: () => stage.clientHeight * 1.6,
-          x: (_index, element) => Number(element.dataset.exit) * stage.clientWidth * 0.2,
-          rotation: (_index, element) => Number(element.dataset.exit) * 12,
-          duration: 0.95, stagger: { amount: 0.2 }, ease: 'power2.in',
+        .fromTo('.hero-person', { x: 0, y: 0, rotation: 0, scale: 1 }, {
+          x: (_index, element) => -Number(getComputedStyle(element).getPropertyValue('--hand-x')) * sun.offsetWidth * 0.08,
+          y: (_index, element) => -Number(getComputedStyle(element).getPropertyValue('--hand-y')) * sun.offsetWidth * 0.08,
+          rotation: (_index, element) => Number(element.dataset.exit) * -3,
+          duration: 0.3, ease: 'power2.out',
         }, 0.65)
-        .fromTo('.hero-tide', { yPercent: 0 }, { yPercent: -38, duration: 0.65, ease: 'power2.inOut' }, 0.65)
-        .to('.hero-tide', { yPercent: 110, duration: 0.75, ease: 'power2.in' }, 1.2)
+        .to('.hero-person', {
+          x: (_index, element) => Number(element.dataset.exit) * stage.clientWidth * (element.dataset.side === 'top' ? 0.18 : 1.1),
+          y: (_index, element) => -stage.clientHeight * (element.dataset.side === 'top' ? 1.1 : 0.16),
+          rotation: (_index, element) => Number(element.dataset.exit) * 24,
+          scale: 1.12, duration: 1.1, stagger: { amount: 0.2, from: 'center' }, ease: 'power3.inOut',
+        }, 0.95)
         .fromTo(sun, { x: 0, y: 0, scale: 1 }, {
           x: () => stage.clientWidth / 2 - sun.offsetLeft - sun.offsetWidth / 2,
           y: () => stage.clientHeight / 2 - sun.offsetTop - sun.offsetHeight / 2,

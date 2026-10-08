@@ -37,3 +37,11 @@ Khi cuộn, chính phần tử tên thu về logo góc trên; nút Nhận lệnh
 Mỗi nhân vật có dáng ngồi/quỳ gọn với tà áo hoàn chỉnh, tay và đạo cụ nằm trong khung ảnh. Không dùng clip-path hoặc gradient để giấu phần thân bị cắt. Khung chung được giới hạn theo cả chiều rộng và chiều cao màn hình; chữ và lời dẫn có khoảng trống riêng phía dưới.
 
 Prompt và chế độ built-in được lưu trong hero-sun-reach-generation.json. PNG nhân vật được chuyển lossless sang WebP, không chỉnh màu. Các bản PNG nguồn vẫn được giữ riêng.
+
+## Bố cục từ ba mép màn hình — 08/10/2026
+
+Theo tham chiếu Creation of Adam và phản hồi mới: giữ nguyên sáu WebP đang có, phóng lớn nhân vật để phần thân nằm ngoài khung hình. Thám Quân ở góc trái trên; Hướng Đạo ở góc phải trên; hai cặp còn lại vươn tay từ trái/phải. Tất cả đầu ngón tay neo quanh cùng một mặt trời lớn, giữ khoảng hở trước mép mặt trời. Thứ tự lớp giữ cả sáu gương mặt rõ ràng. Không dùng ảnh mới, mask hay filter để sửa dáng.
+
+Tên game lớn hơn, màu đỏ trầm, nằm dưới mặt trời. CTA Đặt trước boardgame xuất hiện ngay màn đầu và mở giao diện đặt trước hiện có; nút có hover, pressed và focus bàn phím. Bỏ hoàn toàn sóng nước ở đáy hero. Khi cuộn, sáu bàn tay nhích vào tâm một nhịp rồi cả hình xoay và rút về trái, phải hoặc phía trên; không fade nhân vật. Mặt trời vẫn phủ toàn màn trước khi hộp đi lên. Tiêu đề vẫn thu về cùng phần tử logo.
+
+Kiểm tra trực tiếp desktop/mobile: sáu ảnh được giải mã; mép hình nằm ngoài ba phía; đầu ngón tay không bị cắt; tiêu đề, lời dẫn và CTA có khoảng riêng; CTA mở đúng trang; xoay rút theo ba phía; phủ kín trước hộp; cuộn ngược và refresh khôi phục đúng cảnh; giảm chuyển động giữ hero tĩnh.

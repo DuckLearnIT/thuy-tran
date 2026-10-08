@@ -34,9 +34,9 @@ export default function Header() {
       if (!ScrollTrigger.getAll().some(st => st.pin && st.trigger?.querySelector('#top'))) {
         const brand = document.querySelector<HTMLElement>('.site-brand')!
         const docked = window.scrollY > 24
-        const scale = Math.min(innerWidth * (innerWidth > innerHeight ? 0.56 : 0.84), innerHeight * 0.68, 760) / brand.offsetWidth
+        const scale = Math.min(innerWidth * (innerWidth > innerHeight ? 0.78 : 0.9), innerHeight * 0.78, 900) / brand.offsetWidth
         gsap.set('.site-cta, .chapter-nav', { autoAlpha: docked ? 1 : 0 })
-        gsap.set(brand, { autoAlpha: 1, scale: docked ? 1 : scale, color: docked ? '#f6e9d7' : '#231511',
+        gsap.set(brand, { autoAlpha: 1, scale: docked ? 1 : scale, color: docked ? '#f6e9d7' : '#9c2923', '--brand-outline': docked ? '0px' : '0.6px',
           x: docked ? 0 : (innerWidth - brand.offsetWidth * scale) / 2 - brand.offsetLeft,
           y: docked ? 0 : document.querySelector<HTMLElement>('.hero-copy')!.offsetTop - brand.offsetHeight * scale - 16 - brand.offsetTop })
         gsap.set('.site-header', { mixBlendMode: docked ? 'difference' : 'normal' })
@@ -49,7 +49,7 @@ export default function Header() {
         const pin = ScrollTrigger.getAll().find((st) => st.pin && (st.trigger === target || st.trigger?.contains(target)))
         return [{ id, top: pin?.start ?? target.getBoundingClientRect().top + window.scrollY }]
       })
-      update()
+      scroll()
     }
     const scroll = () => { if (!frame) frame = requestAnimationFrame(update) }
     measure()

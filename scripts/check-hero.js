@@ -21,14 +21,20 @@
   check('Six characters are decoded', images.length === 6 && images.every(i => i.complete && i.naturalWidth))
   check('Artwork has no color filters', images.every(i => getComputedStyle(i).filter === 'none'))
   const viewportWidth = document.documentElement.clientWidth
-  const wave = hero.querySelector('.hero-water-front')
-  check('Water moves continuously', matchMedia('(prefers-reduced-motion: reduce)').matches
-    || getComputedStyle(wave).animationName === 'hero-water-flow')
-  const largeTitleWidth = Math.min(viewportWidth * 0.5, innerHeight * 0.65, 500)
+  check('Bottom water has been removed', !hero.querySelector('.hero-water, .hero-tide'))
+  const heroCta = hero.querySelector('.hero-cta')
+  check('Opening CTA leads to preorder', new URL(heroCta.href).searchParams.get('page') === 'dat-truoc')
+  const largeTitleWidth = Math.min(viewportWidth * 0.6, innerHeight * 0.75, 700)
 
   const trigger = window.ScrollTrigger.getAll().find(t => t.trigger?.querySelector?.('#top'))
   if (!trigger) {
     check('Static fallback retains the hero', hero.getBoundingClientRect().height > 0)
+    const title = document.querySelector('.site-brand')
+    check('Static fallback retains the large opening title', getComputedStyle(title).visibility !== 'hidden'
+      && title.getBoundingClientRect().width >= largeTitleWidth)
+    const cta = heroCta.getBoundingClientRect()
+    check('Static fallback retains the visible opening CTA', getComputedStyle(heroCta).visibility !== 'hidden'
+      && cta.height >= 44 && cta.bottom < innerHeight - 20)
     return results
   }
   const originalScroll = scrollY
@@ -59,26 +65,42 @@
     }
     const textLight = luminance(getComputedStyle(brand).color)
     const paperLight = luminance(getComputedStyle(hero).backgroundColor)
-    check('Title has strong contrast against the paper', (paperLight + 0.05) / (textLight + 0.05) >= 7)
+    check('Title has strong contrast against the paper', (paperLight + 0.05) / (textLight + 0.05) >= 4.5)
     const initialPositions = [...hero.querySelectorAll('.hero-person')].map(p => p.getBoundingClientRect())
-    const tide = hero.querySelector('.hero-tide')
-    const initialTideTop = tide.getBoundingClientRect().top
-    const cast = hero.querySelector('.hero-cast').getBoundingClientRect()
     const focalSun = hero.querySelector('.sun').getBoundingClientRect()
     const radius = focalSun.width / 2
     const focalX = focalSun.left + radius
     const focalY = focalSun.top + radius
-    check('Six hand anchors surround a small central sun', focalSun.width < viewportWidth * 0.26
-      && initialPositions.every(rect => Math.abs(Math.hypot(rect.left - focalX, rect.top - focalY) - radius) < cast.width * 0.04))
+    check('Six hand anchors surround an enlarged central sun', focalSun.width >= Math.min(viewportWidth * 0.3, innerHeight * 0.3)
+      && initialPositions.every(rect => Math.abs(Math.hypot(rect.left - focalX, rect.top - focalY) - radius) < focalSun.width * 0.08))
+    check('Large figures extend beyond left, right and top edges', images.every(image => {
+      const rect = image.getBoundingClientRect()
+      const side = image.closest('.hero-person').dataset.side
+      return rect.right > 0 && rect.left < viewportWidth && rect.bottom > 0 && rect.top < innerHeight
+        && (side === 'left' ? rect.left < 0 : side === 'right' ? rect.right > viewportWidth : rect.top < 0)
+    }))
     check('Hand anchors stay inside the viewport', initialPositions.every(rect => rect.left > 0
       && rect.left < viewportWidth && rect.top > 0 && rect.top < innerHeight))
     check('Heading and subheading have their own space below the sun', brand.getBoundingClientRect().top > focalSun.bottom + 8
       && hero.querySelector('.hero-copy').getBoundingClientRect().top > brand.getBoundingClientRect().bottom + 8)
+    const openingCta = heroCta.getBoundingClientRect()
+    check('Opening CTA is visible, legible and fits the viewport', !hidden(heroCta)
+      && openingCta.height >= 44 && openingCta.left >= 0 && openingCta.right <= viewportWidth
+      && openingCta.top > hero.querySelector('.hero-copy p').getBoundingClientRect().bottom + 8
+      && openingCta.bottom < innerHeight - 20)
     await seek(0.45)
     const title = brand.getBoundingClientRect()
     check('Large title fits the viewport before docking', title.width >= largeTitleWidth
       && title.left >= -1 && title.right <= viewportWidth + 1 && !hidden(brand))
     check('Navigation waits for the title to dock', navigation.every(hidden))
+    await seek(1.8)
+    check('Characters sweep outward through their own three edges', images.every(image => {
+      const person = image.closest('.hero-person')
+      const side = person.dataset.side
+      return getComputedStyle(person).opacity === '1' && Math.abs(window.gsap.getProperty(person, 'rotation')) > 5
+        && (side === 'top' ? window.gsap.getProperty(person, 'y') < -30
+          : window.gsap.getProperty(person, 'x') * (side === 'left' ? -1 : 1) > 30)
+    }))
     await seek(1.65)
     check('The same title docks as the header logo', brand === document.querySelector('.site-brand')
       && Math.abs(brand.getBoundingClientRect().width - brand.offsetWidth) < 1
@@ -94,8 +116,10 @@
     const cy = sun.y + sun.height / 2
     check('Sun covers all four corners before the box enters', [[0, 0], [stage.width, 0], [0, stage.height], [stage.width, stage.height]]
       .every(([x, y]) => Math.hypot(x - cx, y - cy) <= sun.width / 2))
-    check('Characters leave before the box enters', images.every(p => p.getBoundingClientRect().top >= stage.height))
-    check('Foreground wave leaves before the box enters', tide.getBoundingClientRect().top >= stage.height)
+    check('Characters leave before the box enters', images.every(p => {
+      const rect = p.getBoundingClientRect()
+      return rect.bottom <= 0 || rect.right <= 0 || rect.left >= stage.width || rect.top >= stage.height
+    }))
     await seek(entrance.startTime() + entrance.duration())
     check('Box reaches the viewport', Math.abs(canvas.getBoundingClientRect().top) < 2)
     check('Hero gives way to the box', getComputedStyle(hero.parentElement).visibility === 'hidden')
@@ -111,7 +135,6 @@
         const rect = p.getBoundingClientRect()
         return Math.abs(rect.top - initialPositions[i].top) < 1 && Math.abs(rect.left - initialPositions[i].left) < 1
       }))
-    check('Reverse restores the foreground wave', Math.abs(tide.getBoundingClientRect().top - initialTideTop) < 1)
     check('Reverse restores the large title and hides navigation', !hidden(brand)
       && brand.getBoundingClientRect().width >= largeTitleWidth && navigation.every(hidden))
   } finally {
