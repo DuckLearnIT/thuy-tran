@@ -51,6 +51,10 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
       const brand = document.querySelector<HTMLElement>('.site-brand')!
       const header = document.querySelector<HTMLElement>('.site-header')!
       const navigation = document.querySelectorAll('.site-cta, .chapter-nav')
+      tl.eventCallback('onUpdate', () => {
+        const inert = tl.time() < 1.4
+        if (brand.inert !== inert) brand.inert = inert
+      })
       const titleScale = () => Math.min(stage.clientWidth * (stage.clientWidth > stage.clientHeight ? 0.78 : 0.9), stage.clientHeight * 0.77, 900) / brand.offsetWidth
       const titleX = () => (stage.clientWidth - brand.offsetWidth * titleScale()) / 2 - brand.offsetLeft
       const titleY = () => stage.querySelector<HTMLElement>('.hero-copy')!.offsetTop - brand.offsetHeight * titleScale() - 16 - brand.offsetTop

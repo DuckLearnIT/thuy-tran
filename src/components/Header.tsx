@@ -41,6 +41,7 @@ export default function Header() {
       if (!ScrollTrigger.getAll().some(st => st.pin && st.trigger?.querySelector('#top'))) {
         const brand = document.querySelector<HTMLElement>('.site-brand')!
         const docked = window.scrollY > 24
+        brand.inert = !docked
         const scale = Math.min(innerWidth * (innerWidth > innerHeight ? 0.78 : 0.9), innerHeight * 0.77, 900) / brand.offsetWidth
         gsap.set('.site-cta, .chapter-nav', { autoAlpha: docked ? 1 : 0 })
         gsap.set(brand, { autoAlpha: 1, scale: docked ? 1 : scale, force3D: false, color: docked ? '#f6e9d7' : '#9c2923', '--brand-outline': docked ? '0px' : '0.6px',
@@ -101,7 +102,7 @@ export default function Header() {
         aria-valuemin={0} aria-valuemax={100} aria-valuenow={0} />
       <div inert={open} aria-hidden={open}
         className="site-header fixed inset-x-0 top-0 z-40 flex items-center justify-between px-[clamp(1rem,3vw,2.5rem)] py-4 text-white pointer-events-none">
-        <a href="#top" onClick={(event) => navigate(event, 'top')}
+        <a href="#top" inert onClick={(event) => navigate(event, 'top')}
           className="site-brand pointer-events-auto display !text-2xl !font-bold tracking-[0.04em]">Thủy Trận</a>
         <a href="#nhan-lenh" onClick={(event) => navigate(event, 'nhan-lenh')}
           className="site-cta pointer-events-auto group flex min-h-11 items-center gap-2 text-[0.8rem] font-medium tracking-[0.22em] uppercase">

@@ -17,6 +17,8 @@
     if (!passed) throw new Error(name)
   }
   const hero = document.querySelector('#top')
+  check('Page opts out of automatic dark recoloring', /^(only light|light only)$/.test(getComputedStyle(document.documentElement).colorScheme)
+    && document.querySelector('meta[name="color-scheme"]')?.content === 'only light')
   const images = [...hero.querySelectorAll('.hero-portrait')]
   const edgeAnchored = image => {
     const rect = image.getBoundingClientRect()
@@ -35,6 +37,25 @@
     return filter.startsWith('drop-shadow(') && !/brightness|contrast|saturate/.test(filter)
   }))
   const viewportWidth = document.documentElement.clientWidth
+  const commanderHemHidden = () => {
+    if (viewportWidth < innerHeight) return true
+    const parent = hero.querySelector('[data-character="nha-tuong"] .hero-person-intro')
+    const position = parent.style.position
+    parent.style.position = 'relative'
+    try {
+      // Measure the cut edge itself; the image bounding box only checks its side.
+      return [0, 10, 20].every(percent => {
+        const probe = document.createElement('i')
+        probe.style.cssText = `position:absolute;width:0;height:0;left:${percent}%;top:100%;`
+        parent.append(probe)
+        const point = probe.getBoundingClientRect()
+        probe.remove()
+        return point.x < 0 || point.y >= innerHeight
+      })
+    } finally {
+      parent.style.position = position
+    }
+  }
   const pageProgress = document.querySelector('.page-progress')
   check('Reading progress stays above the grain and has no pointer target', pageProgress
     && getComputedStyle(pageProgress).pointerEvents === 'none' && Number(getComputedStyle(pageProgress).zIndex) > 60)
@@ -79,6 +100,7 @@
     window.ScrollTrigger.refresh()
     check('Opening title is already visible and navigation waits', !hidden(brand)
       && brand.getBoundingClientRect().width >= largeTitleWidth && navigation.every(hidden))
+    check('Opening heading has no pointer or keyboard interaction', brand.inert && getComputedStyle(brand).pointerEvents === 'none')
     const luminance = color => {
       const rgb = color.match(/[\d.]+/g).slice(0, 3).map(v => {
         const c = Number(v) / 255
@@ -100,6 +122,7 @@
     check('Commander stays smaller than the opposite blue character', hero.querySelector('[data-character="nha-tuong"]').offsetWidth
       <= hero.querySelector('[data-character="truyen-lenh-lam"]').offsetWidth * 0.8)
     check('Unfinished portrait backs stay hidden beyond the edges', images.every(edgeAnchored))
+    check('Commander cut hem stays below the desktop viewport', commanderHemHidden())
     check('Hand anchors stay inside the viewport', initialPositions.every(rect => rect.left > 0
       && rect.left < viewportWidth && rect.top > 0 && rect.top < innerHeight))
     check('Heading and subheading have their own space below the sun', brand.getBoundingClientRect().top > focalSun.bottom + 8
@@ -120,7 +143,7 @@
       for (const [x, y] of [[1, 1], [viewportWidth - 1, innerHeight - 1]]) {
         hero.dispatchEvent(new PointerEvent('pointermove', { clientX: x, clientY: y, pointerType: 'mouse' }))
         await settleDepth()
-        check('Parallax preserves the framing at both pointer extremes', images.every(edgeAnchored))
+        check('Parallax preserves the framing at both pointer extremes', images.every(edgeAnchored) && commanderHemHidden())
       }
       const depth = [...hero.querySelectorAll('.hero-person-depth')].map(el => Math.abs(window.gsap.getProperty(el, 'x')))
       check('Pointer depth is visible and differs between layers', Math.max(...depth) > Math.min(4, viewportWidth * 0.01) && Math.max(...depth) > Math.min(...depth) * 1.4)
@@ -136,6 +159,7 @@
     await seek(1.1)
     check('Heading outline shrinks with the title instead of piling onto the logo', getComputedStyle(brand).textShadow === 'none'
       && parseFloat(getComputedStyle(brand).webkitTextStrokeWidth) < 0.3)
+    check('Heading waits until docking is complete before becoming interactive', brand.inert)
     await seek(1.8)
     check('Characters sweep outward through their own three edges', images.every(image => {
       const person = image.closest('.hero-person')
@@ -152,6 +176,7 @@
       && Math.abs(brand.getBoundingClientRect().width - brand.offsetWidth) < 1
       && Math.abs(brand.getBoundingClientRect().top - brand.offsetTop) < 1)
     check('CTA and navigation appear after docking', navigation.every(el => !hidden(el)))
+    check('Docked logo supports pointer and keyboard interaction', !brand.inert && getComputedStyle(brand).pointerEvents === 'auto')
     check('Docked logo has no heading outline', getComputedStyle(brand).textShadow === 'none'
       && parseFloat(getComputedStyle(brand).webkitTextStrokeWidth) === 0)
     document.querySelector('.nav-toggle').click()
@@ -191,6 +216,7 @@
       }))
     check('Reverse restores the large title and hides navigation', !hidden(brand)
       && brand.getBoundingClientRect().width >= largeTitleWidth && navigation.every(hidden))
+    check('Reverse disables the hero heading again', brand.inert)
   } finally {
     window.scrollTo(0, originalScroll)
     window.ScrollTrigger.update()

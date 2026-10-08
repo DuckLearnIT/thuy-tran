@@ -1,5 +1,9 @@
 @import 'tailwindcss';
 
+:root { color-scheme: only light; }
+html, body { scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; width: 0; height: 0; }
+
 @font-face {
   font-family: 'NVN Yellost';
   src: url('./assets/fonts/NVN-Yellost-Regular-VH.woff2') format('woff2'),
@@ -334,16 +338,18 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
 .site-brand, .site-cta, .chapter-nav { opacity: 0; visibility: hidden; }
 .site-header[aria-hidden='true'] { opacity: 0; }
 .site-brand { --brand-outline: 0px; color: var(--color-ink); white-space: nowrap; transform-origin: 0 0; -webkit-text-stroke: var(--brand-outline) #f6e9d7; paint-order: stroke fill; }
+.site-brand[inert] { pointer-events: none; cursor: default; }
 .hero-cast { position: absolute; z-index: 2; inset: 0; }
 .hero-person { position: absolute; top: calc(var(--hero-center-y) + var(--hand-y) * var(--hero-sun)); left: calc(50% + var(--hand-x) * var(--hero-sun)); width: max(min(68vw, 94svh), calc(50vw - var(--hero-sun) * .5 + 36px)); aspect-ratio: 3/2; transform-origin: 0 0; }
 .hero-person[data-side='top'] { width: max(min(58vw, 71svh), calc(50vw - var(--hero-sun) * .45 + 36px)); }
 .hero-person[data-character='nha-tuong'] {
   --commander-width: min(49vw, 71svh);
   width: var(--commander-width);
-  left: calc(50% + var(--hand-x) * var(--hero-sun) - max(0px, calc(50vw - var(--hero-sun) * .55 + 36px - var(--commander-width))));
+  top: calc(var(--hero-center-y) + var(--hand-y) * var(--hero-sun) + 5svh);
+  left: calc(50% + var(--hand-x) * var(--hero-sun) - max(0px, calc(50vw - var(--hero-sun) * .55 + 36px - var(--commander-width))) - 32px);
   aspect-ratio: 3/4;
 }
-.hero-person-placement { width: 100%; height: 100%; transform-origin: calc(var(--tip-x) * 1%) calc(var(--tip-y) * 1%); transform: translate(calc(var(--tip-x) * -1%), calc(var(--tip-y) * -1%)) rotate(calc(var(--angle) * 1deg)); filter: drop-shadow(0 6px 9px #23151124); }
+.hero-person-placement { width: 100%; height: 100%; transform-origin: calc(var(--tip-x) * 1%) calc(var(--tip-y) * 1%); transform: translate(calc(var(--tip-x) * -1%), calc(var(--tip-y) * -1%)) rotate(calc(var(--angle) * 1deg)); filter: drop-shadow(0 8px 12px #23151132); }
 .hero-person-depth, .hero-person-intro { width: 100%; height: 100%; }
 .hero-portrait { display: block; width: 100%; height: 100%; object-fit: contain; user-select: none; }
 .hero-person[data-character='tham-quan'], .hero-person[data-character='huong-dao-luc'] { z-index: 3; }
@@ -373,7 +379,7 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
   .hero-scene { --hero-sun: min(40vw, 27svh); --hero-center-y: 32svh; }
   .hero-kicker { top: 4%; font-size: 9px; letter-spacing: .1em; }
   .hero-person { width: 58vw; }
-  .hero-person[data-character='nha-tuong'] { width: 42vw; }
+  .hero-person[data-character='nha-tuong'] { width: 42vw; top: calc(var(--hero-center-y) + var(--hand-y) * var(--hero-sun)); }
   .hero-person[data-side='top'] { width: 65vw; }
   .hero-person[data-character='tham-quan'] { --hand-x: -.3 !important; --hand-y: -.44 !important; }
   .hero-person[data-character='huong-dao-luc'] { --hand-x: .3 !important; --hand-y: -.44 !important; }
