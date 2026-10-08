@@ -1,4 +1,5 @@
 import cover from './assets/bia-thuy-tran.webp'
+import heroPaper from './assets/hero/hero-paper.webp'
 import { cards } from './data/cards'
 import { strategies } from './data/strategies'
 import { locations } from './data/locations'
@@ -7,7 +8,7 @@ import { heroCast } from './data/heroCast'
 // Retain decoded images for both DOM artwork and the WebGL textures.
 export const preloadedImages = new Map<string, HTMLImageElement>()
 
-const artwork = [...new Set([cover, ...heroCast.map((person) => person.image), ...cards.map((card) => card.image), ...strategies.map((card) => card.image), ...locations.map((card) => card.image)])]
+const artwork = [...new Set([cover, heroPaper, ...heroCast.map((person) => person.image), ...cards.map((card) => card.image), ...strategies.map((card) => card.image), ...locations.map((card) => card.image)])]
 const fontFaces = [
   '700 16px "NVN Yellost"',
   '300 16px "Futura"',

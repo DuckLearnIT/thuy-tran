@@ -51,7 +51,7 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
       const brand = document.querySelector<HTMLElement>('.site-brand')!
       const header = document.querySelector<HTMLElement>('.site-header')!
       const navigation = document.querySelectorAll('.site-cta, .chapter-nav')
-      const titleScale = () => Math.min(stage.clientWidth * (stage.clientWidth > stage.clientHeight ? 0.78 : 0.9), stage.clientHeight * 0.78, 900) / brand.offsetWidth
+      const titleScale = () => Math.min(stage.clientWidth * (stage.clientWidth > stage.clientHeight ? 0.78 : 0.9), stage.clientHeight * 0.77, 900) / brand.offsetWidth
       const titleX = () => (stage.clientWidth - brand.offsetWidth * titleScale()) / 2 - brand.offsetLeft
       const titleY = () => stage.querySelector<HTMLElement>('.hero-copy')!.offsetTop - brand.offsetHeight * titleScale() - 16 - brand.offsetTop
       // Explicit starts also restore the scene after resizing mid-transition.
@@ -59,7 +59,7 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
         .set(navigation, { autoAlpha: 0 }, 0)
         .set(header, { mixBlendMode: 'normal' }, 0)
         .set(brand, { x: titleX, y: titleY, scale: titleScale, force3D: false, autoAlpha: 1, color: '#9c2923', '--brand-outline': '0.6px' }, 0)
-        .fromTo(brand, { x: titleX, y: titleY, scale: titleScale }, { x: 0, y: 0, scale: 1, duration: 0.75, ease: 'power2.inOut', immediateRender: false }, 0.65)
+        .fromTo(brand, { x: titleX, y: titleY, scale: titleScale, '--brand-outline': '0.6px' }, { x: 0, y: 0, scale: 1, '--brand-outline': '0px', duration: 0.75, ease: 'power2.inOut', immediateRender: false }, 0.65)
         .to(navigation, { autoAlpha: 1, duration: 0.25 }, 1.4)
         .set(header, { mixBlendMode: 'difference' }, 1.4)
         .set(brand, { color: '#f6e9d7', '--brand-outline': '0px' }, 1.4)

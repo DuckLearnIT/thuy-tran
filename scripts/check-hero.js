@@ -116,6 +116,9 @@
     check('Large title fits the viewport before docking', title.width >= largeTitleWidth
       && title.left >= -1 && title.right <= viewportWidth + 1 && !hidden(brand))
     check('Navigation waits for the title to dock', navigation.every(hidden))
+    await seek(1.1)
+    check('Heading outline shrinks with the title instead of piling onto the logo', getComputedStyle(brand).textShadow === 'none'
+      && parseFloat(getComputedStyle(brand).webkitTextStrokeWidth) < 0.3)
     await seek(1.8)
     check('Characters sweep outward through their own three edges', images.every(image => {
       const person = image.closest('.hero-person')
@@ -129,6 +132,14 @@
       && Math.abs(brand.getBoundingClientRect().width - brand.offsetWidth) < 1
       && Math.abs(brand.getBoundingClientRect().top - brand.offsetTop) < 1)
     check('CTA and navigation appear after docking', navigation.every(el => !hidden(el)))
+    check('Docked logo has no heading outline', getComputedStyle(brand).textShadow === 'none'
+      && parseFloat(getComputedStyle(brand).webkitTextStrokeWidth) === 0)
+    document.querySelector('.nav-toggle').click()
+    await new Promise(requestAnimationFrame)
+    check('Menu replaces the header without a second logo underneath', getComputedStyle(document.querySelector('.site-header')).opacity === '0'
+      && Math.abs(document.querySelector('.nav-brand').getBoundingClientRect().width - brand.offsetWidth) < 1)
+    document.querySelector('.nav-toggle').click()
+    await new Promise(requestAnimationFrame)
     const cta = document.querySelector('.site-cta').getBoundingClientRect()
     check('Docked CTA fits without clipping or colliding with the logo', cta.left > brand.getBoundingClientRect().right + 8
       && cta.right <= viewportWidth && cta.top >= 0 && cta.bottom < innerHeight)

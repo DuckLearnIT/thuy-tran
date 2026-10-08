@@ -214,9 +214,7 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
 }
 
 .hero-ground {
-  background:
-    radial-gradient(70% 80% at 68% 45%, #f7eacb 0%, transparent 72%),
-    linear-gradient(150deg, #efe1c9, #e9d4ae);
+  background: url('./assets/hero/hero-paper.webp') center / cover no-repeat;
   background-color: var(--color-paper);
 }
 .hero-scene { --hero-sun: min(34vw, 36svh); --hero-center-y: 34svh; }
@@ -224,7 +222,8 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
 .hero-scene .sun-texture { position: absolute; inset: 0; border-radius: inherit; background: radial-gradient(circle at 34% 30%, #f9cf68, #edaf35 56%, #d78b2b); }
 .hero-kicker { position: absolute; z-index: 12; left: 5%; top: 4%; width: 90%; margin: 0; text-align: center; font-size: clamp(9px, .8vw, 12px); font-weight: 500; letter-spacing: .18em; text-transform: uppercase; }
 .site-brand, .site-cta, .chapter-nav { opacity: 0; visibility: hidden; }
-.site-brand { --brand-outline: 0px; color: var(--color-ink); white-space: nowrap; transform-origin: 0 0; text-shadow: 0 var(--brand-outline) #efe1c9, 0 calc(var(--brand-outline) * -1) #efe1c9, var(--brand-outline) 0 #efe1c9, calc(var(--brand-outline) * -1) 0 #efe1c9; }
+.site-header[aria-hidden='true'] { opacity: 0; }
+.site-brand { --brand-outline: 0px; color: var(--color-ink); white-space: nowrap; transform-origin: 0 0; -webkit-text-stroke: var(--brand-outline) #f6e9d7; paint-order: stroke fill; }
 .hero-cast { position: absolute; z-index: 2; inset: 0; }
 .hero-person { position: absolute; top: calc(var(--hero-center-y) + var(--hand-y) * var(--hero-sun)); left: calc(50% + var(--hand-x) * var(--hero-sun)); width: min(68vw, 94svh); aspect-ratio: 3/2; transform-origin: 0 0; }
 .hero-person[data-side='top'] { width: min(58vw, 71svh); }
@@ -540,9 +539,9 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
-  padding: 1.1rem clamp(1rem, 3vw, 2.5rem);
+  padding: 1rem clamp(1rem, 3vw, 2.5rem);
 }
-.nav-brand { font-size: 1.9rem; white-space: nowrap; }
+.nav-brand { font-size: 1.5rem; line-height: 1.333333; letter-spacing: .02em; white-space: nowrap; }
 .nav-chapters { display: flex; gap: clamp(1rem, 2.5vw, 3rem); }
 .nav-link {
   display: flex;
@@ -603,7 +602,6 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
   .nav-inner { flex-wrap: wrap; gap: 0.75rem; padding-right: 6.5rem; }
   .nav-chapters { order: 3; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 0.25rem 1rem; }
   .nav-cta { margin-left: auto; }
-  .nav-brand { font-size: 1.7rem; }
 }
 @media (hover: none), (pointer: coarse) {
   .nav-toggle { opacity: 1; pointer-events: auto; right: 50%; transform: translateX(50%); }
