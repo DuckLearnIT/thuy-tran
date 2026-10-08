@@ -16,6 +16,7 @@ export default function Header() {
   const [active, setActive] = useState('top')
   const root = useRef<HTMLElement>(null)
   const toggle = useRef<HTMLButtonElement>(null)
+  const scrollProgress = useRef<HTMLDivElement>(null)
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const reduced = useReducedMotion()
 
@@ -27,6 +28,12 @@ export default function Header() {
     let stops: { id: string; top: number }[] = []
     const update = () => {
       frame = 0
+      const distance = document.documentElement.scrollHeight - innerHeight
+      const progress = distance > 0 ? Math.max(0, Math.min(1, scrollY / distance)) : 0
+      if (scrollProgress.current) {
+        scrollProgress.current.style.transform = `scaleX(${progress})`
+        scrollProgress.current.setAttribute('aria-valuenow', String(Math.round(progress * 100)))
+      }
       const position = window.scrollY + innerHeight * 0.28
       setActive(stops.filter((stop) => stop.top <= position).at(-1)?.id ?? 'top')
       if (window.scrollY < 24) setOpen(false)
@@ -90,6 +97,8 @@ export default function Header() {
 
   return (
     <>
+      <div ref={scrollProgress} className="page-progress" role="progressbar" aria-label="Tiến trình khám phá trang"
+        aria-valuemin={0} aria-valuemax={100} aria-valuenow={0} />
       <div inert={open} aria-hidden={open}
         className="site-header fixed inset-x-0 top-0 z-40 flex items-center justify-between px-[clamp(1rem,3vw,2.5rem)] py-4 text-white pointer-events-none">
         <a href="#top" onClick={(event) => navigate(event, 'top')}

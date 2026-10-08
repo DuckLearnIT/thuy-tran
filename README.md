@@ -23,6 +23,8 @@ Kiểm tra luồng bằng cách chạy nội dung `scripts/check-preorder.js` tr
 
 ## Kiểm tra và triển khai
 
+Commit/push lên `main` chỉ lưu code, không tự deploy. Hoàn thiện và duyệt tại localhost trước; chỉ chạy deploy khi được yêu cầu. Web chính thức tiếp tục phục vụ bản đã xuất bản trên `gh-pages`.
+
 ```sh
 npx tsc --noEmit
 npm run deploy

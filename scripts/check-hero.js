@@ -2,7 +2,7 @@
 (async () => {
   // Check settled artwork, rather than an intermediate loading/entrance frame.
   const deadline = performance.now() + 40000
-  while (document.querySelector('[role="progressbar"]') || [...document.querySelectorAll('.hero-person-intro')].some(el => {
+  while (document.querySelector('.cu-water[role="progressbar"]') || [...document.querySelectorAll('.hero-person-intro')].some(el => {
     const transform = getComputedStyle(el).transform
     if (transform === 'none') return false
     const matrix = new DOMMatrix(transform)
@@ -28,11 +28,21 @@
   }
   check('Six characters are decoded', images.length === 6 && images.every(i => i.complete && i.naturalWidth))
   check('Artwork has no color filters', images.every(i => getComputedStyle(i).filter === 'none'))
+  check('Only the hero paper texture is softened to 70 percent', getComputedStyle(hero, '::before').opacity === '0.7'
+    && images.every(image => getComputedStyle(image).opacity === '1'))
   check('Six characters have only a soft silhouette shadow', images.every(i => {
     const filter = getComputedStyle(i.closest('.hero-person-placement')).filter
     return filter.startsWith('drop-shadow(') && !/brightness|contrast|saturate/.test(filter)
   }))
   const viewportWidth = document.documentElement.clientWidth
+  const pageProgress = document.querySelector('.page-progress')
+  check('Reading progress stays above the grain and has no pointer target', pageProgress
+    && getComputedStyle(pageProgress).pointerEvents === 'none' && Number(getComputedStyle(pageProgress).zIndex) > 60)
+  const sections = [...document.querySelectorAll('.landing-experience > section, .landing-experience > .pin-spacer > section')]
+  check('Section backgrounds bleed across fractional pixel boundaries', sections.length >= 6 && sections.every(section => {
+    const style = getComputedStyle(section, '::before')
+    return style.content === '""' && style.top === '-2px' && getComputedStyle(section).overflowClipMargin === '2px'
+  }))
   check('Bottom water has been removed', !hero.querySelector('.hero-water, .hero-tide'))
   const heroCta = hero.querySelector('.hero-cta')
   check('Opening CTA leads to preorder', new URL(heroCta.href).searchParams.get('page') === 'dat-truoc')
@@ -132,6 +142,9 @@
           : window.gsap.getProperty(person, 'x') * (side === 'left' ? -1 : 1) > 30)
     }))
     await seek(1.65)
+    const distance = document.documentElement.scrollHeight - innerHeight
+    check('Reading progress follows the real document including pinned chapters', Math.abs(new DOMMatrix(getComputedStyle(pageProgress).transform).a - scrollY / distance) < 0.001
+      && Math.abs(Number(pageProgress.getAttribute('aria-valuenow')) - Math.round(scrollY / distance * 100)) <= 1)
     check('The same title docks as the header logo', brand === document.querySelector('.site-brand')
       && Math.abs(brand.getBoundingClientRect().width - brand.offsetWidth) < 1
       && Math.abs(brand.getBoundingClientRect().top - brand.offsetTop) < 1)

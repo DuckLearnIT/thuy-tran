@@ -103,7 +103,7 @@ export default function App() {
       <Curtain ready={ready} progress={progress} failed={failed}
         onRetry={() => setAttempt((value) => value + 1)} onOpen={onOpen} onComplete={onComplete} />
       {assetsReady && (
-        <div ref={experience} inert={!unlocked} aria-hidden={!unlocked}>
+        <div ref={experience} className="landing-experience" inert={!unlocked} aria-hidden={!unlocked}>
           <Cursor />
           <Header />
           <Cover playIntro={opening} onReady={onSceneReady} />
