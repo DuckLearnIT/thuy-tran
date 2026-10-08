@@ -88,6 +88,9 @@
       && openingCta.height >= 44 && openingCta.left >= 0 && openingCta.right <= viewportWidth
       && openingCta.top > hero.querySelector('.hero-copy p').getBoundingClientRect().bottom + 8
       && openingCta.bottom < innerHeight - 20)
+    const scrollCue = hero.querySelector('.hero-scroll').getBoundingClientRect()
+    check('Opening CTA stays clear of the scroll cue', openingCta.right + 8 < scrollCue.left
+      || openingCta.left > scrollCue.right + 8 || openingCta.bottom + 10 < scrollCue.top)
     await seek(0.45)
     const title = brand.getBoundingClientRect()
     check('Large title fits the viewport before docking', title.width >= largeTitleWidth
