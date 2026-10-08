@@ -4,10 +4,12 @@ import Hero from './Hero'
 import cover from '../assets/bia-thuy-tran.webp'
 import { cards } from '../data/cards'
 import { strategies } from '../data/strategies'
+import { locations } from '../data/locations'
 import { createBoxScene } from './boxScene'
 import useReducedMotion from '../hooks/useReducedMotion'
 
 const alt = 'Bìa board game Thủy trận Bạch Đằng: thuyền nhẹ cầm cờ len giữa bãi cọc nhọn, chiến thuyền buồm đỏ phía xa'
+const locationColumns = [2, 4, 6, 6, 4, 2].flatMap(count => Array.from({ length: count }, (_, i) => (6 - count) / 2 + i + 1))
 
 export default function Cover({ playIntro, onReady }: { playIntro: boolean; onReady: () => void }) {
   const root = useRef<HTMLElement>(null)
@@ -25,6 +27,7 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
         cover,
         cards: cards.map((c) => c.image),
         extra: strategies.map((k) => k.image),
+        locations,
       })
     } catch {
       setFallback(true)
@@ -39,7 +42,7 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
         scrollTrigger: {
           trigger: root.current,
           start: 'top top',
-          end: '+=1000%',
+          end: '+=1200%',
           invalidateOnRefresh: true,
           pin: true,
           scrub: 0.6,
@@ -106,7 +109,17 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
       const t0 = tl.duration() - 0.5
       tl.to(st, { swap: 1, zoom: 1.1, elev: 0.26, shift: 0, ease: 'power2.inOut', duration: 1.3 }, t0)
       st.fan2.forEach((_, i) => tl.to(st.fan2, { [i]: 1, ease: 'power2.out', duration: 0.9 }, t0 + 0.7 + i * 0.1))
-      tl.to(root.current, { backgroundColor: '#e6cfa6', duration: 1.2, ease: 'none' }, '>-0.5')
+      const locationsStart = tl.duration()
+      // Two additional screens, with the preceding beats retaining their scroll density.
+      const locationsDuration = (locationsStart + 1.1) * 0.2
+      tl.addLabel('locations-in', locationsStart)
+      tl.fromTo(st, { locationsReveal: 0 }, { locationsReveal: 1, duration: locationsDuration * 0.55, ease: 'none' }, locationsStart)
+      tl.fromTo('.bx-locations-copy', { autoAlpha: 0, y: 18 }, { autoAlpha: 1, y: 0, duration: locationsDuration * 0.18 }, locationsStart + locationsDuration * 0.2)
+      tl.addLabel('locations-showcase', locationsStart + locationsDuration * 0.65)
+      tl.addLabel('locations-out', locationsStart + locationsDuration * 0.8)
+      tl.fromTo(st, { locationsExit: 0 }, { locationsExit: 1, duration: locationsDuration * 0.2, ease: 'none' }, 'locations-out')
+      tl.to('.bx-locations-copy', { autoAlpha: 0, y: -18, duration: locationsDuration * 0.2 }, 'locations-out')
+      tl.to(root.current, { backgroundColor: '#e6cfa6', duration: 0.7, ease: 'none' })
       tl.to({}, { duration: 0.4 })
     }, root)
 
@@ -123,6 +136,14 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
         <Hero playIntro={playIntro} />
         <section className="bg-[#ffb627] px-4 py-16 text-ink" aria-label="Bìa hộp">
           <img src={cover} alt={alt} className="mx-auto w-full max-w-xl" />
+        </section>
+        <section className="box-locations-static" aria-label="24 địa danh trong hộp">
+          <p className="box-inventory">6 nhân vật · 7 kế sách · 24 địa danh</p>
+          <h2 className="display">24 địa danh. Một chiến trường.</h2>
+          <div className="box-locations-grid">
+            {locations.map((card, i) => <img key={card.id} src={card.image} alt={card.name} draggable={false}
+              style={{ gridColumn: locationColumns[i] }} />)}
+          </div>
         </section>
       </section>
     )
@@ -142,15 +163,25 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
           <span className="text-vermilion">00</span> — Trong hộp
         </p>
         <p className="display mt-4 text-[clamp(2.4rem,4.4vw,4.6rem)] !font-bold leading-[0.92]">
-          Sáu lệnh bài,
+          Sáu nhân vật,
           <br />
           <span className="text-vermilion">bảy kế sách.</span>
         </p>
+        <p className="box-inventory mt-5">6 nhân vật · 7 kế sách · 24 địa danh</p>
       </div>
 
-      <canvas ref={canvas} className="absolute inset-0 size-full touch-pan-y" role="img" aria-label={alt} />
+      <div className="bx-locations-copy">
+        <p className="box-inventory"><span className="text-vermilion">00</span> — Trong hộp</p>
+        <h2 className="display">24 địa danh.<br /><span className="text-vermilion">Một chiến trường.</span></h2>
+        <p className="box-inventory">6 nhân vật · 7 kế sách · 24 địa danh</p>
+      </div>
+
+      <canvas ref={canvas} className="absolute inset-0 size-full touch-pan-y" role="img"
+        aria-label="Mở hộp Thủy Trận: sáu nhân vật, bảy kế sách và 24 địa danh trải thành bàn trận" />
       <p className="sr-only">
         {cards.map((cd) => `${cd.role}: ${cd.skill}`).join('. ')}
+        {'. '}
+        {locations.map(card => card.name).join('. ')}
       </p>
     </section>
   )

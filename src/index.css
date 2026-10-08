@@ -390,6 +390,17 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
 }
 @media (max-aspect-ratio: 1/1) and (max-height: 600px) { .hero-copy { top: 74%; } }
 @media (prefers-reduced-motion: reduce) { .hero-scroll svg { animation: none; } .hero-cta, .hero-cta::before, .hero-cta span:first-child::after, .hero-cta .nav-diamond { transition: none; } }
+.box-inventory { font-size: 12px; line-height: 1.7; letter-spacing: .1em; }
+.bx-locations-copy { position: absolute; z-index: 20; left: 6%; top: 12%; width: 88%; text-align: center; opacity: 0; visibility: hidden; pointer-events: none; }
+.bx-locations-copy h2 { margin: 14px 0 18px; font-size: clamp(32px, 5.8vw, 52px); line-height: .98; }
+.box-locations-static { padding: 24px 5% 64px; text-align: center; }
+.box-locations-static h2 { margin: 16px 0 28px; font-size: clamp(32px, 5vw, 64px); }
+.box-locations-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: clamp(4px, 1vw, 12px); width: min(100%, 760px); margin: auto; }
+.box-locations-grid img { display: block; width: 100%; aspect-ratio: 1; border-radius: 4%; box-shadow: 0 3px 6px #23151124; }
+@media (min-width: 1000px) and (min-aspect-ratio: 27/20) {
+  .bx-locations-copy { left: clamp(24px, 3vw, 48px); top: 50%; width: 28%; text-align: left; translate: 0 -50%; }
+  .bx-locations-copy h2 { font-size: clamp(42px, 4.4vw, 72px); }
+}
 .manifesto-ground {
   background: linear-gradient(180deg, #e6cfa6 0%, #efe0c4 40%, #ecdcc0 100%);
 }
