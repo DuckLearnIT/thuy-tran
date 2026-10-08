@@ -38,6 +38,10 @@ Mỗi nhân vật có dáng ngồi/quỳ gọn với tà áo hoàn chỉnh, tay 
 
 Prompt và chế độ built-in được lưu trong hero-sun-reach-generation.json. PNG nhân vật được chuyển lossless sang WebP, không chỉnh màu. Các bản PNG nguồn vẫn được giữ riêng.
 
+### 08/10/2026 — Khôi phục nét mặt Nha Tướng
+
+Hero dùng lại `src/assets/hero/nha-tuong.webp`, bản WebP từ tranh gốc trong Trans, để giữ nguyên khuôn mặt chỉ gồm các mảng màu và lông mày. Căn lại tỉ lệ 3:4, kích thước và điểm đặt ngón tay cho bố cục quanh mặt trời; giữ timeline vào/ra. CTA dùng font tiêu đề, màu son, đầu dải cờ và hình thoi như nav, với gạch dưới và xoay hình thoi khi hover. Các bản thử retouch không được sử dụng.
+
 ## Bố cục từ ba mép màn hình — 08/10/2026
 
 Theo tham chiếu Creation of Adam và phản hồi mới: giữ nguyên sáu WebP đang có, phóng lớn nhân vật để phần thân nằm ngoài khung hình. Thám Quân ở góc trái trên; Hướng Đạo ở góc phải trên; hai cặp còn lại vươn tay từ trái/phải. Tất cả đầu ngón tay neo quanh cùng một mặt trời lớn, giữ khoảng hở trước mép mặt trời. Thứ tự lớp giữ cả sáu gương mặt rõ ràng. Không dùng ảnh mới, mask hay filter để sửa dáng.

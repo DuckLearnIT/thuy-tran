@@ -73,7 +73,7 @@ export default function Hero({ playIntro = true }: { playIntro?: boolean }) {
       <div className="hero-copy hero-fade">
         <p>Sáu nhân vật. Một ý chí.<br />Cùng xoay chuyển thế trận.</p>
         <a className="hero-cta" href="?page=dat-truoc">
-          <span>Đặt trước boardgame</span><span aria-hidden="true">↗</span>
+          <span>Đặt trước boardgame</span><span className="nav-diamond" aria-hidden="true" />
         </a>
       </div>
       <div className="hero-scroll hero-fade">
