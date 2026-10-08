@@ -11,6 +11,7 @@ import Cursor from './Cursor'
 import SplitChars from './SplitChars'
 import Wave from './Wave'
 import useCardFeel from '../hooks/useCardFeel'
+import SiteFooter from './SiteFooter'
 
 export default function Preorder() {
   const root = useRef<HTMLElement>(null)
@@ -150,7 +151,7 @@ export default function Preorder() {
   }, [opening, reduced])
 
   return (
-    <main ref={root} className="po-page grain">
+    <main ref={root} id="dat-truoc" className="po-page grain" tabIndex={-1}>
       <Curtain ready={ready} progress={progress} failed={failed} onRetry={() => setAttempt((value) => value + 1)}
         onOpen={onOpen} onComplete={onComplete} />
       <div inert={!unlocked} aria-hidden={!unlocked}>
@@ -271,7 +272,7 @@ export default function Preorder() {
           </section>
         </div>
         <div className="po-wave" aria-hidden="true"><Wave fill="var(--color-ink)" /></div>
-        <footer className="po-footer"><span>Thủy Trận — board game chiến thuật</span><a href="./#ke-sach">Khám phá cách chơi ↗</a></footer>
+        <div className="po-footer-area"><SiteFooter /></div>
       </div>
     </main>
   )

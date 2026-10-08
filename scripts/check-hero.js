@@ -28,6 +28,10 @@
   }
   check('Six characters are decoded', images.length === 6 && images.every(i => i.complete && i.naturalWidth))
   check('Artwork has no color filters', images.every(i => getComputedStyle(i).filter === 'none'))
+  check('Six characters have only a soft silhouette shadow', images.every(i => {
+    const filter = getComputedStyle(i.closest('.hero-person-placement')).filter
+    return filter.startsWith('drop-shadow(') && !/brightness|contrast|saturate/.test(filter)
+  }))
   const viewportWidth = document.documentElement.clientWidth
   check('Bottom water has been removed', !hero.querySelector('.hero-water, .hero-tide'))
   const heroCta = hero.querySelector('.hero-cta')

@@ -90,7 +90,10 @@ export default function App() {
     const frame = requestAnimationFrame(() => {
       ScrollTrigger.refresh()
       const anchor = document.getElementById(decodeURIComponent(window.location.hash.slice(1)))
-      anchor?.scrollIntoView()
+      if (anchor) {
+        const trigger = ScrollTrigger.getAll().find((item) => item.pin && (item.trigger === anchor || item.trigger?.contains(anchor)))
+        window.scrollTo(0, trigger?.start ?? anchor.getBoundingClientRect().top + scrollY)
+      }
     })
     return () => cancelAnimationFrame(frame)
   }, [unlocked])
