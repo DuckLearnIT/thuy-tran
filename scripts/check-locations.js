@@ -8,6 +8,12 @@
     if (next !== layout) { layout = next; stable = performance.now() }
   }
   const root = document.querySelector('#dia-diem')
+  const { locations } = await import('/src/data/locations.ts')
+  const { cards } = await import('/src/data/cards.ts')
+  const { strategies } = await import('/src/data/strategies.ts')
+  // Vite versions module URLs after edits; read the actual running loader instance.
+  const loaderUrl = performance.getEntriesByType('resource').find(entry => new URL(entry.name).pathname === '/src/preloadAssets.ts')?.name
+  const { preloadedImages } = await import(loaderUrl ?? '/src/preloadAssets.ts')
   const scene = root.querySelector('.spiral-scene')
   const faces = [...root.querySelectorAll('.spiral-face')]
   const triggers = window.ScrollTrigger.getAll().filter((st) => st.trigger === root)
@@ -17,7 +23,11 @@
   const check = (ok, message) => { if (!ok) throw Error(message); passed++ }
   const settle = async (condition) => {
     const deadline = performance.now() + 5000
-    while (!condition() && performance.now() < deadline) await frame()
+    while (!condition() && performance.now() < deadline) {
+      await frame()
+      // Finish scrub poses deterministically; hidden QA tabs throttle GSAP's clock.
+      st?.getTween()?.progress(1)
+    }
     check(condition(), 'Interaction settles')
     await frame()
   }
@@ -25,6 +35,8 @@
   const resting = () => !st || (!st.getTween()?.isActive?.() && !st.getTween(true)?.isActive?.())
   const scrub = async (progress) => {
     window.scrollTo({ top: st.start + progress * (st.end - st.start), behavior: 'instant' })
+    await frame()
+    window.ScrollTrigger.update()
     await settle(() => Math.abs(st.progress - progress) < 0.0005 && resting())
   }
   const pick = async (index) => {
@@ -43,6 +55,14 @@
     await settle(() => selected() === index && resting())
   }
   check(faces.length === 24, 'Exactly 24 location cards')
+  check(new Set(locations.map(card => card.image)).size === 24 && new Set(locations.flatMap(card => [card.image, card.back])).size === 48, '24 distinct F1/F2 pairs replace every placeholder')
+  check(locations.every(card => [card.image, card.back].every(src => {
+    const image = preloadedImages.get(src)
+    return image?.complete && image.naturalWidth === image.naturalHeight && src.includes('.webp')
+  })), 'Both faces are decoded before the experience opens')
+  check(!root.querySelector('.spiral-folio'), 'Number badges are removed from the artwork')
+  check(locations.every(card => card.meaning && card.story && (!card.characterId || cards.some(c => c.id === card.characterId))
+    && (!card.strategyId || strategies.some(s => s.id === card.strategyId))), 'Meaning, stories and current game references are complete')
   check(triggers.length === (staticScene ? 0 : 1), 'Only one chapter trigger, none for static scene')
   check(faces.every((face) => { const img = face.querySelector('img'); return img.complete && img.naturalWidth === img.naturalHeight && img.loading === 'eager' }), 'All square artwork is ready before browsing')
   check(getComputedStyle(scene).touchAction.includes('pan-y'), 'Vertical touch scrolling remains native')
@@ -90,8 +110,22 @@
   await settle(() => faces[13].getBoundingClientRect().width > width * 1.15)
   const zoom = faces[13].getBoundingClientRect()
   check(faces[13].getAttribute('aria-expanded') === 'true' && zoom.left >= 0 && zoom.right <= innerWidth + 1 && zoom.top >= 0 && zoom.bottom <= innerHeight, 'Zoom is accessible and stays on screen')
+  const detail = root.querySelector('.location-detail')
+  await settle(() => detail.open)
+  check(detail.matches(':modal') && detail.contains(document.activeElement), 'Detail opens as a native modal with focus inside')
+  const detailBounds = detail.getBoundingClientRect()
+  check(detailBounds.left >= 0 && detailBounds.right <= innerWidth + 1 && detailBounds.top >= 0 && detailBounds.bottom <= innerHeight + 1
+    && detail.scrollWidth <= detail.clientWidth + 1, 'Detail fits the viewport without horizontal overflow')
+  check(detail.querySelector('h3').textContent === locations[13].name && detail.querySelector('.location-meaning').textContent === locations[13].meaning, 'Detail matches the chosen location and source meaning')
+  check(detail.querySelectorAll('.location-flip img')[1].src.endsWith(locations[13].back), 'The correct F2 is paired with F1')
+  detail.querySelector('.location-face-actions button').click()
+  await settle(() => detail.querySelector('.location-flip').dataset.back === 'true')
+  check(detail.querySelectorAll('.location-flip img')[1].getAttribute('aria-hidden') === 'false', 'Flipping exposes the back face to assistive technology')
+  detail.querySelector('.location-face-actions button').click()
+  await settle(() => detail.querySelector('.location-flip').dataset.back === 'false')
   faces[13].dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
   await settle(() => faces[13].getAttribute('aria-expanded') === 'false')
+  check(!detail.open && document.documentElement.style.overflow !== 'hidden', 'Escape closes detail and restores scrolling')
   faces[13].focus({ preventScroll: true })
   await settle(() => document.activeElement === faces[13])
   faces[13].dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }))
@@ -104,6 +138,18 @@
   }
   await pick(12)
   check(!scene.inert && faces[12].getAttribute('aria-current') === 'true', 'Reverse traversal restores selection')
+  for (let index = 0; index < locations.length; index++) {
+    const character = cards.find(card => card.id === locations[index].characterId)
+    if (!character) continue
+    await pick(index)
+    faces[index].click()
+    await settle(() => detail.open)
+    const label = [character.prefix, character.role].filter(Boolean).join(' ')
+    check(detail.querySelector('.location-game-use').textContent === `Nơi xuất phát · ${label}`, 'Starting character name matches its current card')
+    detail.querySelector('.location-close').click()
+    await settle(() => !detail.open)
+  }
+  await pick(12)
   check(document.documentElement.scrollWidth <= innerWidth, 'No horizontal page overflow')
   return { passed, viewport: `${innerWidth}×${innerHeight}`, staticScene }
 })()
