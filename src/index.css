@@ -228,7 +228,7 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
 .hero-cast { position: absolute; z-index: 2; inset: 0; }
 .hero-person { position: absolute; top: calc(var(--hero-center-y) + var(--hand-y) * var(--hero-sun)); left: calc(50% + var(--hand-x) * var(--hero-sun)); width: min(65vw, 90svh); aspect-ratio: 3/2; transform-origin: 0 0; }
 .hero-person[data-side='top'] { width: min(56vw, 68svh); }
-.hero-person[data-character='nha-tuong'] { width: min(54vw, 78svh); aspect-ratio: 3/4; }
+.hero-person[data-character='nha-tuong'] { width: min(47vw, 68svh); aspect-ratio: 3/4; }
 .hero-person-placement { width: 100%; height: 100%; transform-origin: calc(var(--tip-x) * 1%) calc(var(--tip-y) * 1%); transform: translate(calc(var(--tip-x) * -1%), calc(var(--tip-y) * -1%)) rotate(calc(var(--angle) * 1deg)); }
 .hero-person-depth, .hero-person-intro { width: 100%; height: 100%; }
 .hero-portrait { display: block; width: 100%; height: 100%; object-fit: contain; user-select: none; }
@@ -259,7 +259,7 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
   .hero-scene { --hero-sun: min(40vw, 27svh); --hero-center-y: 32svh; }
   .hero-kicker { top: 4%; font-size: 9px; letter-spacing: .1em; }
   .hero-person { width: 55vw; }
-  .hero-person[data-character='nha-tuong'] { width: 44vw; }
+  .hero-person[data-character='nha-tuong'] { width: 40vw; }
   .hero-person[data-side='top'] { width: 62vw; }
   .hero-person[data-character='tham-quan'] { --hand-x: -.3 !important; --hand-y: -.48 !important; }
   .hero-person[data-character='huong-dao-luc'] { --hand-x: .3 !important; --hand-y: -.48 !important; }
