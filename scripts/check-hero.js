@@ -94,8 +94,11 @@
     const radius = focalSun.width / 2
     const focalX = focalSun.left + radius
     const focalY = focalSun.top + radius
-    check('Six hand anchors surround an enlarged central sun', focalSun.width >= Math.min(viewportWidth * 0.3, innerHeight * 0.3)
-      && initialPositions.every(rect => Math.abs(Math.hypot(rect.left - focalX, rect.top - focalY) - radius) < focalSun.width * 0.08))
+    check('Six hand anchors frame an enlarged central sun', focalSun.width >= Math.min(viewportWidth * 0.3, innerHeight * 0.3)
+      && initialPositions.every((rect, index) => Math.abs(rect.top - focalY) < radius
+        && (index < 3 ? rect.left < focalX : rect.left > focalX)))
+    check('Commander stays smaller than the opposite blue character', hero.querySelector('[data-character="nha-tuong"]').offsetWidth
+      <= hero.querySelector('[data-character="truyen-lenh-lam"]').offsetWidth * 0.8)
     check('Unfinished portrait backs stay hidden beyond the edges', images.every(edgeAnchored))
     check('Hand anchors stay inside the viewport', initialPositions.every(rect => rect.left > 0
       && rect.left < viewportWidth && rect.top > 0 && rect.top < innerHeight))
