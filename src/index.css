@@ -206,6 +206,81 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
 .stack-tilt { transform-style: preserve-3d; }
 .hand-slot:has([data-feel-hover='true']) { z-index: 20 !important; }
 
+/* Finale: a hand of real cards, followed by a compact information footer. */
+.finale-intro { display: grid; grid-template-columns: 1.4fr 1fr; gap: 3rem; align-items: center; padding: clamp(3rem, 7vw, 7rem) clamp(1.25rem, 5vw, 5rem) 0; }
+.finale .f-title { font-size: clamp(6rem, 14vw, 14rem); }
+.finale-invitation { max-width: 24rem; justify-self: end; }
+.finale .finale-cta { margin: 0; }
+.finale .finale-cta:focus-visible { outline-color: var(--color-card); }
+.finale-sales-note { font-size: .9rem; color: #d8c4ac; max-width: 23rem; }
+.finale-eyebrow { font-size: .75rem; font-weight: 500; text-transform: uppercase; letter-spacing: .18em; color: #dfb978; }
+.finale-hand-area { margin-top: 3rem; }
+.finale .hand { display: flex; justify-content: center; padding: 5rem 1rem 2.5rem; }
+.finale .hand-slot { width: min(17vw, 215px); margin-left: max(-5vw, -64px); flex-shrink: 0; }
+.finale .hand-slot:first-child { margin-left: 0; }
+.finale .hand-slot:has([aria-pressed='true']) { z-index: 30 !important; }
+.finale .hand-slot:focus-within { z-index: 31 !important; }
+.finale-pick { display: block; width: 100%; background: none; border: 0; padding: 0; cursor: pointer; border-radius: 3%; }
+.finale-pick:focus-visible { outline: 3px solid var(--color-ochre); outline-offset: 8px; }
+.finale-pick[aria-pressed='true'] .hand-card { transform: translateY(-50px) rotate(0); box-shadow: 0 35px 55px -20px #000b, 0 0 0 3px var(--color-ochre); }
+@media (hover: hover) and (pointer: fine) {
+  .finale .hand:has(.finale-pick:hover) .finale-pick:not(:hover):not([aria-pressed='true']) .hand-card { transform: translateY(calc(var(--y) + 8px)) rotate(var(--r)); }
+  .finale-pick:hover:not([aria-pressed='true']) .hand-card { transform: translateY(-25px) rotate(0); }
+}
+.finale-card-detail { min-height: 12rem; text-align: center; max-width: 35rem; margin: 0 auto; padding: 1rem 1.25rem 2rem; }
+.finale-card-copy { animation: finale-card-copy .25s ease-out; }
+.finale-character { font-size: clamp(2rem, 4vw, 3rem); color: #f0bd66; margin-bottom: .5rem; }
+.finale-skill { color: #dfb978; font-size: .9rem; margin-bottom: .4rem; }
+.finale-card-detail p:last-of-type { font-size: .95rem; }
+.finale-hand-hint { color: #d8c4ac; padding-top: 1rem; }
+.finale-stow { display: inline-flex !important; gap: 1rem; background: none; cursor: pointer; margin-top: .5rem; font-size: .85rem; }
+.finale-footer { background: var(--color-ink); padding: 3rem clamp(1.25rem, 5vw, 5rem) 2rem; }
+.finale-footer-grid { display: grid; grid-template-columns: 1.5fr 1fr .8fr; gap: clamp(2rem, 5vw, 5rem); }
+.finale-wordmark { display: inline-block; font-size: clamp(2.5rem, 4vw, 4rem); color: #f0bd66; margin-bottom: 1rem; }
+.finale-about { max-width: 25rem; color: #d8c4ac; font-size: .95rem; }
+.finale-footer nav .finale-eyebrow { margin-bottom: .75rem; }
+.finale-link { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; min-height: 44px; width: fit-content; color: var(--color-card); text-decoration: none; }
+.finale-link::after { content: ''; position: absolute; bottom: 8px; left: 0; right: 0; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform .2s ease-out; }
+.finale-link span { transition: transform .2s ease-out; }
+.finale-link:hover, .finale-link:focus-visible { color: #f0bd66; }
+.finale-link:hover::after, .finale-link:focus-visible::after { transform: scaleX(1); }
+.finale-link:hover span { transform: translate(2px, -2px); }
+.finale-link:active { color: var(--color-card); }
+.finale-origin { margin-top: 1.5rem; font-size: .75rem; text-transform: uppercase; letter-spacing: .16em; color: #d8c4ac; }
+.finale-credits { margin-top: 3rem; }
+.finale-credits summary { display: flex; align-items: center; justify-content: space-between; min-height: 56px; padding: .5rem 0; cursor: pointer; color: #dfb978; list-style: none; }
+.finale-credits summary::-webkit-details-marker { display: none; }
+.finale-credits summary:hover { color: var(--color-card); }
+.finale-credit-count { margin-left: .7rem; font-size: .8rem; }
+.finale-credit-toggle { font-size: 1.8rem; font-weight: 300; transition: transform .25s ease-out; }
+.finale-credits[open] .finale-credit-toggle { transform: rotate(45deg); }
+.finale-credit-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem; padding: 1.5rem 0; }
+.finale-credit-name { font-weight: 500; margin-bottom: .5rem; }
+.finale-credit-role { font-size: .85rem; color: #d8c4ac; }
+.finale-colophon { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 2rem; }
+.finale-colophon .finale-origin { margin: 0; }
+.finale-colophon .finale-link { font-size: .85rem; }
+@keyframes finale-card-copy { from { opacity: .6; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 700px) {
+  .finale-intro { grid-template-columns: 1fr; gap: 2rem; }
+  .finale .f-title { font-size: clamp(6rem, 25vw, 10rem); }
+  .finale-invitation { justify-self: start; }
+  .finale .hand { flex-wrap: wrap; gap: 1.5rem .75rem; padding: 2.25rem 1rem 2rem; }
+  .finale .hand-slot { width: calc((100% - 1.5rem) / 3); margin-left: 0; }
+  .finale .hand-card { --y: 0px !important; --r: 0deg !important; }
+  .finale-pick[aria-pressed='true'] .hand-card { transform: translateY(-12px) rotate(0); }
+  .finale-card-detail { min-height: 14rem; }
+  .finale-footer-grid { grid-template-columns: 1fr 1fr; column-gap: 1.5rem; }
+  .finale-footer-grid > :first-child { grid-column: 1 / -1; }
+  .finale-cta { font-size: 20px; gap: .8rem; }
+  .finale-credit-grid { grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+}
+@media (max-width: 360px) { .finale-footer-grid, .finale-credit-grid { grid-template-columns: 1fr; gap: 1.5rem; } }
+@media (prefers-reduced-motion: reduce) {
+  .finale-pick .hand-card, .finale-link span, .finale-link::after { transition: none; }
+  .finale-card-copy { animation: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
