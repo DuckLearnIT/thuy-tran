@@ -14,9 +14,9 @@
   const click = async (selector) => { root.querySelector(selector).click(); await settle() }
   const fill = async (name, value) => {
     const input = root.querySelector(`[name="${name}"]`)
-    const prototype = input instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype
+    const prototype = input instanceof HTMLSelectElement ? HTMLSelectElement.prototype : input instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype
     Object.getOwnPropertyDescriptor(prototype, 'value').set.call(input, value)
-    input.dispatchEvent(new Event('input', { bubbles: true }))
+    input.dispatchEvent(new Event(input instanceof HTMLSelectElement ? 'change' : 'input', { bubbles: true }))
     await settle()
     input.dispatchEvent(new FocusEvent('focusout', { bubbles: true }))
     await settle()
@@ -31,7 +31,7 @@
   }
   const fits = () => {
     check(document.documentElement.scrollWidth <= innerWidth, 'No horizontal page overflow')
-    check([...root.querySelectorAll('input, textarea, .po-submit')].every((el) => {
+    check([...root.querySelectorAll('input, textarea, select, .po-submit')].every((el) => {
       const box = el.getBoundingClientRect()
       return box.width > 0 && box.width <= innerWidth && box.right <= innerWidth + 1
     }), 'Fields and CTA fit the viewport')
@@ -91,12 +91,14 @@
   check(current() === '2' && new URLSearchParams(location.search).get('step') === '2', 'Continue opens delivery and updates URL')
   check(!root.querySelector('[role="progressbar"]'), 'Curtain does not run between steps')
   check(document.activeElement.id === 'po-step-title', 'Step change focuses the heading')
+  check(root.querySelector('[name="province"]').options.length === 35, 'All 34 provinces are bundled and available')
+  check(root.querySelector('[name="ward"]').disabled && root.querySelector('[name="ward"]').options.length === 1, 'Wards wait for a province selection')
   check(root.querySelector('[name="name"]').required && root.querySelector('[name="phone"]').required && !root.querySelector('[name="email"]').required, 'Name/phone are required; email is optional')
   await click('.po-submit')
   check(current() === '2' && document.activeElement.name === 'name', 'Invalid submission focuses the first error')
   check(root.querySelectorAll('[aria-invalid="true"]').length === 5, 'Required delivery fields show errors')
-  for (const name of ['name', 'province', 'ward', 'address']) await fill(name, '   ')
-  check(['name', 'province', 'ward', 'address'].every((name) => root.querySelector(`[name="${name}"]`).getAttribute('aria-invalid') === 'true'), 'Whitespace is rejected for names and addresses')
+  for (const name of ['name', 'address']) await fill(name, '   ')
+  check(['name', 'address'].every((name) => root.querySelector(`[name="${name}"]`).getAttribute('aria-invalid') === 'true'), 'Whitespace is rejected for names and addresses')
   await fill('phone', '090')
   check(root.querySelector('[name="phone"]').getAttribute('aria-invalid') === 'true', 'Invalid phone shows an inline error')
   await fill('email', 'invalid-email')
@@ -105,9 +107,16 @@
   window.dispatchEvent(new PopStateEvent('popstate'))
   await settle()
   check(current() === '2' && new URLSearchParams(location.search).get('step') === '2', 'Incomplete delivery cannot bypass validation through the URL')
-  const sample = { name: 'Người nhận thử', phone: '+84 912-345-678', province: 'Thành phố mẫu', ward: 'Phường mẫu', address: '12 Đường thử', email: '', note: 'Gọi trước khi giao.' }
+  const sample = { name: 'Người nhận thử', phone: '+84 912-345-678', province: 'Thành phố Hà Nội', ward: 'Phường Ba Đình', address: '12 Đường thử', email: '', note: 'Gọi trước khi giao.' }
   for (const [name, value] of Object.entries(sample)) await fill(name, value)
   check(root.querySelectorAll('[aria-invalid="true"]').length === 0, 'Correcting values clears inline errors')
+  check(root.querySelector('[name="ward"]').options.length === 127, 'Ha Noi exposes its 126 wards')
+  await fill('province', 'Thành phố Huế')
+  check(root.querySelector('[name="ward"]').value === '' && ![...root.querySelector('[name="ward"]').options].some((option) => option.value === sample.ward), 'Changing province clears the old ward and replaces its options')
+  await click('.po-submit')
+  check(current() === '2' && document.activeElement.name === 'ward', 'A cleared ward must be selected again')
+  await fill('province', sample.province)
+  await fill('ward', sample.ward)
   fits()
   await click('.po-submit')
   check(current() === '3', 'Valid delivery with no email reaches review')

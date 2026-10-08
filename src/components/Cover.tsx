@@ -68,8 +68,8 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
           x: (_index, element) => -Number(getComputedStyle(element).getPropertyValue('--hand-x')) * sun.offsetWidth * 0.08,
           y: (_index, element) => -Number(getComputedStyle(element).getPropertyValue('--hand-y')) * sun.offsetWidth * 0.08,
           rotation: (_index, element) => Number(element.dataset.exit) * -3,
-          duration: 0.3, ease: 'power2.out',
-        }, 0.65)
+          duration: 0.9, ease: 'power2.out',
+        }, 0)
         .to('.hero-person', {
           x: (_index, element) => Number(element.dataset.exit) * stage.clientWidth * (element.dataset.side === 'top' ? 0.18 : 1.1),
           y: (_index, element) => -stage.clientHeight * (element.dataset.side === 'top' ? 1.1 : 0.16),

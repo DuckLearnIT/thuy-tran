@@ -1,3 +1,8 @@
+import addressData from './vietnam-addresses.json'
+
+export const provinces = addressData
+export const wardsFor = (province: string) => provinces.find((item) => item.name === province)?.wards ?? []
+
 export type CheckoutStep = '1' | '2' | '3' | 'preview'
 export type DeliveryField = 'name' | 'phone' | 'province' | 'ward' | 'address' | 'email' | 'note'
 export type CheckoutDraft = Record<DeliveryField, string> & {
@@ -24,16 +29,18 @@ export const sales: {
 export const deliveryFields: { name: DeliveryField; label: string; autoComplete: string; placeholder: string; maxLength: number; optional?: boolean; type?: string }[] = [
   { name: 'name', label: 'Tên người nhận', autoComplete: 'shipping name', placeholder: 'Họ và tên người nhận', maxLength: 100 },
   { name: 'phone', label: 'Số điện thoại', autoComplete: 'shipping tel', placeholder: 'Số điện thoại nhận hàng', maxLength: 30, type: 'tel' },
-  { name: 'province', label: 'Tỉnh / thành phố', autoComplete: 'shipping address-level1', placeholder: 'Tỉnh hoặc thành phố', maxLength: 100 },
-  { name: 'ward', label: 'Phường / xã', autoComplete: 'shipping address-level2', placeholder: 'Phường hoặc xã', maxLength: 100 },
+  { name: 'province', label: 'Tỉnh / thành phố', autoComplete: 'shipping address-level1', placeholder: 'Chọn tỉnh / thành phố', maxLength: 100 },
+  { name: 'ward', label: 'Phường / xã', autoComplete: 'shipping address-level2', placeholder: 'Chọn phường / xã', maxLength: 100 },
   { name: 'address', label: 'Địa chỉ cụ thể', autoComplete: 'shipping street-address', placeholder: 'Số nhà, đường, thôn / tổ…', maxLength: 200 },
   { name: 'email', label: 'Email', autoComplete: 'shipping email', placeholder: 'Email của bạn', maxLength: 254, optional: true, type: 'email' },
   { name: 'note', label: 'Ghi chú giao hàng', autoComplete: 'off', placeholder: 'Điều cần lưu ý khi giao hàng', maxLength: 500, optional: true },
 ]
 
-export function fieldError(name: DeliveryField, value: string): string {
+export function fieldError(name: DeliveryField, value: string, province = ''): string {
   const text = value.trim()
   const field = deliveryFields.find((field) => field.name === name)!
+  if (name === 'province' && !provinces.some((item) => item.name === text)) return 'Chọn tỉnh / thành phố nhận hàng.'
+  if (name === 'ward' && !wardsFor(province).includes(text)) return 'Chọn phường / xã thuộc tỉnh / thành phố đã chọn.'
   if (!text && !field.optional) return `Nhập ${field.label.toLowerCase()}.`
   if (text.length > field.maxLength) return `Tối đa ${field.maxLength} ký tự.`
   if (name === 'phone' && !/^(?:0|\+84)[1-9]\d{8}$/.test(text.replace(/[\s-]/g, ''))) {
@@ -44,7 +51,7 @@ export function fieldError(name: DeliveryField, value: string): string {
 }
 
 export function deliveryErrors(draft: CheckoutDraft): Partial<Record<DeliveryField, string>> {
-  return Object.fromEntries(deliveryFields.map(({ name }) => [name, fieldError(name, draft[name])]).filter(([, error]) => error))
+  return Object.fromEntries(deliveryFields.map(({ name }) => [name, fieldError(name, draft[name], draft.province)]).filter(([, error]) => error))
 }
 
 export function allowedStep(step: string | null, draft: CheckoutDraft): CheckoutStep {
@@ -61,7 +68,10 @@ export function readDraft(): CheckoutDraft {
     const draft = saved.draft
     if (!Number.isInteger(draft.quantity) || draft.quantity < 1 || draft.quantity > 99 || typeof draft.selected !== 'boolean') return { ...emptyDraft }
     if (deliveryFields.some(({ name, maxLength }) => typeof draft[name] !== 'string' || draft[name].length > maxLength)) return { ...emptyDraft }
-    return { quantity: draft.quantity, selected: draft.selected, ...Object.fromEntries(deliveryFields.map(({ name }) => [name, draft[name]])) } as CheckoutDraft
+    const restored = { quantity: draft.quantity, selected: draft.selected, ...Object.fromEntries(deliveryFields.map(({ name }) => [name, draft[name]])) } as CheckoutDraft
+    if (!provinces.some((province) => province.name === restored.province)) restored.province = ''
+    if (!wardsFor(restored.province).includes(restored.ward)) restored.ward = ''
+    return restored
   } catch { return { ...emptyDraft } }
 }
 

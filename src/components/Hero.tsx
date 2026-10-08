@@ -28,17 +28,22 @@ export default function Hero({ playIntro = true }: { playIntro?: boolean }) {
       mm.add('(hover: hover) and (pointer: fine)', () => {
         const layers = gsap.utils.toArray<HTMLElement>('.hero-person-depth')
         const setters = layers.map((el, i) => ({
-          x: gsap.quickTo(el, 'x', { duration: 0.7, ease: 'power3.out' }),
-          y: gsap.quickTo(el, 'y', { duration: 0.7, ease: 'power3.out' }),
+          x: gsap.quickTo(el, 'x', { duration: 0.5, ease: 'power3.out' }),
+          y: gsap.quickTo(el, 'y', { duration: 0.5, ease: 'power3.out' }),
           k: heroCast[i].depth,
         }))
-        const move = (event: PointerEvent) => {
-          const nx = event.clientX / innerWidth - 0.5
-          const ny = event.clientY / innerHeight - 0.5
-          setters.forEach((s) => { s.x(nx * s.k); s.y(ny * s.k * 0.6) })
-        }
-        const leave = () => setters.forEach((s) => { s.x(0); s.y(0) })
+        const sunX = gsap.quickTo('.sun-texture', 'x', { duration: 0.8, ease: 'power3.out' })
+        const sunY = gsap.quickTo('.sun-texture', 'y', { duration: 0.8, ease: 'power3.out' })
         const host = root.current!
+        const move = (event: PointerEvent) => {
+          const bounds = host.getBoundingClientRect()
+          const nx = gsap.utils.clamp(-0.5, 0.5, (event.clientX - bounds.left) / bounds.width - 0.5)
+          const ny = gsap.utils.clamp(-0.5, 0.5, (event.clientY - bounds.top) / bounds.height - 0.5)
+          const strength = Math.min(1, bounds.width / 1000)
+          setters.forEach((s) => { s.x(nx * s.k * strength); s.y(ny * s.k * strength * 0.65) })
+          sunX(-nx * 6); sunY(-ny * 4)
+        }
+        const leave = () => { setters.forEach((s) => { s.x(0); s.y(0) }); sunX(0); sunY(0) }
         host.addEventListener('pointermove', move)
         host.addEventListener('pointerleave', leave)
         return () => {

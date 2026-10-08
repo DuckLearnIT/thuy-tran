@@ -2,7 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import gsap from 'gsap'
 import cover from '../assets/bia-thuy-tran.webp'
 import { cards } from '../data/cards'
-import { allowedStep, deliveryErrors, deliveryFields, DRAFT_KEY, emptyDraft, fieldError, priceLabel, readDraft, sales, totals,
+import { allowedStep, deliveryErrors, deliveryFields, DRAFT_KEY, emptyDraft, fieldError, priceLabel, provinces, readDraft, sales, totals, wardsFor,
   type CheckoutStep, type DeliveryField } from '../data/checkout'
 import { preloadAssets } from '../preloadAssets'
 import useReducedMotion from '../hooks/useReducedMotion'
@@ -52,8 +52,8 @@ export default function Preorder() {
     setStep(target)
   }
   const changeField = (name: DeliveryField, value: string) => {
-    setDraft((draft) => ({ ...draft, [name]: value }))
-    if (name in errors) setErrors((errors) => ({ ...errors, [name]: fieldError(name, value) }))
+    setDraft((draft) => ({ ...draft, [name]: value, ...(name === 'province' ? { ward: '' } : {}) }))
+    setErrors((errors) => ({ ...errors, ...(name in errors ? { [name]: fieldError(name, value, draft.province) } : {}), ...(name === 'province' ? { ward: '' } : {}) }))
   }
   const submit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -65,7 +65,7 @@ export default function Preorder() {
       const nextErrors = deliveryErrors(draft)
       setErrors(nextErrors)
       const first = deliveryFields.find(({ name }) => nextErrors[name])
-      if (first) requestAnimationFrame(() => root.current?.querySelector<HTMLInputElement>(`[name="${first.name}"]`)?.focus())
+      if (first) requestAnimationFrame(() => root.current?.querySelector<HTMLElement>(`[name="${first.name}"]`)?.focus())
       else goToStep('3')
     } else if (step === '3') goToStep('preview')
   }
@@ -228,11 +228,18 @@ export default function Preorder() {
                     <span className="po-field-label"><span className="po-field-number" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>{field.label}
                       {!field.optional && <span className="po-required" aria-hidden="true">*</span>}</span>
                     {field.optional && <span className="po-optional">Tùy chọn</span>}
-                    {field.name === 'note' ? <textarea name={field.name} autoComplete={field.autoComplete} maxLength={field.maxLength} rows={2}
+                    {field.name === 'province' || field.name === 'ward' ? <select name={field.name} autoComplete={field.autoComplete} required
+                      value={draft[field.name]} disabled={field.name === 'ward' && !draft.province}
+                      aria-invalid={!!errors[field.name]} aria-describedby={`po-${field.name}-error`}
+                      onChange={(event) => changeField(field.name, event.target.value)}
+                      onBlur={(event) => setErrors((errors) => ({ ...errors, [field.name]: fieldError(field.name, event.target.value, draft.province) }))}>
+                      <option value="">{field.name === 'ward' && !draft.province ? 'Chọn tỉnh / thành phố trước' : field.placeholder}</option>
+                      {(field.name === 'province' ? provinces.map((province) => province.name) : wardsFor(draft.province)).map((name) => <option value={name} key={name}>{name}</option>)}
+                    </select> : field.name === 'note' ? <textarea name={field.name} autoComplete={field.autoComplete} maxLength={field.maxLength} rows={2}
                       value={draft[field.name]} placeholder={field.placeholder} onChange={(event) => changeField(field.name, event.target.value)} /> :
                       <input name={field.name} type={field.type ?? 'text'} autoComplete={field.autoComplete} required={!field.optional} maxLength={field.maxLength}
                         value={draft[field.name]} placeholder={field.placeholder} aria-invalid={!!errors[field.name]} aria-describedby={`po-${field.name}-error`}
-                        onChange={(event) => changeField(field.name, event.target.value)} onBlur={(event) => setErrors((errors) => ({ ...errors, [field.name]: fieldError(field.name, event.target.value) }))} />}
+                        onChange={(event) => changeField(field.name, event.target.value)} onBlur={(event) => setErrors((errors) => ({ ...errors, [field.name]: fieldError(field.name, event.target.value, draft.province) }))} />}
                     {field.name !== 'note' && <span id={`po-${field.name}-error`} className="po-error" aria-live="polite">{errors[field.name]}</span>}
                   </label>)}
                 </>}

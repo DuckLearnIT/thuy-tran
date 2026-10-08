@@ -18,6 +18,14 @@
   }
   const hero = document.querySelector('#top')
   const images = [...hero.querySelectorAll('.hero-portrait')]
+  const edgeAnchored = image => {
+    const rect = image.getBoundingClientRect()
+    const bounds = hero.getBoundingClientRect()
+    const side = image.closest('.hero-person').dataset.side
+    return rect.right > bounds.left && rect.left < bounds.right && rect.bottom > bounds.top && rect.top < bounds.bottom
+      && (side === 'left' ? rect.left < bounds.left : side === 'right' ? rect.right > bounds.right
+        : rect.top < bounds.top || (bounds.width < bounds.height && (rect.left < bounds.left || rect.right > bounds.right)))
+  }
   check('Six characters are decoded', images.length === 6 && images.every(i => i.complete && i.naturalWidth))
   check('Artwork has no color filters', images.every(i => getComputedStyle(i).filter === 'none'))
   const viewportWidth = document.documentElement.clientWidth
@@ -29,6 +37,7 @@
   const trigger = window.ScrollTrigger.getAll().find(t => t.trigger?.querySelector?.('#top'))
   if (!trigger) {
     check('Static fallback retains the hero', hero.getBoundingClientRect().height > 0)
+    check('Static fallback hides unfinished backs beyond the edges', images.every(edgeAnchored))
     const title = document.querySelector('.site-brand')
     check('Static fallback retains the large opening title', getComputedStyle(title).visibility !== 'hidden'
       && title.getBoundingClientRect().width >= largeTitleWidth)
@@ -73,12 +82,7 @@
     const focalY = focalSun.top + radius
     check('Six hand anchors surround an enlarged central sun', focalSun.width >= Math.min(viewportWidth * 0.3, innerHeight * 0.3)
       && initialPositions.every(rect => Math.abs(Math.hypot(rect.left - focalX, rect.top - focalY) - radius) < focalSun.width * 0.08))
-    check('Large figures extend beyond left, right and top edges', images.every(image => {
-      const rect = image.getBoundingClientRect()
-      const side = image.closest('.hero-person').dataset.side
-      return rect.right > 0 && rect.left < viewportWidth && rect.bottom > 0 && rect.top < innerHeight
-        && (side === 'left' ? rect.left < 0 : side === 'right' ? rect.right > viewportWidth : rect.top < 0)
-    }))
+    check('Unfinished portrait backs stay hidden beyond the edges', images.every(edgeAnchored))
     check('Hand anchors stay inside the viewport', initialPositions.every(rect => rect.left > 0
       && rect.left < viewportWidth && rect.top > 0 && rect.top < innerHeight))
     check('Heading and subheading have their own space below the sun', brand.getBoundingClientRect().top > focalSun.bottom + 8
@@ -91,6 +95,22 @@
     const scrollCue = hero.querySelector('.hero-scroll').getBoundingClientRect()
     check('Opening CTA stays clear of the scroll cue', openingCta.right + 8 < scrollCue.left
       || openingCta.left > scrollCue.right + 8 || openingCta.bottom + 10 < scrollCue.top)
+    if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      const settleDepth = async () => {
+        const end = performance.now() + 650
+        while (performance.now() < end) await new Promise(requestAnimationFrame)
+      }
+      for (const [x, y] of [[1, 1], [viewportWidth - 1, innerHeight - 1]]) {
+        hero.dispatchEvent(new PointerEvent('pointermove', { clientX: x, clientY: y, pointerType: 'mouse' }))
+        await settleDepth()
+        check('Parallax preserves the framing at both pointer extremes', images.every(edgeAnchored))
+      }
+      const depth = [...hero.querySelectorAll('.hero-person-depth')].map(el => Math.abs(window.gsap.getProperty(el, 'x')))
+      check('Pointer depth is visible and differs between layers', Math.max(...depth) > Math.min(4, viewportWidth * 0.01) && Math.max(...depth) > Math.min(...depth) * 1.4)
+      hero.dispatchEvent(new PointerEvent('pointerleave'))
+      await settleDepth()
+      check('Pointer leave restores the composition', depth.length === 6 && [...hero.querySelectorAll('.hero-person-depth')].every(el => Math.abs(window.gsap.getProperty(el, 'x')) < 0.1))
+    }
     await seek(0.45)
     const title = brand.getBoundingClientRect()
     check('Large title fits the viewport before docking', title.width >= largeTitleWidth
