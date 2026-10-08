@@ -406,17 +406,19 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
   width: 100%;
   aspect-ratio: 1;
   border: 0;
-  border-radius: 3px;
+  border-radius: 4%;
   background: transparent;
   box-shadow: 0 22px 38px -16px #061619aa;
   filter: brightness(var(--card-light, 1));
   transition: transform 0.5s var(--ease-out-expo), translate 240ms var(--ease-out-expo), rotate 160ms ease-out, scale 220ms var(--ease-out-expo), filter 0.35s, box-shadow 0.24s;
   cursor: pointer;
 }
-.spiral-face img { display: block; width: 100%; aspect-ratio: 1; object-fit: contain; border-radius: 2px; user-select: none; }
+.spiral-face img { display: block; width: 100%; aspect-ratio: 1; object-fit: contain; border-radius: inherit; user-select: none; }
 .spiral-source { opacity: 0; }
 .spiral-art { position: absolute; inset: 0; perspective: 800px; transform-style: preserve-3d; pointer-events: none; }
 .spiral-slice { position: absolute; top: 0; width: calc(100% / 7 + 1.5px); height: 100%; background-size: var(--tile) var(--tile); backface-visibility: hidden; }
+.spiral-slice:first-child { border-radius: 28% 0 0 28% / 4% 0 0 4%; }
+.spiral-slice:last-child { border-radius: 0 28% 28% 0 / 0 4% 4% 0; }
 .spiral-static .spiral-source { opacity: 1; }
 .spiral-static .spiral-art { display: none; }
 .spiral-plane[data-active='true'] .spiral-face { filter: brightness(1); }
@@ -439,7 +441,7 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
 .location-flip { perspective: 1200px; aspect-ratio: 1; }
 .location-flip-sheet { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .5s var(--ease-out-expo); }
 .location-flip[data-back='true'] .location-flip-sheet { transform: rotateY(180deg); }
-.location-flip img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; backface-visibility: hidden; border-radius: 3px; box-shadow: 0 14px 25px -14px #23151180; }
+.location-flip img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; backface-visibility: hidden; border-radius: 4%; box-shadow: 0 14px 25px -14px #23151180; }
 .location-flip img:last-child { transform: rotateY(180deg); }
 .location-face-actions { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem; margin-top: .8rem; font-size: .8rem; }
 .location-face-actions > span { color: #69594d; }

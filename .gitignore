@@ -22,6 +22,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
-# GitHub workflows (local deploy via gh-pages used)
-.github/
