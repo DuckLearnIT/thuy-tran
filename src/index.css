@@ -116,7 +116,7 @@ body {
   line-height: 1.625;
   letter-spacing: 0.015em;
   -webkit-font-smoothing: antialiased;
-  overflow-x: clip;
+  overflow-x: hidden;
   scrollbar-width: none;
 }
 body::-webkit-scrollbar {
@@ -148,7 +148,6 @@ body::-webkit-scrollbar {
 }
 
 /* Bleed backgrounds across fractional pixel edges without changing pin spacing. */
-.landing-experience { overflow-x: clip; }
 .landing-experience > section, .landing-experience > .pin-spacer > section {
   isolation: isolate;
   overflow: clip;
@@ -340,22 +339,6 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
 .site-header[aria-hidden='true'] { opacity: 0; }
 .site-brand { --brand-outline: 0px; color: var(--color-ink); white-space: nowrap; transform-origin: 0 0; -webkit-text-stroke: var(--brand-outline) #f6e9d7; paint-order: stroke fill; }
 .site-brand[inert] { pointer-events: none; cursor: default; }
-.site-brand { position: relative; }
-.site-header[data-docked='true'] .site-brand::before { content: ''; position: absolute; inset: -6px -9px; z-index: -1; background: #f6e9d7; border-radius: 2px; }
-.site-cta { padding: 0 12px; border-radius: 2px; background: #f6e9d7; color: #231511; box-shadow: 0 2px 8px #23151112; }
-.site-cta:hover { background: #e6cfa6; }
-.site-cta:active { transform: translateY(1px); }
-.ks-controls button:focus-visible { outline: 2px solid currentColor; outline-offset: 5px; }
-.po-undo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 12px; margin-bottom: 20px; padding: 8px 12px; background: #e6cfa650; border-left: 3px solid var(--color-vermilion); font-size: .85rem; }
-
-@media (max-width: 1023px) {
-  .ks-content { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 18px; padding: 88px 16px 24px; }
-  .ks-entry-label { position: static; }
-  .ks-browse { position: relative; inset: auto; min-height: 0; }
-  .ks-stage { height: 88%; max-height: 430px; }
-  .ks-card-slot { height: 100%; width: auto; }
-  .ks-footer { position: static; padding: 0; }
-}
 .hero-cast { position: absolute; z-index: 2; inset: 0; }
 .hero-person { position: absolute; top: calc(var(--hero-center-y) + var(--hand-y) * var(--hero-sun)); left: calc(50% + var(--hand-x) * var(--hero-sun)); width: max(min(68vw, 94svh), calc(50vw - var(--hero-sun) * .5 + 36px)); aspect-ratio: 3/2; transform-origin: 0 0; }
 .hero-person[data-side='top'] { width: max(min(58vw, 71svh), calc(50vw - var(--hero-sun) * .45 + 36px)); }
