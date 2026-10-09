@@ -1,9 +1,9 @@
 # Handoff Thủy Trận cho AI agent tiếp theo
 
-**Ngày bàn giao:** 09/10/2026, múi giờ Asia/Bangkok.  
-**Phạm vi:** code đang có, quyết định sản phẩm, ràng buộc triển khai, kiểm tra và việc chưa chốt.  
-**Chủ sở hữu quyết định sản phẩm/artwork/nội dung:** người dùng trong cuộc trò chuyện này.  
-**Mục đích:** tiếp tục dự án bằng repo và tài liệu này, không cần đoán lại toàn bộ lịch sử chat.
+- **Ngày bàn giao:** 09/10/2026, múi giờ Asia/Bangkok.
+- **Phạm vi:** code đang có, quyết định sản phẩm, ràng buộc triển khai, kiểm tra và việc chưa chốt.
+- **Chủ sở hữu quyết định sản phẩm/artwork/nội dung:** người dùng trong cuộc trò chuyện này.
+- **Mục đích:** tiếp tục dự án bằng repo và tài liệu này, không cần đoán lại toàn bộ lịch sử chat.
 
 ## 1. Đọc phần này trước
 
