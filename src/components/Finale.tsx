@@ -169,7 +169,7 @@ export default function Finale() {
         if (event.key === "Escape") stow()
       }}
     >
-      <div className="relative z-10 shrink-0 -mb-px bg-river pointer-events-none">
+      <div className="finale-wave relative z-10 shrink-0 -mb-px bg-river pointer-events-none">
         <Wave fill="var(--color-ink)" />
       </div>
       <div
