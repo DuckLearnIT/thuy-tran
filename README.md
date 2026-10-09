@@ -4,6 +4,10 @@ Website giới thiệu board game chiến thuật Bạch Đằng, xây dựng b�
 
 Website: https://ducklearnit.github.io/thuy-tran/
 
+## Tiếp tục bằng AI agent
+
+Đọc [AGENTS.md](AGENTS.md) và [handoff chi tiết](docs/AI-HANDOFF.md) trước khi sửa. Handoff ghi baseline đã chọn, cơ chế animation, dữ liệu, các hướng đã bỏ và quy tắc giữ GitHub Pages ở bản cũ trong lúc hoàn thiện local.
+
 ## Chạy tại máy
 
 ```sh
