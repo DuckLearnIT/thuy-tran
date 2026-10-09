@@ -245,7 +245,8 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
 .finale .finale-cta:focus-visible { outline-color: var(--color-card); }
 .finale-sales-note { font-size: .9rem; color: #d8c4ac; max-width: 23rem; }
 .finale-eyebrow { font-size: .75rem; font-weight: 500; text-transform: uppercase; letter-spacing: .18em; color: #dfb978; }
-.finale-wave::before { content: ''; position: absolute; z-index: 1; inset: -2px 0 auto; height: 5px; background: var(--color-river); pointer-events: none; }
+.finale { overflow-clip-margin: 5px; }
+.finale-wave::before { content: ''; position: absolute; z-index: 1; inset: -5px 0 auto; height: 10px; background: var(--color-river); pointer-events: none; }
 .finale-hand-area { margin-top: 3rem; }
 .finale .hand { display: flex; justify-content: center; padding: 5rem 1rem 2.5rem; }
 .finale .hand-slot { width: min(17vw, 215px); margin-left: max(-5vw, -64px); flex-shrink: 0; }
