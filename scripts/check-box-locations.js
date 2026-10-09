@@ -13,6 +13,8 @@
   const staticGrid = document.querySelector('.box-locations-grid')
   if (staticGrid) {
     const images = [...staticGrid.querySelectorAll('img')]
+    check('Static box preview continues to show F1 artwork', images.length === locations.length
+      && images.every((image, i) => image.src.endsWith(locations[i].image)))
     const rows = new Map()
     images.forEach(image => {
       const rect = image.getBoundingClientRect()

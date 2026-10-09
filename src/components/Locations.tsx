@@ -34,7 +34,7 @@ export default function Locations() {
   const [expanded, setExpanded] = useState(false)
   const [showBack, setShowBack] = useState(false)
   const [available, setAvailable] = useState(false)
-  const [short, setShort] = useState(() => matchMedia('(max-height: 560px)').matches)
+  const [short, setShort] = useState(() => matchMedia('(max-height: 600px), (max-width: 360px)').matches)
   const reduced = useReducedMotion()
   const animated = !reduced && !short
   const current = locations[active]
@@ -55,7 +55,7 @@ export default function Locations() {
   }, [expanded])
 
   useEffect(() => {
-    const media = matchMedia('(max-height: 560px)')
+    const media = matchMedia('(max-height: 600px), (max-width: 360px)')
     const change = () => setShort(media.matches)
     media.addEventListener('change', change)
     return () => media.removeEventListener('change', change)
@@ -76,14 +76,14 @@ export default function Locations() {
         const d = i - index
         const angle = d * 0.88
         const depth = Math.cos(angle)
-        const visible = animated ? Math.abs(d) < 6 : i === selected
+        const visible = animated ? Math.abs(d) < 4.5 : i === selected
         const x = Math.sin(angle) * radius - d * tile * 0.045
         const y = d * tile * 0.27 + Math.sin(angle) * tile * 0.09
         const z = (depth - 1) * radius
         plane.style.transform = animated
           ? `translate(-50%, -50%) translate3d(${x}px, ${y}px, ${z}px) rotateY(${-Math.sin(angle) * 32}deg) rotateZ(${Math.sin(angle) * 8}deg)`
           : 'translate(-50%, -50%)'
-        plane.style.opacity = visible ? String(animated ? Math.min(1, (6 - Math.abs(d)) / 2) : 1) : '0'
+        plane.style.opacity = visible ? String(animated ? Math.min(1, (4.5 - Math.abs(d)) / 1.5) : 1) : '0'
         plane.style.visibility = visible ? 'visible' : 'hidden'
         plane.style.setProperty('--card-order', String(Math.round(100 - Math.abs(d) * 10)))
         plane.style.pointerEvents = visible && Math.abs(d) < 3 ? 'auto' : 'none'
@@ -228,12 +228,12 @@ export default function Locations() {
         <div className="spiral-world">
           {locations.map((card, index) => <div className="spiral-plane" key={card.id} data-active={index === active}>
             <button type="button" className="spiral-face card-feel" tabIndex={index === active ? 0 : -1}
-              aria-label={`Xem địa danh ${card.name}`} aria-current={index === active ? 'true' : undefined}
-              aria-controls="location-detail" aria-haspopup="dialog" aria-expanded={index === active && expanded}
+              aria-label={`${index === active && expanded ? 'Thu nhỏ' : 'Xem'} tranh F3 của địa danh ${card.name}`}
+              aria-current={index === active ? 'true' : undefined}
               onClick={() => index === active ? setExpanded((value) => !value) : choose(index)}>
-              <img className="spiral-source" src={card.image} alt={card.name} loading="eager" decoding="async" draggable={false} />
+              <img className="spiral-source" src={card.spiralImage} alt={`${card.name} — tranh toàn cảnh F3`} loading="eager" decoding="async" draggable={false} />
               <span className="spiral-art" aria-hidden="true">
-                {slices.map((style, i) => <span className="spiral-slice" key={i} style={{ ...style, backgroundImage: `url(${card.image})` }} />)}
+                {slices.map((style, i) => <span className="spiral-slice" key={i} style={{ ...style, backgroundImage: `url(${card.spiralImage})` }} />)}
               </span>
             </button>
           </div>)}

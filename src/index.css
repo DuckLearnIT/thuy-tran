@@ -448,7 +448,7 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
 .spiral-heading p { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.2em; opacity: 0.75; }
 .spiral-heading h2 { font-size: clamp(2.4rem, 5vw, 4rem); margin-top: 0.65rem; }
 .spiral-scene {
-  --tile: min(30vw, 35svh, 285px);
+  --tile: min(30vw, 27svh, 250px);
   position: relative;
   flex: 1;
   min-height: 0;
@@ -458,12 +458,12 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
 }
 .spiral-scene[data-dragging='true'], .spiral-scene[data-dragging='true'] .spiral-face { cursor: grabbing; }
 .spiral-world { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; pointer-events: none; }
-.spiral-plane { position: absolute; top: 50%; left: 50%; width: var(--tile); aspect-ratio: 1; opacity: 0; z-index: var(--card-order, 1); }
+.spiral-plane { position: absolute; top: 50%; left: 50%; width: var(--tile); aspect-ratio: 1500 / 2078; opacity: 0; z-index: var(--card-order, 1); }
 .spiral-face {
   display: block;
   position: relative;
   width: 100%;
-  aspect-ratio: 1;
+  aspect-ratio: 1500 / 2078;
   border: 0;
   border-radius: 4%;
   background: transparent;
@@ -472,10 +472,10 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
   transition: transform 0.5s var(--ease-out-expo), translate 240ms var(--ease-out-expo), rotate 160ms ease-out, scale 220ms var(--ease-out-expo), filter 0.35s, box-shadow 0.24s;
   cursor: pointer;
 }
-.spiral-face img { display: block; width: 100%; aspect-ratio: 1; object-fit: contain; border-radius: inherit; user-select: none; }
+.spiral-face img { display: block; width: 100%; height: 100%; aspect-ratio: 1500 / 2078; object-fit: contain; border-radius: inherit; user-select: none; }
 .spiral-source { opacity: 0; }
 .spiral-art { position: absolute; inset: 0; perspective: 800px; transform-style: preserve-3d; pointer-events: none; }
-.spiral-slice { position: absolute; top: 0; width: calc(100% / 7 + 1.5px); height: 100%; background-size: var(--tile) var(--tile); backface-visibility: hidden; }
+.spiral-slice { position: absolute; top: 0; width: calc(100% / 7 + 1.5px); height: 100%; background-size: var(--tile) auto; backface-visibility: hidden; }
 .spiral-slice:first-child { border-radius: 28% 0 0 28% / 4% 0 0 4%; }
 .spiral-slice:last-child { border-radius: 0 28% 28% 0 / 0 4% 4% 0; }
 .spiral-static .spiral-source { opacity: 1; }
@@ -522,7 +522,7 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
 @media (max-width: 700px) { .location-detail-layout { grid-template-columns: 1fr; gap: .5rem; } .location-detail { padding-top: 3rem; } .location-flip { max-width: 360px; margin: auto; } }
 @media (prefers-reduced-motion: reduce) { .location-detail[open] { animation: none; } .location-flip-sheet { transition: none; } }
 .spiral-static { height: auto; min-height: 100svh; }
-.spiral-static .spiral-scene { flex: none; height: max(16rem, 52svh); --tile: min(56vw, 40svh, 300px); }
+.spiral-static .spiral-scene { flex: none; height: max(20rem, 58svh); --tile: min(48vw, 28svh, 240px); }
 @media (hover: hover) and (pointer: fine) {
   .spiral-plane:hover { z-index: 200; }
   .spiral-plane .spiral-face:hover { filter: brightness(1.07); }
@@ -531,7 +531,7 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
   .spiral-section { gap: 0.75rem; }
   .spiral-heading p { font-size: 0.6rem; letter-spacing: 0.15em; }
   .spiral-heading h2 { font-size: clamp(2.1rem, 8vw, 3rem); }
-  .spiral-scene { --tile: min(56vw, 30svh, 240px); perspective: 750px; }
+  .spiral-scene { --tile: min(48vw, 27svh, 220px); perspective: 750px; }
   .spiral-caption { display: flex; width: 100%; justify-content: space-between; align-items: center; gap: 1rem; }
   .spiral-caption > div > span { margin-top: 0; }
 }

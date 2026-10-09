@@ -55,16 +55,29 @@
     await settle(() => selected() === index && resting())
   }
   check(faces.length === 24, 'Exactly 24 location cards')
-  check(new Set(locations.map(card => card.image)).size === 24 && new Set(locations.flatMap(card => [card.image, card.back])).size === 48, '24 distinct F1/F2 pairs replace every placeholder')
-  check(locations.every(card => [card.image, card.back].every(src => {
+  check(new Set(locations.map(card => card.image)).size === 24
+    && new Set(locations.map(card => card.spiralImage)).size === 24
+    && new Set(locations.flatMap(card => [card.image, card.back, card.spiralImage])).size === 72
+    && locations.every(card => card.image.endsWith(`${card.id}-front.webp`)
+      && card.back.endsWith(`${card.id}-back.webp`) && card.spiralImage.endsWith(`${card.id}-f3.webp`)),
+  '24 distinct F1/F2/F3 sets replace every placeholder')
+  check(locations.every(card => [card.image, card.back, card.spiralImage].every(src => {
     const image = preloadedImages.get(src)
-    return image?.complete && image.naturalWidth === image.naturalHeight && src.includes('.webp')
-  })), 'Both faces are decoded before the experience opens')
+    return image?.complete && Math.abs(image.naturalWidth / image.naturalHeight - (src === card.spiralImage ? 1500 / 2078 : 1)) < 0.01 && src.includes('.webp')
+  })), 'F1/F2 squares and portrait F3 artwork are decoded before the experience opens')
   check(!root.querySelector('.spiral-folio'), 'Number badges are removed from the artwork')
   check(locations.every(card => card.meaning && card.story && (!card.characterId || cards.some(c => c.id === card.characterId))
     && (!card.strategyId || strategies.some(s => s.id === card.strategyId))), 'Meaning, stories and current game references are complete')
+  check(['Cửa Nam Triệu', 'Bến Chuyển Gỗ', 'Bến Tập Kết'].every(name => locations.some(card => card.name === name)),
+    'Renamed places match the redesigned artwork')
   check(triggers.length === (staticScene ? 0 : 1), 'Only one chapter trigger, none for static scene')
-  check(faces.every((face) => { const img = face.querySelector('img'); return img.complete && img.naturalWidth === img.naturalHeight && img.loading === 'eager' }), 'All square artwork is ready before browsing')
+  check(faces.every((face, index) => {
+    const img = face.querySelector('img')
+    return img.currentSrc.endsWith(locations[index].spiralImage) && img.complete
+      && Math.abs(img.naturalWidth / img.naturalHeight - 1500 / 2078) < 0.01 && img.loading === 'eager'
+  }), 'All 24 spiral faces use their eager-loaded portrait F3 artwork')
+  check(faces.every((face, index) => face.getAttribute('aria-label') === `Xem tranh F3 của địa danh ${locations[index].name}`),
+    'Spiral controls identify each F3 illustration')
   check(getComputedStyle(scene).touchAction.includes('pan-y'), 'Vertical touch scrolling remains native')
   check(!root.querySelector('input, .spiral-browse, .spiral-zoom'), 'Separate browsing controls are removed')
   check(getComputedStyle(scene).maskImage === 'none', 'No horizontal fade band around the scene')
@@ -83,7 +96,7 @@
     return document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)?.closest('.spiral-face') === faces[12]
   })
   const r = faces[12].getBoundingClientRect()
-  check(Math.abs(r.width - r.height) < 1 && r.width >= 120 && r.left >= 0 && r.right <= innerWidth + 1, 'Front card is square and fits the viewport')
+  check(Math.abs(r.width / r.height - 1500 / 2078) < 0.01 && r.width >= 120 && r.left >= 0 && r.right <= innerWidth + 1, 'F3 card keeps its portrait ratio and fits the viewport')
   check(document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)?.closest('.spiral-face') === faces[12], 'Front card is clickable')
   check(faces.filter((face) => face.tabIndex === 0).length === 1, 'Only current card enters the tab sequence')
   if (st) {
@@ -109,7 +122,8 @@
   faces[13].click()
   await settle(() => faces[13].getBoundingClientRect().width > width * 1.15)
   const zoom = faces[13].getBoundingClientRect()
-  check(faces[13].getAttribute('aria-expanded') === 'true' && zoom.left >= 0 && zoom.right <= innerWidth + 1 && zoom.top >= 0 && zoom.bottom <= innerHeight, 'Zoom is accessible and stays on screen')
+  check(faces[13].getAttribute('aria-label') === `Thu nhỏ tranh F3 của địa danh ${locations[13].name}`
+    && zoom.left >= 0 && zoom.right <= innerWidth + 1 && zoom.top >= 0 && zoom.bottom <= innerHeight, 'Zoom is announced and stays on screen')
   const detail = root.querySelector('.location-detail')
   await settle(() => detail.open)
   check(detail.matches(':modal') && detail.contains(document.activeElement), 'Detail opens as a native modal with focus inside')
@@ -117,7 +131,8 @@
   check(detailBounds.left >= 0 && detailBounds.right <= innerWidth + 1 && detailBounds.top >= 0 && detailBounds.bottom <= innerHeight + 1
     && detail.scrollWidth <= detail.clientWidth + 1, 'Detail fits the viewport without horizontal overflow')
   check(detail.querySelector('h3').textContent === locations[13].name && detail.querySelector('.location-meaning').textContent === locations[13].meaning, 'Detail matches the chosen location and source meaning')
-  check(detail.querySelectorAll('.location-flip img')[1].src.endsWith(locations[13].back), 'The correct F2 is paired with F1')
+  check(detail.querySelectorAll('.location-flip img')[0].src.endsWith(locations[13].image)
+    && detail.querySelectorAll('.location-flip img')[1].src.endsWith(locations[13].back), 'F1 and F2 remain paired in the detail dialog')
   detail.querySelector('.location-face-actions button').click()
   await settle(() => detail.querySelector('.location-flip').dataset.back === 'true')
   check(detail.querySelectorAll('.location-flip img')[1].getAttribute('aria-hidden') === 'false', 'Flipping exposes the back face to assistive technology')
