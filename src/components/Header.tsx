@@ -38,16 +38,18 @@ export default function Header() {
       setActive(stops.filter((stop) => stop.top <= position).at(-1)?.id ?? 'top')
       if (window.scrollY < 24) setOpen(false)
       // The pinned cover owns the morph; static/reduced-motion pages dock instantly.
-      if (!ScrollTrigger.getAll().some(st => st.pin && st.trigger?.querySelector('#top'))) {
-        const brand = document.querySelector<HTMLElement>('.site-brand')!
-        const docked = window.scrollY > 24
-        brand.inert = !docked
+      const cover = ScrollTrigger.getAll().find(st => st.pin && st.trigger?.querySelector('#top'))
+      const brand = document.querySelector<HTMLElement>('.site-brand')!
+      const docked = cover ? (cover.animation?.time() ?? 0) >= 1.4 : window.scrollY > 24
+      brand.inert = !docked
+      document.querySelector<HTMLElement>('.site-header')!.dataset.docked = String(docked)
+      if (!cover) {
         const scale = Math.min(innerWidth * (innerWidth > innerHeight ? 0.78 : 0.9), innerHeight * 0.77, 900) / brand.offsetWidth
         gsap.set('.site-cta, .chapter-nav', { autoAlpha: docked ? 1 : 0 })
-        gsap.set(brand, { autoAlpha: 1, scale: docked ? 1 : scale, force3D: false, color: docked ? '#f6e9d7' : '#9c2923', '--brand-outline': docked ? '0px' : '0.6px',
+        gsap.set(brand, { autoAlpha: 1, scale: docked ? 1 : scale, force3D: false, color: docked ? '#231511' : '#9c2923', '--brand-outline': docked ? '0px' : '0.6px',
           x: docked ? 0 : (innerWidth - brand.offsetWidth * scale) / 2 - brand.offsetLeft,
           y: docked ? 0 : document.querySelector<HTMLElement>('.hero-copy')!.offsetTop - brand.offsetHeight * scale - 16 - brand.offsetTop })
-        gsap.set('.site-header', { mixBlendMode: docked ? 'difference' : 'normal' })
+        gsap.set('.site-header', { mixBlendMode: 'normal' })
       }
     }
     const measure = () => {

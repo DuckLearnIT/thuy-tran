@@ -57,6 +57,7 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
       tl.eventCallback('onUpdate', () => {
         const inert = tl.time() < 1.4
         if (brand.inert !== inert) brand.inert = inert
+        header.dataset.docked = String(!inert)
       })
       const titleScale = () => Math.min(stage.clientWidth * (stage.clientWidth > stage.clientHeight ? 0.78 : 0.9), stage.clientHeight * 0.77, 900) / brand.offsetWidth
       const titleX = () => (stage.clientWidth - brand.offsetWidth * titleScale()) / 2 - brand.offsetLeft
@@ -68,8 +69,7 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
         .set(brand, { x: titleX, y: titleY, scale: titleScale, force3D: false, autoAlpha: 1, color: '#9c2923', '--brand-outline': '0.6px' }, 0)
         .fromTo(brand, { x: titleX, y: titleY, scale: titleScale, '--brand-outline': '0.6px' }, { x: 0, y: 0, scale: 1, '--brand-outline': '0px', duration: 0.75, ease: 'power2.inOut', immediateRender: false }, 0.65)
         .to(navigation, { autoAlpha: 1, duration: 0.25 }, 1.4)
-        .set(header, { mixBlendMode: 'difference' }, 1.4)
-        .set(brand, { color: '#f6e9d7', '--brand-outline': '0px' }, 1.4)
+        .set(brand, { color: '#231511', '--brand-outline': '0px' }, 1.4)
         .fromTo('.hero-fade', { y: 0, opacity: 1 }, { y: -60, opacity: 0, duration: 0.65 }, 0.65)
         .fromTo('.hero-person', { x: 0, y: 0, rotation: 0, scale: 1 }, {
           x: (_index, element) => -Number(getComputedStyle(element).getPropertyValue('--hand-x')) * sun.offsetWidth * 0.08,

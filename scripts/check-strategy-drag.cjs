@@ -15,6 +15,7 @@ const mocks = {
   gsap: {}, 'gsap/ScrollTrigger': {},
   '../data/strategies': { strategies: Array.from({ length: 7 }, (_, id) => ({ id, name: `Card ${id}`, bg: '#000', fg: '#fff', lines: [] })) },
   '../hooks/useReducedMotion': { default: () => false, __esModule: true },
+  '../hooks/useCompactChapters': { default: () => false, __esModule: true },
 }
 const source = fs.readFileSync('src/components/Strategies.tsx', 'utf8')
 const js = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true } }).outputText

@@ -3,7 +3,7 @@ import gsap from 'gsap'
 import cover from '../assets/bia-thuy-tran.webp'
 import { cards } from '../data/cards'
 import { allowedStep, deliveryErrors, deliveryFields, DRAFT_KEY, emptyDraft, fieldError, priceLabel, provinces, readDraft, sales, totals, wardsFor,
-  type CheckoutStep, type DeliveryField } from '../data/checkout'
+  type CheckoutDraft, type CheckoutStep, type DeliveryField } from '../data/checkout'
 import { preloadAssets } from '../preloadAssets'
 import useReducedMotion from '../hooks/useReducedMotion'
 import Curtain from './Curtain'
@@ -25,6 +25,7 @@ export default function Preorder() {
   const [step, setStep] = useState<CheckoutStep>(initial.step)
   const [errors, setErrors] = useState<Partial<Record<DeliveryField, string>>>({})
   const [saved, setSaved] = useState(true)
+  const [deletedDraft, setDeletedDraft] = useState<{ draft: CheckoutDraft; step: CheckoutStep } | null>(null)
   const direction = useRef(1)
   const previousStep = useRef(step)
   const [attempt, setAttempt] = useState(0)
@@ -53,11 +54,13 @@ export default function Preorder() {
     setStep(target)
   }
   const changeField = (name: DeliveryField, value: string) => {
+    setDeletedDraft(null)
     setDraft((draft) => ({ ...draft, [name]: value, ...(name === 'province' ? { ward: '' } : {}) }))
     setErrors((errors) => ({ ...errors, ...(name in errors ? { [name]: fieldError(name, value, draft.province) } : {}), ...(name === 'province' ? { ward: '' } : {}) }))
   }
   const submit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    setDeletedDraft(null)
     if (step === '1') {
       const next = { ...draft, selected: true }
       setDraft(next)
@@ -71,11 +74,18 @@ export default function Preorder() {
     } else if (step === '3') goToStep('preview')
   }
   const clearDraft = () => {
+    setDeletedDraft({ draft, step })
     setDraft({ ...emptyDraft })
     setErrors({})
     direction.current = -1
     updateUrl('1', true)
     setStep('1')
+  }
+  const restoreDraft = () => {
+    if (!deletedDraft) return
+    setDraft(deletedDraft.draft)
+    setDeletedDraft(null)
+    goToStep(deletedDraft.step, deletedDraft.draft)
   }
 
   useEffect(() => {
@@ -205,6 +215,7 @@ export default function Preorder() {
               </li>)}</ol>
             </nav>
             <form noValidate onSubmit={submit}>
+              {deletedDraft && <div className="po-undo" role="status"><span>Đã xóa nháp.</span><button type="button" className="po-edit" onClick={restoreDraft}>Khôi phục nháp vừa xóa</button></div>}
               <div key={step} className="po-step-panel" data-step={step}>
                 <p className="po-step-count">{step === 'preview' ? 'Bản tổng hợp' : `Bước 0${step} / 03`}</p>
                 <h3 id="po-step-title" className="display" tabIndex={-1}>{({ '1': 'Chọn bộ game.', '2': 'Hẹn nơi gặp.', '3': 'Kiểm tra phiếu.', preview: 'Phiếu mẫu.' })[step]}</h3>
@@ -215,9 +226,9 @@ export default function Preorder() {
                   <fieldset className="po-quantity">
                     <legend>Số bộ game <small>Từ 1 đến 99 bộ</small></legend>
                     <div>
-                      <button type="button" aria-label="Giảm số bộ game" disabled={draft.quantity === 1} onClick={() => setDraft((draft) => ({ ...draft, quantity: draft.quantity - 1 }))}>−</button>
+                      <button type="button" aria-label="Giảm số bộ game" disabled={draft.quantity === 1} onClick={() => { setDeletedDraft(null); setDraft((draft) => ({ ...draft, quantity: draft.quantity - 1 })) }}>−</button>
                       <output aria-live="polite" aria-label="Số bộ đã chọn"><strong key={draft.quantity}>{String(draft.quantity).padStart(2, '0')}</strong></output>
-                      <button type="button" aria-label="Tăng số bộ game" disabled={draft.quantity === 99} onClick={() => setDraft((draft) => ({ ...draft, quantity: draft.quantity + 1 }))}>+</button>
+                      <button type="button" aria-label="Tăng số bộ game" disabled={draft.quantity === 99} onClick={() => { setDeletedDraft(null); setDraft((draft) => ({ ...draft, quantity: draft.quantity + 1 })) }}>+</button>
                     </div>
                   </fieldset>
                   <dl className="po-totals"><div><dt>Giá một bộ</dt><dd>{priceLabel(sales.unitPrice)}</dd></div><div><dt>Tạm tính · {draft.quantity} bộ</dt><dd>{priceLabel(amount.subtotal)}</dd></div><div><dt>Lịch giao dự kiến</dt><dd>{sales.deliveryDate ?? 'Chưa công bố'}</dd></div></dl>

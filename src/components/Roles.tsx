@@ -3,6 +3,7 @@ import gsap from 'gsap'
 import SplitChars from './SplitChars'
 import { cards, type CardData } from '../data/cards'
 import useReducedMotion from '../hooks/useReducedMotion'
+import useCompactChapters from '../hooks/useCompactChapters'
 import { strategies } from '../data/strategies'
 
 /* The skill badge is cropped straight out of each card's artwork. */
@@ -63,10 +64,12 @@ export default function Roles() {
   const counter = useRef<HTMLSpanElement>(null)
   const bigNum = useRef<HTMLSpanElement>(null)
   const reduced = useReducedMotion()
+  const compact = useCompactChapters()
+  const staticLayout = reduced || compact
   const n = cards.length
 
   useLayoutEffect(() => {
-    if (reduced) return
+    if (staticLayout) return
     const ctx = gsap.context(() => {
       const cardEls = gsap.utils.toArray<HTMLElement>('.stack-card')
       const infos = gsap.utils.toArray<HTMLElement>('.info')
@@ -169,9 +172,9 @@ export default function Roles() {
       tl.scrollTrigger?.refresh()
     }, root)
     return () => ctx.revert()
-  }, [reduced, n])
+  }, [staticLayout, n])
 
-  if (reduced) {
+  if (staticLayout) {
     return (
       <section ref={root} id="roles">
         {cards.map((c, i) => (
@@ -212,7 +215,7 @@ export default function Roles() {
       >
         01
       </span>
-      <div className="absolute inset-x-0 top-0 h-full px-[clamp(1rem,3vw,2.5rem)] pt-16 pb-6 lg:pt-20 lg:pb-10 grid grid-rows-[minmax(0,44svh)_1fr] lg:grid-rows-1 lg:grid-cols-12 gap-x-4">
+      <div className="roles-layout absolute inset-x-0 top-0 h-full px-[clamp(1rem,3vw,2.5rem)] pt-24 pb-14 lg:pt-20 lg:pb-14 grid grid-rows-[minmax(0,1fr)_auto] lg:grid-rows-1 lg:grid-cols-12 gap-x-4 gap-y-5">
         {/* card stack */}
         <div className="relative lg:col-start-8 lg:col-span-5 lg:row-start-1 row-start-1 flex items-center justify-center z-10">
           <div className="relative h-full lg:h-[min(78svh,100%)] max-w-full [perspective:1400px]" style={{ aspectRatio: '1500 / 2078' }}>

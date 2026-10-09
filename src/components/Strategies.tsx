@@ -3,6 +3,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { strategies as list } from '../data/strategies'
 import useReducedMotion from '../hooks/useReducedMotion'
+import useCompactChapters from '../hooks/useCompactChapters'
 
 const n = list.length
 const carouselDuration = n - 1
@@ -33,9 +34,11 @@ export default function Strategies() {
   const [dragging, setDragging] = useState(false)
   const [active, setActive] = useState(0)
   const reduced = useReducedMotion()
+  const compact = useCompactChapters()
+  const staticLayout = reduced || compact
 
   useLayoutEffect(() => {
-    if (reduced) return
+    if (staticLayout) return
 
     const ctx = gsap.context(() => {
       // Lift each wrapper in a left-to-right wave; the carousel owns the images.
@@ -159,7 +162,7 @@ export default function Strategies() {
     }, root)
 
     return () => { trigger.current = null; ctx.revert() }
-  }, [reduced])
+  }, [staticLayout])
 
   const jump = (j: number) => {
     const st = trigger.current
@@ -168,7 +171,7 @@ export default function Strategies() {
     window.scrollTo({ top: st.start + p * (st.end - st.start), behavior: 'smooth' })
   }
 
-  if (reduced) {
+  if (staticLayout) {
     return (
       <section id="ke-sach" className="bg-paper px-[clamp(1rem,3vw,2.5rem)] py-20 text-ink">
         <h2 className="display text-[clamp(3rem,10vw,8rem)]">Bảy kế sách</h2>
@@ -213,7 +216,7 @@ export default function Strategies() {
           className="ks-name display whitespace-nowrap text-[clamp(4.5rem,18vw,22rem)] leading-none transition-all duration-500"
           style={{
             color: 'transparent',
-            WebkitTextStroke: '1.5px currentColor',
+            WebkitTextStroke: `1.5px ${cur.fg}`,
             opacity: 0.35,
           }}
         >
@@ -274,7 +277,7 @@ export default function Strategies() {
         }}>
         <div className="ks-stage relative flex items-center justify-center [transform-style:preserve-3d]">
           <div
-            className="relative w-[min(54vw,34svh)] sm:w-[min(44vw,38svh)] lg:w-[min(23vw,46svh)] max-w-[340px]"
+            className="ks-card-slot relative w-[min(54vw,34svh)] sm:w-[min(44vw,38svh)] lg:w-[min(23vw,46svh)] max-w-[340px]"
             style={{ aspectRatio: '1500 / 2078' }}
           >
             {list.map((s, i) => (
@@ -305,21 +308,20 @@ export default function Strategies() {
           <h3 className="display mt-1 mb-3 text-[clamp(1.8rem,3.6vw,3.4rem)] !font-bold">{cur.name}</h3>
           <Lines s={cur} />
         </div>
-        <div className="flex items-center gap-1.5 self-start lg:self-end" role="tablist" aria-label="Chọn lá kế sách">
+        <div className="ks-controls flex flex-wrap items-center gap-2 self-start lg:self-end" role="group" aria-label="Chọn lá kế sách">
           {list.map((s, i) => (
             <button
               key={s.id}
               type="button"
-              role="tab"
-              aria-selected={i === active}
+              aria-pressed={i === active}
               aria-label={s.name}
               onClick={() => jump(i)}
-              className="display grid size-11 place-items-center rounded-full border text-sm !font-bold transition-all duration-300 cursor-pointer"
+              className="display grid size-11 shrink-0 place-items-center rounded-full border text-sm !font-bold transition-all duration-300 cursor-pointer"
               style={{
-                borderColor: 'currentColor',
-                background: i === active ? 'currentColor' : 'transparent',
-                color: i === active ? cur.bg : 'currentColor',
-                transform: i === active ? 'scale(1.18)' : 'scale(1)',
+                borderColor: i === active ? '#f6e9d7' : cur.fg,
+                background: i === active ? '#f6e9d7' : 'transparent',
+                color: i === active ? '#231511' : cur.fg,
+                boxShadow: i === active ? `0 0 0 2px ${cur.bg}, 0 0 0 3px #f6e9d7` : 'none',
                 opacity: i === active ? 1 : 0.65,
               }}
             >
