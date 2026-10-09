@@ -4,6 +4,7 @@
 - **Phạm vi:** code đang có, quyết định sản phẩm, ràng buộc triển khai, kiểm tra và việc chưa chốt.
 - **Chủ sở hữu quyết định sản phẩm/artwork/nội dung:** người dùng trong cuộc trò chuyện này.
 - **Mục đích:** tiếp tục dự án bằng repo và tài liệu này, không cần đoán lại toàn bộ lịch sử chat.
+- **Task địa danh đang dang dở:** xem [handoff thay artwork 24 địa danh](AI-HANDOFF-LOCATION-ARTWORK.md); trạng thái Git hiện tại luôn là nguồn sự thật.
 
 ## 1. Đọc phần này trước
 
@@ -21,7 +22,7 @@
 | Workflow custom deploy | `.github/workflows/deploy.yml`, `workflow_dispatch`, trạng thái remote `disabled_manually` |
 | Nhánh phát hành đã quan sát | `origin/gh-pages` ở `65b67a9` — Updates |
 | Nhận đơn/thanh toán | Chưa có backend; checkout chỉ tạo phiếu mẫu trong trình duyệt |
-| Task sản phẩm còn được giao | Không có. Việc đang hoàn thành là handoff này |
+| Task sản phẩm còn được giao | Thay artwork mới F1/F2/F3 cho 24 địa danh; đang dở, xem handoff task riêng |
 
 Thông tin Pages/workflow được đọc từ GitHub ngày bàn giao, không suy ra từ giao diện local. Một workflow hệ thống `pages-build-deployment` vẫn hoạt động để phục vụ nhánh phát hành; đó không phải workflow custom deploy đang tắt.
 
@@ -121,7 +122,7 @@ Repo assets là đầu vào runtime. Thư mục Downloads dưới đây là ngu�
 | --- | --- |
 | `C:\Users\Duck\Downloads\Trans` | Cutout nhân vật gốc; xem `docs/hero-artwork-sources.json` |
 | `C:\Users\Duck\Downloads\char pack 2.0` | Card nhân vật, trong đó `quantrinhsat.png` và `truyenlenhcard.png` từng được sửa tên/phân biệt |
-| `C:\Users\Duck\Downloads\FINAL\FINAL` | Đủ 24 cặp địa danh F1/F2; thư mục user nêu ban đầu là FINAL |
+| `C:\Users\Duck\Downloads\CHỐT\CHỐT` | Bộ mới đủ 24 địa danh × F1/F2/F3; repo giữ WebP đã tối ưu |
 | `C:\Users\Duck\Downloads\Location2\Bandoanh.png` | Mẫu địa danh cũ, đã được thay; không dùng lại làm 24 placeholder |
 | `C:\Users\Duck\Downloads\Generated Image October 08, 2026 - 2_22PM.jpg` | Nguồn background giấy hero, bản WebP hiện là `src/assets/hero/hero-paper.webp` |
 
@@ -140,7 +141,7 @@ Lỗi tài nguyên → trạng thái lỗi/retry; không mở trang với ảnh 
 WebGL không tạo/chuẩn bị được → Cover fallback tĩnh → vẫn mở được trang
 ```
 
-`preloadAssets.ts` nạp cover, paper, heroCast, cards, strategies và cả 48 mặt địa danh. Giữ ảnh decode trong `preloadedImages: Map<string, HTMLImageElement>` để DOM và texture dùng lại. Mỗi task nạp có timeout 30 giây, kết quả dùng `Promise.allSettled`, có lỗi thì báo failure. App dành 90% tiến trình cho preload; còn lại cho scene/DOM.
+`preloadAssets.ts` nạp cover, paper, heroCast, cards, strategies và đủ 72 artwork F1/F2/F3 của 24 địa danh. Giữ ảnh decode trong `preloadedImages: Map<string, HTMLImageElement>` để DOM và texture dùng lại. Mỗi task nạp có timeout 30 giây, kết quả dùng `Promise.allSettled`, có lỗi thì báo failure. App dành 90% tiến trình cho preload; còn lại cho scene/DOM.
 
 Người dùng chủ động chọn **nạp sẵn toàn trang trước khi trải nghiệm**. Không tự chuyển sang lazy-load theo scroll để làm số tải ban đầu đẹp hơn. Sóng trên thanh loading chạy liên tục dù % đứng yên; reduced motion có nhánh giảm chuyển động. Curtain không chạy lại khi đổi bước checkout.
 
@@ -170,8 +171,8 @@ Thông số/hợp đồng kỹ thuật:
 - Cover pin `+=1200%`, tăng từ 10 lên 12 viewport; khoảng 2 viewport mới dành cho địa danh.
 - Nhịp phase địa danh: 15% đổi bộ, 40% trải, 25% giữ, 20% thu. Không kéo dài thành 24 trigger riêng.
 - GSAP state mới: `locationsReveal`, `locationsExit`. Labels: `locations-in`, `locations-showcase`, `locations-out`.
-- Đầu vào Three.js: `locations: { image, back }[]`, thứ tự từ dữ liệu hiện có.
-- Dùng hình học vuông chung, UV chuẩn, bo 4%, giấy mỏng và shadow nhẹ. F1 front/F2 back, không F3 hoặc số trên tranh. Mặt tranh `toneMapped: false`.
+- Đầu vào Three.js: `locations: { image, back }[]`, thứ tự từ dữ liệu hiện có. F3 không vào cảnh mở hộp.
+- Dùng hình học vuông chung, UV chuẩn, bo 4%, giấy mỏng và shadow nhẹ. Cảnh mở hộp dùng F1 front/F2 back; F3 không xuất hiện trong cảnh này, không thêm số lên artwork. Mặt tranh `toneMapped: false`.
 - Chuẩn bị/upload/compile texture trước khi curtain mở; dispose texture/material/geometry một lần mỗi tài nguyên khi scene tháo.
 - Fit camera toàn bàn + copy; desktop đủ rộng copy trái, mobile copy trên. Không crop lá ngoài cùng.
 - Desktop chỉ tilt cả bàn rất nhẹ, tối đa 2°. Không nâng/lật/mở từng lá trong cảnh mở hộp. Mobile dùng scroll.
@@ -220,7 +221,7 @@ Prefix `Quân` là trường dữ liệu riêng; không thêm prefix lần hai k
 
 7 kế sách theo `strategies.ts`: Triều Biến, Cờ Lệnh, Gia Cố, Nghi Binh, Cọc Ngầm, Dò Luồng, Mai Phục. Một số mô tả là copy giới thiệu; không đủ để tự dựng toàn bộ luật thắng/thua.
 
-24 địa danh: `locations.ts` với `id,name,image,back,meaning,story,source,characterId?,strategyId?`. Tranh trong `src/assets/locations/`: 48 WebP, 896×896, quality 90, giữ màu. F1 trước/F2 sau; F3 là thẻ bốc, không dùng ở website này.
+24 địa danh: `locations.ts` với `id,name,image,back,spiralImage,meaning,story,source,characterId?,strategyId?`. Tranh trong `src/assets/locations/`: 72 WebP quality 90, giữ màu gốc. F1/F2 là mặt vuông 896×896 dùng trong cảnh mở hộp và hộp thoại. F3 là tranh dọc 896×1242 (tỉ lệ nguồn 1500:2078), chỉ dùng làm mặt nhìn thấy của 24 lá trong spiral; hộp thoại vẫn lật giữa F1/F2. Preload phải giải mã cả 72 ảnh trước curtain. Ba tên mới theo artwork: Cửa Nam Triệu, Bến Chuyển Gỗ, Bến Tập Kết.
 
 Nguồn ý nghĩa: https://docs.google.com/document/d/1WqryE88CVgMAJLq1xULrtpy2IznMl32enYt3hA5XkKE/edit?tab=t.vow30oeu9xl6 . Bảng lúc nhập có 7 cột; cột cuối chứa liên kết cơ chế, cột 6 trống. User gọi là cột 5 trong chat nhưng đã đối chiếu nội dung thật; không đọc nhầm cột theo số trong lời nhắc cũ.
 
@@ -228,16 +229,16 @@ Nguồn ý nghĩa: https://docs.google.com/document/d/1WqryE88CVgMAJLq1xULrtpy2I
 | --- | --- |
 | Lương Xâm | Nơi xuất phát Nha Tướng |
 | Cửa biển An Bang | Quân Hướng Đạo |
-| Bến vận chuyển gỗ | Nha Binh |
+| Bến Chuyển Gỗ | Nha Binh |
 | Bãi bùn triều | Quân Thuyền Nhẹ |
 | Rừng ven sông | Thám Quân |
 | Bãi tiếp lương | Quân Truyền Lệnh |
 | Tràng Kênh, Bờ lau | Mai Phục |
 | Bãi cọc ngầm, Bãi chuẩn bị cọc | Cọc Ngầm |
 | Lạch nước sâu, Ngã ba dòng nước | Dò Luồng |
-| Bến thuyền nhẹ, Bãi tập kết | Nghi Binh |
+| Bến thuyền nhẹ, Bến Tập Kết | Nghi Binh |
 
-Tên render lấy từ artwork/data hiện tại: Gia Viên, Cửa Bạch Đằng, Bãi Tiếp Lương, Vùng Nước Lặng. Ô nguồn trống không được gán cơ chế mới. Có ghi chú mapping tên cũ tại `src/assets/locations/README.md`.
+Tên render lấy từ artwork/data hiện tại: Gia Viên, Cửa Nam Triệu, Bến Chuyển Gỗ, Bến Tập Kết, Bãi Tiếp Lương, Vùng Nước Lặng. Ô nguồn trống không được gán cơ chế mới. Có ghi chú mapping tên cũ tại `src/assets/locations/README.md`.
 
 ## 8. Hợp đồng checkout hiện tại
 
@@ -301,7 +302,7 @@ Kênh thật: https://www.facebook.com/daugiaothoi và https://www.tiktok.com/@d
 | --- | --- |
 | `check-hero.js` | Paste toàn nội dung vào console localhost; artwork/framing/parallax/heading/CTA/dock/sun→box/reverse/refresh |
 | `check-box-locations.js` | Console localhost; đủ 48 texture, layout 24 lá, phase 2 viewport, reverse/refresh/fallback; có đọc pixels canvas |
-| `check-locations.js` | Console localhost; spiral, keyboard, chọn card/dialog/F1-F2/mapping; để lại card 13 |
+| `check-locations.js` | Console localhost; 72 artwork/F3 spiral, keyboard, chọn card/dialog F1-F2/mapping; để lại card 13 |
 | `check-preorder.js` | Tab mới `?page=dat-truoc`, chờ curtain mở; 3 lượt với reload theo kết quả để thử draft/corrupt/storage |
 | `check-footer.js` | Console sau curtain; quạt thẻ/footer/credit/link/keyboard |
 | `check-strategy-drag.cjs` | `node scripts/check-strategy-drag.cjs`; handlers drag thật qua mock, không thay kiểm tra render |

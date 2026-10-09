@@ -21,8 +21,9 @@ hành vi cần giữ, dữ liệu, lịch sử quyết định và cách kiểm 
   chi tiết hoặc đổi ảnh. Hero giấu mép tranh khuyết bằng bố cục sát viền.
 - Checkout hiện chỉ là **phiếu mẫu**, không gửi đơn, không thu tiền. Giá/phí/
   lịch giao/ngân hàng chưa có: dùng `null`, không dựng giá hay QR thanh toán giả.
-- 24 địa danh đã đủ F1/F2, dùng WebP vuông bo góc; không dùng F3, không thêm
-  số lên tranh. Tên nhân vật lấy từ `src/data/cards.ts`.
+- 24 địa danh có F1/F2 cho hộp và hộp thoại, F3 chỉ dùng làm tranh dọc trong
+  spiral; giữ đúng tỉ lệ WebP và không thêm số lên tranh. Tên nhân vật lấy từ
+  `src/data/cards.ts`.
 - Không chạm hoặc commit file không liên quan. Khi bàn giao hiện có
   `Anki_HSK3.0_New_HSK_Course_2_L13_selected.csv` chưa được theo dõi bởi Git.
 
