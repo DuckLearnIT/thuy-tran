@@ -4,6 +4,21 @@ Website giới thiệu board game chiến thuật Bạch Đằng, xây dựng b�
 
 Website: https://ducklearnit.github.io/thuy-tran/
 
+Bản xem thử riêng: https://ducklearnit.github.io/thuy-tran-preview/
+
+Repo bản xem thử: https://github.com/DuckLearnIT/thuy-tran-preview. Ngày
+10/10/2026 đã xuất bản bản `81b4d20` tại đây; website chính thức vẫn giữ bản
+đã phát hành. Push code không tự cập nhật bản xem thử.
+
+Khi được yêu cầu cập nhật bản xem thử, chạy typecheck/build trước và chỉ định
+đích xuất bản rõ ràng để không đẩy nhầm vào website chính thức:
+
+```sh
+npx tsc --noEmit
+npm run build
+npx gh-pages -d dist --dotfiles -r https://github.com/DuckLearnIT/thuy-tran-preview.git
+```
+
 ## Tiếp tục bằng AI agent
 
 Đọc [AGENTS.md](AGENTS.md) và [handoff chi tiết](docs/AI-HANDOFF.md) trước khi sửa. Handoff ghi baseline đã chọn, cơ chế animation, dữ liệu, các hướng đã bỏ và quy tắc giữ GitHub Pages ở bản cũ trong lúc hoàn thiện local.
