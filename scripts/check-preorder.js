@@ -36,7 +36,10 @@
       return box.width > 0 && box.width <= innerWidth && box.right <= innerWidth + 1
     }), 'Fields and CTA fit the viewport')
   }
-  check(root && !root.querySelector('[inert]'), 'Page unlocks after preloading')
+  check(root?.querySelector('.po-content:not([inert])'), 'Page unlocks after preloading')
+  check(root.querySelectorAll('.chapter-nav').length === 1 && root.querySelectorAll('.page-progress').length === 1, 'Checkout reuses one shared navbar and reading progress')
+  check([...root.querySelectorAll('.nav-chapters a')].map(a => a.getAttribute('href')).join() === './#top,./#loi-lenh,./#roles,./#ke-sach,./#dia-diem,?page=cach-choi'
+    && root.querySelector('.site-cta[href="./#nhan-lenh"]'), 'Original menu and Nhan lenh return to the right pages')
   check(document.fonts.check('700 16px "NVN Yellost"'), 'Display font is ready')
   check([...root.querySelectorAll('img')].every((img) => img.complete && img.naturalWidth > 0), 'All visible and hidden assets are ready')
 
@@ -89,7 +92,7 @@
   fits()
   await click('.po-submit')
   check(current() === '2' && new URLSearchParams(location.search).get('step') === '2', 'Continue opens delivery and updates URL')
-  check(!root.querySelector('[role="progressbar"]'), 'Curtain does not run between steps')
+  check(!root.querySelector('[role="progressbar"]:not(.page-progress)'), 'Curtain does not run between steps')
   check(document.activeElement.id === 'po-step-title', 'Step change focuses the heading')
   check(root.querySelector('[name="province"]').options.length === 35, 'All 34 provinces are bundled and available')
   check(root.querySelector('[name="ward"]').disabled && root.querySelector('[name="ward"]').options.length === 1, 'Wards wait for a province selection')

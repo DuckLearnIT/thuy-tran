@@ -10,7 +10,10 @@
   // Allow the browser's delayed resize refresh to settle before seeking scenes.
   for (let i = 0; i < 30; i++) await frame()
   const root = document.querySelector(".rules-page")
-  check(root && !root.querySelector("[inert]"), "Rules page is unlocked")
+  check(
+    root && !root.querySelector(".rules-shell[inert]"),
+    "Rules page is unlocked",
+  )
   check(document.title === "Cách chơi — Thủy Trận", "Page title")
   check(document.fonts.check('700 16px "NVN Yellost"'), "Display font prepared")
   check(
@@ -20,6 +23,32 @@
     "Artwork prepared",
   )
   const story = root.querySelector(".match-story")
+  const sharedNav = root.querySelector('.chapter-nav[data-page="cach-choi"]')
+  check(
+    sharedNav && root.querySelectorAll(".page-progress").length === 1,
+    "Rules uses the shared navigation and one progress bar",
+  )
+  check(
+    root.querySelector('.site-brand[href="./#top"]') &&
+      root.querySelector('.site-cta[href="./#nhan-lenh"]'),
+    "Original brand and Nhan lenh links return to landing",
+  )
+  sharedNav.querySelector(".nav-toggle").click()
+  await frame()
+  check(sharedNav.dataset.open === "true", "Shared menu opens")
+  check(
+    [...sharedNav.querySelectorAll(".nav-chapters a")].map(a => a.getAttribute("href")).join() ===
+      "./#top,./#loi-lenh,./#roles,./#ke-sach,./#dia-diem,#cach-choi",
+    "Original landing menu is reused on Rules",
+  )
+  document.dispatchEvent(
+    new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+  )
+  await frame()
+  check(
+    sharedNav.dataset.open === "false",
+    "Escape closes the menu without requiring focus inside",
+  )
   const boardCheck = (board) => {
     const tiles = [...board.querySelectorAll(".match-tile")]
     check(
@@ -82,16 +111,29 @@
         "Board fits above controls",
       )
       check(controls.bottom <= innerHeight + 1, "Scene controls fit viewport")
-      if (innerWidth <= 760) {
-        const text = story.querySelector(".match-copy").getBoundingClientRect()
+      const text = story.querySelector(".match-copy").getBoundingClientRect()
+      const side = story.querySelector(".match-sidebar").getBoundingClientRect()
+      if (innerWidth <= 900) {
         check(text.bottom <= board.top, "Mobile text does not overlap board")
+        check(
+          board.bottom <= side.top + 1 && side.bottom <= controls.top + 1,
+          "Mobile card rail stays outside board and controls",
+        )
         check(
           text.top >=
             story.querySelector(".match-topline").getBoundingClientRect()
               .bottom,
           "Mobile title does not overlap scene label",
         )
-      }
+      } else
+        check(
+          text.right <= board.left && board.right <= side.left,
+          "Text, board and card rail occupy separate columns",
+        )
+      check(
+        side.left >= 0 && side.right <= innerWidth + 1,
+        "Card rail fits viewport",
+      )
     }
     await seek(0)
     check(
@@ -117,6 +159,10 @@
           story.querySelectorAll(".match-hand-fan img").length === 4,
           "Transfer provides fourth matching card",
         )
+      if (phase >= 1 && phase <= 3) {
+        const roster = story.querySelector('.match-roster').getBoundingClientRect()
+        check([...story.querySelectorAll('.match-hand-fan img')].every(img => img.getBoundingClientRect().bottom < roster.top || img.getBoundingClientRect().right < roster.left), "Card fan does not cover the character roster")
+      }
       if (phase === 4)
         check(
           story.querySelectorAll(".match-hand-pair img").length === 2,
@@ -158,6 +204,22 @@
           ),
           "Entire party reaches headquarters",
         )
+        const hq = story
+          .querySelector('[data-id="luong-xam"]')
+          .getBoundingClientRect()
+        check(
+          story.dataset.won === "true" &&
+            [...story.querySelectorAll(".match-pawn")].every((pawn) => {
+              const p = pawn.getBoundingClientRect()
+              return (
+                p.left + p.width / 2 >= hq.left &&
+                p.right - p.width / 2 <= hq.right &&
+                p.top + p.height / 2 >= hq.top &&
+                p.bottom - p.height / 2 <= hq.bottom
+              )
+            }),
+          "Victory waits for every pawn to actually reach headquarters",
+        )
       }
     }
     await seek(2)
@@ -176,7 +238,7 @@
     )
     check(
       story.querySelector(".match-table").clientWidth >=
-        Math.min(innerWidth - 40, 500),
+        Math.min(innerWidth - 40, innerWidth * 0.44, 500),
       "Board receives the main visual space",
     )
     check(
@@ -234,6 +296,15 @@
       Number(story.dataset.phase) === 2,
       "Context action advances to reinforcement",
     )
+    await seek(3)
+    story.querySelector(".match-sidebar .match-hand-fan").click()
+    await frame()
+    check(
+      dialog.open && dialog.querySelector("h3").textContent === "Cọc Ngầm",
+      "Relevant strategy card can be read from the right rail",
+    )
+    dialog.querySelector(".match-inspect-close").click()
+    await frame()
     await seek(9)
     story.querySelector(".match-play").click()
     for (let i = 0; i < 180 && Number(story.dataset.phase) !== 0; i++)

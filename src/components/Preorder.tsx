@@ -12,6 +12,7 @@ import SplitChars from './SplitChars'
 import Wave from './Wave'
 import useCardFeel from '../hooks/useCardFeel'
 import SiteFooter from './SiteFooter'
+import Header from './Header'
 
 export default function Preorder() {
   const root = useRef<HTMLElement>(null)
@@ -154,12 +155,9 @@ export default function Preorder() {
     <main ref={root} id="dat-truoc" className="po-page grain" tabIndex={-1}>
       <Curtain ready={ready} progress={progress} failed={failed} onRetry={() => setAttempt((value) => value + 1)}
         onOpen={onOpen} onComplete={onComplete} />
-      <div inert={!unlocked} aria-hidden={!unlocked}>
+      <div className="po-content" inert={!unlocked} aria-hidden={!unlocked}>
         <Cursor />
-        <header className="po-header">
-          <a className="display po-brand" href="./#top">Thủy Trận</a>
-          <a className="po-back" href="./#nhan-lenh">↖ Trở lại dòng sông</a>
-        </header>
+        <Header />
         <div className="po-layout">
           <section className="po-story" data-open={open} aria-labelledby="preorder-title">
             <p className="po-eyebrow">Một hộp game. Cả đội ra quân.</p>

@@ -12,8 +12,11 @@ const chapters = [
 ]
 
 export default function Header() {
+  const page = new URLSearchParams(location.search).get('page')
+  const standalone = page === 'cach-choi' || page === 'dat-truoc'
+  const landingHref = (id: string) => `${standalone ? './' : ''}#${id}`
   const [open, setOpen] = useState(false)
-  const [active, setActive] = useState('top')
+  const [active, setActive] = useState(standalone ? page : 'top')
   const root = useRef<HTMLElement>(null)
   const toggle = useRef<HTMLButtonElement>(null)
   const scrollProgress = useRef<HTMLDivElement>(null)
@@ -35,10 +38,10 @@ export default function Header() {
         scrollProgress.current.setAttribute('aria-valuenow', String(Math.round(progress * 100)))
       }
       const position = window.scrollY + innerHeight * 0.28
-      setActive(stops.filter((stop) => stop.top <= position).at(-1)?.id ?? 'top')
-      if (window.scrollY < 24) setOpen(false)
-      // The pinned cover owns the morph; static/reduced-motion pages dock instantly.
-      if (!ScrollTrigger.getAll().some(st => st.pin && st.trigger?.querySelector('#top'))) {
+      setActive(standalone ? page : stops.filter((stop) => stop.top <= position).at(-1)?.id ?? 'top')
+      if (!standalone && window.scrollY < 24) setOpen(false)
+      // The pinned cover owns the morph; standalone pages use the same docked header.
+      if (!standalone && !ScrollTrigger.getAll().some(st => st.pin && st.trigger?.querySelector('#top'))) {
         const brand = document.querySelector<HTMLElement>('.site-brand')!
         const docked = window.scrollY > 24
         brand.inert = !docked
@@ -51,7 +54,7 @@ export default function Header() {
       }
     }
     const measure = () => {
-      stops = [...chapters, { id: 'nhan-lenh' }].flatMap(({ id }) => {
+      stops = (standalone ? [] : [...chapters, { id: 'nhan-lenh' }]).flatMap(({ id }) => {
         const target = document.getElementById(id)
         if (!target) return []
         const pin = ScrollTrigger.getAll().find((st) => st.pin && (st.trigger === target || st.trigger?.contains(target)))
@@ -70,15 +73,22 @@ export default function Header() {
       window.removeEventListener('scroll', scroll)
       window.removeEventListener('resize', measure)
     }
-  }, [reduced])
+  }, [reduced, page, standalone])
 
   useEffect(() => {
     if (!open) return
     const outside = (event: PointerEvent) => {
       if (!root.current?.contains(event.target as Node)) { clearHover(); setOpen(false) }
     }
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { clearHover(); toggle.current?.focus({ preventScroll: true }); setOpen(false) }
+    }
     document.addEventListener('pointerdown', outside)
-    return () => document.removeEventListener('pointerdown', outside)
+    document.addEventListener('keydown', escape)
+    return () => {
+      document.removeEventListener('pointerdown', outside)
+      document.removeEventListener('keydown', escape)
+    }
   }, [open])
 
   const navigate = (event: React.MouseEvent<HTMLAnchorElement>, id: string) => {
@@ -100,18 +110,21 @@ export default function Header() {
     <>
       <div ref={scrollProgress} className="page-progress" role="progressbar" aria-label="Tiến trình khám phá trang"
         aria-valuemin={0} aria-valuemax={100} aria-valuenow={0} />
-      <div inert={open} aria-hidden={open}
+      <div inert={open} aria-hidden={open} style={standalone ? { mixBlendMode: 'difference' } : undefined}
         className="site-header fixed inset-x-0 top-0 z-40 flex items-center justify-between px-[clamp(1rem,3vw,2.5rem)] py-4 text-white pointer-events-none">
-        <a href="#top" inert onClick={(event) => navigate(event, 'top')}
+        <a href={landingHref('top')} inert={standalone ? undefined : true} onClick={standalone ? undefined : (event) => navigate(event, 'top')}
+          style={standalone ? { opacity: 1, visibility: 'visible', color: '#f6e9d7' } : undefined}
           className="site-brand pointer-events-auto display !text-2xl !font-bold tracking-[0.04em]">Thủy Trận</a>
-        <a href="#nhan-lenh" onClick={(event) => navigate(event, 'nhan-lenh')}
+        <a href={landingHref('nhan-lenh')} onClick={standalone ? undefined : (event) => navigate(event, 'nhan-lenh')}
+          style={standalone ? { opacity: 1, visibility: 'visible' } : undefined}
           className="site-cta pointer-events-auto group flex min-h-11 items-center gap-2 text-[0.8rem] font-medium tracking-[0.22em] uppercase">
           <span>Nhận lệnh</span>
           <span aria-hidden="true" className="inline-block size-2 rotate-45 bg-current transition-transform duration-500 group-hover:rotate-[225deg] group-hover:scale-150" />
         </a>
       </div>
     <header ref={root} className="chapter-nav fixed inset-x-0 top-0 z-50 h-9"
-      data-open={open} onPointerEnter={(event) => {
+      style={standalone ? { opacity: 1, visibility: 'visible' } : undefined}
+      data-page={standalone ? page : 'landing'} data-open={open} onPointerEnter={(event) => {
         clearHover()
         if (event.pointerType !== 'touch' && !toggle.current?.contains(event.target as Node)) hoverTimer.current = setTimeout(() => setOpen(true), 100)
       }}
@@ -124,10 +137,7 @@ export default function Header() {
         clearHover()
         if (event.currentTarget.querySelector('.nav-panel')?.contains(event.target)) setOpen(true)
       }}
-      onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) { clearHover(); setOpen(false) } }}
-      onKeyDown={(event) => {
-        if (event.key === 'Escape') { clearHover(); toggle.current?.focus(); setOpen(false) }
-      }}>
+      onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) { clearHover(); setOpen(false) } }}>
       <button ref={toggle} type="button" className="nav-toggle" aria-controls="chapter-menu"
         aria-expanded={open} aria-label={open ? 'Đóng điều hướng' : 'Mở điều hướng'}
         onClick={() => { clearHover(); setOpen((value) => !value) }}>
@@ -135,22 +145,23 @@ export default function Header() {
       </button>
       <div id="chapter-menu" className="nav-panel" inert={!open} aria-hidden={!open}>
         <div className="nav-inner">
-          <a href="#top" onClick={(event) => navigate(event, 'top')}
+          <a href={landingHref('top')} onClick={standalone ? undefined : (event) => navigate(event, 'top')}
             className="nav-brand display !font-bold">Thủy Trận</a>
           <nav aria-label="Điều hướng chính" className="nav-chapters">
             {chapters.map((chapter, index) => (
-              <a key={chapter.id} href={`#${chapter.id}`} onClick={(event) => navigate(event, chapter.id)}
+              <a key={chapter.id} href={landingHref(chapter.id)} onClick={standalone ? undefined : (event) => navigate(event, chapter.id)}
                 aria-current={active === chapter.id ? 'location' : undefined}
                 className="nav-link" style={{ '--nav-order': index } as React.CSSProperties}>
                 <span className="nav-marker" aria-hidden="true">◆</span>
                 <span className="nav-label">{chapter.label}</span>
               </a>
             ))}
-            <a href="?page=cach-choi" className="nav-link" style={{ '--nav-order': chapters.length } as React.CSSProperties}>
+            <a href={page === 'cach-choi' ? '#cach-choi' : '?page=cach-choi'} onClick={page === 'cach-choi' ? (event) => navigate(event, 'cach-choi') : undefined}
+              aria-current={page === 'cach-choi' ? 'page' : undefined} className="nav-link" style={{ '--nav-order': chapters.length } as React.CSSProperties}>
               <span className="nav-marker" aria-hidden="true">◆</span><span className="nav-label">Cách chơi</span>
             </a>
           </nav>
-          <a href="#nhan-lenh" onClick={(event) => navigate(event, 'nhan-lenh')} className="nav-cta" aria-current={active === 'nhan-lenh' ? 'location' : undefined}>
+          <a href={landingHref('nhan-lenh')} onClick={standalone ? undefined : (event) => navigate(event, 'nhan-lenh')} className="nav-cta" aria-current={active === 'nhan-lenh' ? 'location' : undefined}>
             Nhận lệnh <span aria-hidden="true" className="nav-diamond" />
           </a>
         </div>
