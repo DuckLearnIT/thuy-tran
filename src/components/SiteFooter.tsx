@@ -3,8 +3,10 @@ import useReducedMotion from '../hooks/useReducedMotion'
 
 export default function SiteFooter() {
   const reduced = useReducedMotion()
-  const preorderPage = new URLSearchParams(location.search).get('page') === 'dat-truoc'
-  const chapterHref = (id: string) => `${preorderPage ? './' : ''}#${id}`
+  const page = new URLSearchParams(location.search).get('page')
+  const separatePage = page === 'dat-truoc' || page === 'cach-choi'
+  const topId = page === 'dat-truoc' ? 'dat-truoc' : page === 'cach-choi' ? 'cach-choi' : 'top'
+  const chapterHref = (id: string) => `${separatePage ? './' : ''}#${id}`
   const navigate = (event: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
     const target = document.getElementById(id)
@@ -29,6 +31,7 @@ export default function SiteFooter() {
           {[['roles', 'Sáu nhân vật'], ['ke-sach', 'Bảy kế sách'], ['dia-diem', '24 địa điểm']].map(([id, label]) => (
             <a key={id} className="finale-link" href={chapterHref(id)} onClick={(event) => navigate(event, id)}>{label}<span aria-hidden="true">↗</span></a>
           ))}
+          <a className="finale-link" href="?page=cach-choi">Cách chơi<span aria-hidden="true">◆</span></a>
           <a className="finale-link" href="?page=dat-truoc">Đặt trước boardgame<span aria-hidden="true">↗</span></a>
         </nav>
         <nav aria-label="Kết nối với Thủy Trận">
@@ -50,7 +53,7 @@ export default function SiteFooter() {
       </details>
       <div className="finale-colophon">
         <p className="finale-origin">Thủy Trận · Việt Nam · 2026</p>
-        <a className="finale-link" href={preorderPage ? '#dat-truoc' : '#top'} onClick={(event) => navigate(event, preorderPage ? 'dat-truoc' : 'top')}>Về đầu trang <span aria-hidden="true">↑</span></a>
+        <a className="finale-link" href={`#${topId}`} onClick={(event) => navigate(event, topId)}>Về đầu trang <span aria-hidden="true">↑</span></a>
       </div>
     </footer>
   )

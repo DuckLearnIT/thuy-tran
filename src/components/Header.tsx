@@ -146,6 +146,9 @@ export default function Header() {
                 <span className="nav-label">{chapter.label}</span>
               </a>
             ))}
+            <a href="?page=cach-choi" className="nav-link" style={{ '--nav-order': chapters.length } as React.CSSProperties}>
+              <span className="nav-marker" aria-hidden="true">◆</span><span className="nav-label">Cách chơi</span>
+            </a>
           </nav>
           <a href="#nhan-lenh" onClick={(event) => navigate(event, 'nhan-lenh')} className="nav-cta" aria-current={active === 'nhan-lenh' ? 'location' : undefined}>
             Nhận lệnh <span aria-hidden="true" className="nav-diamond" />
