@@ -7,6 +7,8 @@
     passed++
   }
   const frame = () => new Promise(requestAnimationFrame)
+  // Allow the browser's delayed resize refresh to settle before seeking scenes.
+  for (let i = 0; i < 30; i++) await frame()
   const root = document.querySelector(".rules-page")
   check(root && !root.querySelector("[inert]"), "Rules page is unlocked")
   check(document.title === "Cách chơi — Thủy Trận", "Page title")
@@ -35,7 +37,7 @@
       "Board arrangement",
     )
     check(
-      [...board.querySelectorAll("img")].every(
+      [...board.querySelectorAll(".match-tile-paper img")].every(
         (img) => img.naturalWidth === img.naturalHeight,
       ),
       "Fronts and backs are square",
@@ -168,6 +170,79 @@
       story.querySelectorAll('.match-tile[data-danger="true"]').length === 4,
       "Reverse restores initial board",
     )
+    check(
+      story.querySelectorAll(".match-party button").length === 4,
+      "Four inspectable character cards",
+    )
+    check(
+      story.querySelector(".match-table").clientWidth >=
+        Math.min(innerWidth - 40, 500),
+      "Board receives the main visual space",
+    )
+    check(
+      story.querySelector(".match-brief").textContent.split(/\s+/).length <= 22,
+      "Scene uses a short prompt",
+    )
+    const tile = story.querySelector('[data-id="bach-dang"] button')
+    tile.focus()
+    tile.click()
+    await frame()
+    const dialog = story.querySelector("dialog")
+    check(dialog.open, "Location opens in a modal")
+    check(dialog.contains(document.activeElement), "Focus enters the modal")
+    check(
+      dialog.querySelector(".match-inspect-paper").dataset.back === "true",
+      "Inspection starts on the current dangerous face",
+    )
+    dialog.querySelector(".match-inspect-face button").click()
+    await frame()
+    check(
+      dialog.querySelector(".match-inspect-paper").dataset.back === "false",
+      "Both faces can be inspected",
+    )
+    check(
+      story.querySelector('[data-id="bach-dang"]').dataset.danger === "true",
+      "Inspection does not change the board",
+    )
+    dialog.querySelector(".match-inspect-close").click()
+    await frame()
+    check(
+      !dialog.open && document.activeElement === tile,
+      "Closing restores focus to the card",
+    )
+    const person = story.querySelector(".match-party button")
+    person.click()
+    await frame()
+    check(
+      dialog.open && dialog.querySelector(".match-inspect-person"),
+      "Character artwork and ability can be read",
+    )
+    dialog.querySelector(".match-inspect-close").click()
+    await frame()
+    story.querySelector('[data-actionable="true"] button').click()
+    for (let i = 0; i < 180 && Number(story.dataset.phase) !== 1; i++)
+      await frame()
+    check(
+      Number(story.dataset.phase) === 1,
+      "Board target advances the same scroll sequence",
+    )
+    await seek(1)
+    story.querySelector(".match-play").click()
+    for (let i = 0; i < 180 && Number(story.dataset.phase) !== 2; i++)
+      await frame()
+    check(
+      Number(story.dataset.phase) === 2,
+      "Context action advances to reinforcement",
+    )
+    await seek(9)
+    story.querySelector(".match-play").click()
+    for (let i = 0; i < 180 && Number(story.dataset.phase) !== 0; i++)
+      await frame()
+    check(
+      Number(story.dataset.phase) === 0,
+      "Replay returns to the initial state",
+    )
+    await seek(0)
   } else {
     check(
       root.querySelectorAll(".match-static-scene").length === 10,

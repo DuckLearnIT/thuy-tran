@@ -424,10 +424,20 @@ Không có task phát triển nào còn mặc nhiên được phê duyệt. Back
 - Người dùng đã chê bố cục ba cảnh độc lập, yêu cầu xem luật như một ván game. Trang hiện có **một pin GSAP `+=650%`, scrub .35**, mười cảnh: chuẩn bị → đi → củng cố → cho bài → rút Kế sách → Biến động → hoàn thành Cọc Ngầm → Triều Biến/ô mất → Hiệp lực → tập kết/dùng Cờ Lệnh thắng.
 - Ván cố định minh họa bốn người; có ghi rõ rút gọn các lượt, không phải mô phỏng toàn bộ ván hợp lệ. Các lượt bị bỏ qua được nêu trong diễn giải. Bố trí địa danh chỉ là một ví dụ, không phải thứ tự chơi bắt buộc.
 - Bàn dùng đủ 24 F1/F2, hàng 2–4–6–6–4–2; F3 không dùng. Quân di chuyển bằng timeline, ô đổi mặt/biến mất, kế sách được đánh dấu; không thêm số lên artwork. Có Cảnh trước/Cảnh tiếp và liên kết bỏ qua tới tra cứu. Resize đang trong pin giữ tiến trình; cuộn ngược khôi phục trạng thái.
-- Reduced motion hoặc chiều cao <=620px: mười cảnh đọc tĩnh, không pin. 320px thu nhỏ bàn và bỏ ghi chú lặp trên sân khấu; luật đầy đủ vẫn còn ở phần đọc.
+- Reduced motion hoặc chiều cao <=620px: mười cảnh đọc tĩnh, không pin. Luật đầy đủ vẫn còn ở phần đọc.
 - Sau ván có mục lục, chuẩn bị, năm hành động, bài đặc biệt/Hiệp lực, sáu nhân vật, thắng/thua và sáu disclosure tra cứu. Mục lục mobile đóng sau khi chọn; focus tới tiêu đề. Header độc lập, không tái sử dụng logic morph hero của landing.
 - Curtain/preload dùng lại. Nếu tài nguyên lỗi, ngoài Thử lại còn có Đọc luật không chờ tranh để vào đọc nội dung. Không sửa lifecycle của landing/checkout.
 - `SiteFooter` nhận biết cả hai trang riêng; liên kết chương quay về landing, Về đầu trang ở Rules dùng `#cach-choi`.
-- QA: chạy `scripts/check-rules.js` trong console sau curtain; 101 checks tại 320/390px, 74 tại 920/1280/1840px; reduced motion 51 checks tại 390px. Đã kiểm tra direct hash, resize giữa cảnh, Enter cho Cảnh tiếp/disclosure và fallback khi chặn một artwork.
+- QA: chạy `scripts/check-rules.js` trong console sau curtain; 129 checks tại 320/390px, 96 tại 920/1280/1840px; reduced motion 51 checks tại 390px. Đã kiểm tra direct hash, resize giữa cảnh, Enter cho nút/ô thao tác, Escape/khôi phục focus cho hộp xem thẻ và fallback khi chặn một artwork (task trước).
 - Hồi quy: `check-preorder.js` đủ ba lần đạt 67 checks; footer checkout 9 checks; `check-hero.js` 46 checks đều đạt. Typecheck/build đạt; cảnh báo Vite config cũ giữ nguyên. Kiểm tra bằng Edge/Chromium headless, chưa đo trên thiết bị thật hoặc browser engine khác.
 - Ảnh đối chiếu: `docs/qa/rules-desktop.jpg` (1280×900), `docs/qa/rules-mobile.jpg` (390×844). Chỉ commit/push `origin/main`; không deploy website chính hoặc preview.
+
+### Bàn lớn, hướng dẫn ngắn — chỉnh tiếp 11/10
+
+- Người dùng yêu cầu ít chữ, bàn trận lớn và nhiều tương tác hơn. Sân khấu hiện chỉ hiện tiêu đề + một câu ngắn (`scenePrompts` trong Rules); diễn giải đầy đủ vẫn dành cho screen reader và phần tra cứu. Không thay nội dung luật/data hay xây engine mới.
+- Desktop thu cột chữ, bàn lên 625px ở viewport 1280×900 (tối đa 700px); mobile dùng trọn chiều rộng còn lại: 280px ở 320px và 350px ở 390px. Đủ 24 ô, không bị cắt hoặc chồng lên nút điều hướng.
+- Ô viền son và nút dải cờ đưa tới cảnh kế tiếp **bằng chính ScrollTrigger hiện có**; cuộn vẫn hoạt động bình thường, không bắt người dùng bấm. Nút Trải lại quay về cảnh đầu. Link trực tiếp/mục lục tới ván dừng ở 8% pin để bàn đã trải rõ; đi vào bằng cuộn tự nhiên vẫn có animation bung chồng.
+- Thẻ địa danh khác mở hộp xem lớn hai mặt; mở đúng mặt hiện tại trên bàn. Thẻ nhân vật mở artwork + năng lực. Dùng native dialog, khóa cuộn nền, Escape/Đóng và trả focus về nút đã mở; lật trong hộp chỉ là xem, không đổi trạng thái ván. Ô mất không thể bấm để cứu hoặc xem. Không thêm số lên tranh.
+- Quân dùng chân dung lấy từ thẻ sẵn có; đường nối biểu diễn di chuyển/chuyển bài. Timeline có lá Cọc Ngầm đi tới Nha Binh, hai lá rút vào góc tay bài và bốn lá Cọc Ngầm gom bỏ; ripple làm rõ ô ngập/cứu. Các tài nguyên đều đã nằm trong preload.
+- Bốn thẻ nhân vật nằm ở góc bàn trên desktop, dưới bàn trên mobile để vùng bấm đủ rộng; viền son đánh dấu Truyền Lệnh/Nha Binh khi đến lượt minh họa. Hiện nấc Triều và Hiệp lực; đoạn thắng giữ ba Hiệp lực sau ba kế sách hoàn thành thêm (một dấu đầu đã dùng ở cảnh cứu bến).
+- Đã xem render năm kích thước, thử bàn phím, lật/đóng hộp, replay, cuộn ngược, resize và lấy mẫu tọa độ/opacity giữa animation chuyển bài. Hồi quy checkout 67 checks và hero 46 checks đạt; typecheck/build đạt. Chỉ kiểm tra bằng Edge/Chromium headless, chưa xác nhận trên máy thật hay engine khác.
