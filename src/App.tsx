@@ -94,7 +94,7 @@ export default function App() {
       if (anchor) {
         const trigger = ScrollTrigger.getAll().find((item) => item.pin && (item.trigger === anchor || item.trigger?.contains(anchor)))
         const top = trigger?.start ?? anchor.getBoundingClientRect().top + scrollY
-        window.scrollTo(0, top + (trigger && anchor.id === 'van-minh-hoa' ? (trigger.end - trigger.start) * 0.08 : 0))
+        window.scrollTo(0, top + (trigger && anchor.id === 'van-minh-hoa' ? (trigger.end - trigger.start) * (.96 / 7) : 0))
       }
     })
     return () => cancelAnimationFrame(frame)
@@ -116,12 +116,12 @@ export default function App() {
           <section className="landing-match rules-page" aria-labelledby="landing-match-title">
             <header className="landing-match-intro">
               <div>
-                <p className="rules-eyebrow">04 — Ván minh họa</p>
-                <h2 id="landing-match-title">Theo một ván chơi.</h2>
+                <p className="rules-eyebrow">04 — Gameplay cơ bản</p>
+                <h2 id="landing-match-title">Hiểu lượt chơi.<br />Cùng ra trận.</h2>
               </div>
               <div className="landing-match-links">
-                <a className="rules-text-button" href="#nhan-lenh">Bỏ qua ván minh họa</a>
-                <a className="rules-text-button" href="?page=cach-choi#chuan-bi">Đọc luật đầy đủ</a>
+                <a className="match-play match-rules-link" href="?page=cach-choi#chuan-bi">Xem luật đầy đủ <span className="rules-diamond" aria-hidden="true" /></a>
+                <a className="rules-text-button" href="#nhan-lenh">Bỏ qua minh họa</a>
               </div>
             </header>
             <MatchStory unlocked={unlocked} landing />

@@ -122,7 +122,7 @@ export default function CharacterAbilities() {
       gsap.set(".ability-actor", place(actorCell, boat))
       if (commander || remote) gsap.set(".ability-mate", place(remote ? 2 : 6))
       if (remote)
-        gsap.set(".ability-flight", { left: "29%", top: "83.3%", rotation: -8 })
+        gsap.set(".ability-flight", { xPercent: -50, yPercent: -50, x: 0, y: 0, left: "29%", top: "83.3%", rotation: -8 })
       gsap.set(".ability-route", { strokeDashoffset: 1 })
       gsap.set(".ability-tile-paper", {
         rotationY: (_i, target) =>

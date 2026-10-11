@@ -233,6 +233,35 @@ const shots = [
   { focus: "luong-xam", zoom: 1.55, roll: 0, tilt: 5, bg: "#efd9a8" },
 ]
 
+// The landing teaches the common rules; character exceptions stay in Rules.
+const basicPhases = [0, 1, 2, 3, 4, 5, 9]
+const basicCopy: Record<number, { title: string; caption: string; note: string }> = {
+  0: { title: "Cùng một đội.", caption: "Hoàn thành bốn kế sách. Cùng trở về doanh.", note: "24 địa danh được xáo khi chơi. Đây là một bố trí minh họa." },
+  1: { title: "Đi tới đồng đội.", caption: "Đi sang một ô liền kề, theo chiều ngang hoặc dọc.", note: "Một lần đi tốn một hành động. Quân Truyền Lệnh đến Bến Tập Kết, nơi Nha Binh đang đứng." },
+  2: { title: "Cứu một bến.", caption: "Củng cố ô Nguy cấp ở chỗ mình hoặc liền kề.", note: "Tốn một hành động. Bãi Tiếp Lương được lật về mặt Ổn định." },
+  3: { title: "Cùng ô. Trao bài.", caption: "Đứng cùng ô mới trao được một lá kế sách thường.", note: "Quân Truyền Lệnh và Nha Binh cùng đứng ở Bến Tập Kết. Trao một lá tốn một hành động. Ngoại lệ kỹ năng được giải thích trong luật đầy đủ." },
+  4: { title: "Rút hai lá.", caption: "Làm 0–3 hành động, rồi rút hai lá Kế sách.", note: "Đây là bước tiếp theo trong lượt. Quy tắc giới hạn bài và bài đặc biệt nằm trong luật đầy đủ." },
+  5: { title: "Nước lên.", caption: "Rút Biến động: ô Ổn định bị gọi tên lật sang Nguy cấp.", note: "Lượt chơi theo thứ tự: hành động → rút Kế sách → rút Biến động. Bãi Tiếp Lương vừa được củng cố lại bị nước tác động." },
+  9: { title: "Cùng thắng.", caption: "Hoàn thành bốn kế sách. Cả đội về doanh. Dùng Cờ Lệnh.", note: "Đích đến sau nhiều lượt, không phải kết quả của riêng lượt vừa xem. Xem luật đầy đủ để biết cách hoàn thành kế sách và các điều kiện thắng, thua." },
+}
+
+function BasicContext({ phase }: { phase: number }) {
+  const co = strategies.find(card => card.id === "co-lenh")!
+  const art = phase === 0 ? regularCards : phase === 4 ? regularCards.slice(1, 3)
+    : phase === 3 ? [regularCards[0]] : phase === 9 ? [co]
+      : phase === 5 ? [] : [party[0].card]
+  return <aside className="match-sidebar match-basic-context" aria-label="Minh họa khái niệm">
+    <p className="rules-eyebrow">{phase === 0 ? "Mục tiêu chung" : phase === 3 ? "Trao một lá" : phase === 9 ? "Sau nhiều lượt" : "Trong lượt của bạn"}</p>
+    {phase === 5 ? <div className="match-basic-faces">
+      <figure><img src={locations[21].image} alt="Bãi Tiếp Lương — Ổn định" /><figcaption>Ổn định</figcaption></figure>
+      <figure><img src={locations[21].back} alt="Bãi Tiếp Lương — Nguy cấp" /><figcaption>Nguy cấp</figcaption></figure>
+    </div> : <div className="match-basic-art" data-count={art.length}>
+      {art.map(card => <img key={card.id} src={card.image} alt={"name" in card ? card.name : roleName(card.id)} />)}
+    </div>}
+    <p className="match-basic-detail">{phase === 0 ? "Cọc Ngầm · Dò Luồng · Mai Phục · Nghi Binh" : phase === 3 ? "Quân Truyền Lệnh và Nha Binh cùng ở Bến Tập Kết." : phase === 4 ? "Hai lá mới cho lượt tiếp theo." : phase === 9 ? "Cả đội cùng trở về Đại bản doanh." : phase === 5 ? "Lật sang mặt Nguy cấp." : "Mỗi lần đi hoặc củng cố tốn 1 hành động."}</p>
+  </aside>
+}
+
 function MatchBoard({
   phase,
 
@@ -243,6 +272,8 @@ function MatchBoard({
   busy = false,
 
   settled = true,
+
+  landing = false,
 
   onOverview,
 }: {
@@ -255,6 +286,8 @@ function MatchBoard({
   busy?: boolean
 
   settled?: boolean
+
+  landing?: boolean
 
   onOverview?: () => void
 }) {
@@ -356,7 +389,7 @@ function MatchBoard({
   }
 
   const route =
-    phase === 1 ? [21, 20] : phase === 3 ? [20, 9] : phase === 6 ? [9, 8] : null
+    phase === 1 ? [21, 20] : phase === 3 && !landing ? [20, 9] : phase === 6 ? [9, 8] : null
 
   const routePoint = (index: number) =>
     `${((cells[index].col + 0.5) * 100) / 6},${((cells[index].row + 0.5) * 100) / 6}`
@@ -380,9 +413,9 @@ function MatchBoard({
               <path d="M-10 30 Q25 5 55 30 T115 30 M-10 50 Q25 25 55 50 T115 50 M-10 70 Q25 45 55 70 T115 70" />
             </svg>
             {cells.map(({ tile, row, col }, index) => {
-              const removed = tile.id === "song-chanh" && phase >= 7
+              const removed = !landing && tile.id === "song-chanh" && phase >= 7
 
-              const danger = dangerous(tile.id, phase) && !removed
+              const danger = dangerous(tile.id, landing && phase === 9 ? 5 : phase) && !removed
 
               const actionable =
                 onAdvance && scenePrompts[phase].target === tile.id
@@ -394,11 +427,16 @@ function MatchBoard({
                   data-id={tile.id}
                   data-danger={danger}
                   data-removed={removed}
-                  data-focus={matchScenes[phase].focus.includes(tile.id)}
+                  data-focus={landing && phase === 3 ? index === 20 : matchScenes[phase].focus.includes(tile.id)}
                   data-actionable={!!actionable}
                   style={{ gridRow: row + 1, gridColumn: col + 1 }}
                 >
-                  <button
+                  {landing ? <div className="match-tile-static">
+                    <div className="match-tile-paper">
+                      <img src={tile.image} width={896} height={896} alt={`${tile.name} · ${danger ? "Nguy cấp" : "Ổn định"}`} draggable={false} />
+                      <img src={tile.back} width={896} height={896} alt="" aria-hidden="true" draggable={false} />
+                    </div>
+                  </div> : <button
                     type="button"
                     className="match-tile-hit"
                     onPointerEnter={(event) => {
@@ -453,7 +491,7 @@ function MatchBoard({
                         draggable={false}
                       />
                     </div>
-                  </button>
+                  </button>}
                 </figure>
               )
             })}
@@ -506,12 +544,16 @@ function MatchBoard({
                   ? 4
                   : i === 0 && phase >= 1
                     ? 20
+                    : landing && i === 1
+                      ? 20
                     : i === 1 && phase >= 6
                       ? 8
                       : spawn
 
               const position = {
-                ...point(animated ? spawn : tileIndex),
+                ...point(animated ? (landing && i === 1 ? 20 : spawn) : tileIndex),
+
+                ...(!animated && landing && phase !== 9 && i < 2 ? { transform: `translate(${i === 0 && phase >= 1 ? -105 : i === 1 ? 5 : -50}%, -50%)` } : {}),
 
                 ...(!animated && phase === 9
                   ? {
@@ -553,7 +595,7 @@ function MatchBoard({
           </span>
         )}
       </div>
-      <aside className="match-sidebar" aria-label="Bài và nhân vật liên quan">
+      {landing ? <BasicContext phase={phase} /> : <aside className="match-sidebar" aria-label="Bài và nhân vật liên quan">
         <MatchHand
           phase={phase}
           settled={settled}
@@ -615,8 +657,8 @@ function MatchBoard({
             ))}
           </div>
         </div>
-      </aside>
-      <dialog
+      </aside>}
+      {!landing && <dialog
         className="match-inspect"
         ref={dialog}
         aria-labelledby={animated ? "match-inspect-title" : undefined}
@@ -705,7 +747,7 @@ function MatchBoard({
           </>
         )}
         <p className="rules-note">Xem thẻ không thay đổi ván minh họa.</p>
-      </dialog>
+      </dialog>}
     </>
   )
 }
@@ -854,6 +896,10 @@ export default function MatchStory({
 
   const staticMode = reduced || short
 
+  const phases = landing ? basicPhases : matchScenes.map((_, i) => i)
+  const sceneIndex = phases.indexOf(phase)
+  const endPhase = phases.length - 1
+
   const clearPending = useCallback(() => {
     pending.current = null
 
@@ -922,11 +968,12 @@ export default function MatchStory({
     const ctx = gsap.context(() => {
       const timeline = gsap.timeline({
         onUpdate: () => {
-          const nextPhase = Math.min(9, Math.floor(model.progress))
+          const nextIndex = Math.min(endPhase, Math.floor(model.progress))
+          const nextPhase = phases[nextIndex]
 
           setPhase(nextPhase)
 
-          setSettled(model.progress >= nextPhase + 0.78)
+          setSettled(model.progress >= nextIndex + 0.78)
 
           if (
             pending.current !== null &&
@@ -940,7 +987,7 @@ export default function MatchStory({
 
           start: "top top",
 
-          end: "+=650%",
+          end: landing ? "+=420%" : "+=650%",
 
           scrub: 0.35,
 
@@ -949,6 +996,10 @@ export default function MatchStory({
           anticipatePin: 1,
 
           invalidateOnRefresh: true,
+
+          // Locations can rebuild its pin at the mobile breakpoint. Measure
+          // this later chapter after those preceding pins, even after resize.
+          refreshPriority: landing ? -1 : 0,
 
           onRefreshInit: (self) => {
             preservedProgress = self.isActive ? self.progress : null
@@ -967,7 +1018,7 @@ export default function MatchStory({
 
       trigger.current = timeline.scrollTrigger!
 
-      timeline.to(model, { progress: 10, duration: 10, ease: "none" }, 0)
+      timeline.to(model, { progress: phases.length, duration: phases.length, ease: "none" }, 0)
 
       timeline.fromTo(
         ".match-camera",
@@ -999,10 +1050,11 @@ export default function MatchStory({
         0,
       )
 
-      shots.slice(1).forEach((shot, i) => {
+      phases.slice(1).forEach((phase, i) => {
+        const shot = landing && phase === 3 ? { ...shots[phase], focus: "ben-tap-ket", zoom: 1.6 } : shots[phase]
         const cell = cells.find((c) => c.tile.id === shot.focus)
 
-        const zoom = () =>
+        const zoom = () => landing ? Math.min(shot.zoom, 1.12) :
           shot.zoom * (innerWidth <= 900 && shot.focus ? 1.18 : 1)
 
         timeline.to(
@@ -1011,9 +1063,9 @@ export default function MatchStory({
           {
             width: () => `${zoom() * 100}%`,
 
-            xPercent: () => (cell ? -((cell.col + 0.5) / 6) * 100 : -50),
+            xPercent: () => (landing ? -50 : cell ? -((cell.col + 0.5) / 6) * 100 : -50),
 
-            yPercent: () => (cell ? -((cell.row + 0.5) / 6) * 100 : -50),
+            yPercent: () => (landing ? -50 : cell ? -((cell.row + 0.5) / 6) * 100 : -50),
 
             rotation: shot.roll,
 
@@ -1055,7 +1107,7 @@ export default function MatchStory({
           ease: "power2.inOut",
         },
 
-        9.65,
+        endPhase + .65,
       )
 
       timeline.to(
@@ -1063,7 +1115,7 @@ export default function MatchStory({
 
         { backgroundColor: storyRiver, duration: 0.3, ease: "none" },
 
-        9.65,
+        endPhase + .65,
       )
 
       gsap.set(".match-tile-paper", {
@@ -1075,6 +1127,10 @@ export default function MatchStory({
 
         rotation: 0,
       })
+
+      // Keep anchors proportional when the board changes size; don't retain
+      // the pixel translation GSAP can absorb from the initial CSS transform.
+      gsap.set(".match-pawn, .match-flying-card", { xPercent: -50, yPercent: -50, x: 0, y: 0 })
 
       timeline.to(
         '[data-id="bai-tiep-luong"] .match-tile-paper',
@@ -1092,7 +1148,7 @@ export default function MatchStory({
         5.35,
       )
 
-      timeline.to(
+      if (!landing) timeline.to(
         '[data-id="song-chanh"] .match-tile-paper',
 
         { yPercent: 90, rotation: 16, opacity: 0, duration: 0.35 },
@@ -1100,7 +1156,7 @@ export default function MatchStory({
         7.35,
       )
 
-      timeline.to(
+      if (!landing) timeline.to(
         '[data-id="bai-tiep-luong"] .match-tile-paper',
 
         { rotationY: 0, duration: 0.3 },
@@ -1144,12 +1200,14 @@ export default function MatchStory({
       timeline.to(
         ".match-pawn-0",
 
-        { ...point(20), duration: 0.55, ease: "power2.inOut" },
+        { ...point(20), ...(landing ? { xPercent: -105 } : {}), duration: 0.55, ease: "power2.inOut" },
 
         1.05,
       )
 
-      timeline.to(
+      if (landing) gsap.set(".match-pawn-1", { xPercent: 5, yPercent: -50 })
+
+      if (!landing) timeline.to(
         ".match-pawn-1",
 
         { ...point(8), duration: 0.55, ease: "power2.inOut" },
@@ -1160,10 +1218,12 @@ export default function MatchStory({
       timeline.fromTo(
         ".match-flying-card",
 
-        { ...point(20), opacity: 0, scale: 0.65, rotation: -15 },
+        { ...point(20), xPercent: landing ? -110 : -50, opacity: 0, scale: 0.65, rotation: -15 },
 
         {
-          ...point(9),
+          ...point(landing ? 20 : 9),
+
+          xPercent: landing ? 10 : -50,
 
           opacity: 1,
 
@@ -1219,7 +1279,7 @@ export default function MatchStory({
           4.5 + i * 0.16,
         )
       })
-      ;[0, 1, 2, 3].forEach((i) => {
+      ;(landing ? [] : [0, 1, 2, 3]).forEach((i) => {
         timeline.fromTo(
           `.match-spent-${i}`,
 
@@ -1263,7 +1323,7 @@ export default function MatchStory({
             ease: "power2.inOut",
           },
 
-          9.05 + i * 0.04,
+          endPhase + .05 + i * 0.04,
         ),
       )
     }, root)
@@ -1273,12 +1333,12 @@ export default function MatchStory({
 
       ctx.revert()
     }
-  }, [unlocked, staticMode, clearPending])
+  }, [unlocked, staticMode, clearPending, landing])
 
   const seek = (index: number) => {
     setOverview(false)
 
-    const scene = Math.max(0, Math.min(9, index))
+    const scene = Math.max(0, Math.min(endPhase, index))
 
     if (trigger.current && pending.current === null) {
       pending.current = scene
@@ -1288,7 +1348,7 @@ export default function MatchStory({
       window.scrollTo({
         top:
           trigger.current.start +
-          ((trigger.current.end - trigger.current.start) * (scene + 0.96)) / 10,
+          ((trigger.current.end - trigger.current.start) * (scene + 0.96)) / phases.length,
 
         behavior: "smooth",
       })
@@ -1305,26 +1365,26 @@ export default function MatchStory({
         <div className="match-static-intro">
           <p className="rules-eyebrow">Ván minh họa / đọc từng cảnh</p>
           <h2 id="van-minh-hoa-title" tabIndex={-1}>
-            Theo một ván chơi.
+            {landing ? "Hiểu lượt chơi." : "Theo một ván chơi."}
           </h2>
           <p>
-            Các lượt được rút gọn để làm rõ luật. Thứ tự địa danh là một bố trí
-            minh họa.
+            {landing ? "Một lượt cơ bản, rồi đích đến sau nhiều lượt. Kỹ năng riêng và luật chi tiết nằm ở trang Cách chơi." : "Các lượt được rút gọn để làm rõ luật. Thứ tự địa danh là một bố trí minh họa."}
           </p>
+          {landing && <a className="match-play match-rules-link" href="?page=cach-choi#chuan-bi">Xem luật đầy đủ <span className="rules-diamond" aria-hidden="true" /></a>}
         </div>
-        {matchScenes.map((scene, i) => (
-          <article key={scene.title} className="match-static-scene">
+        {phases.map((i, index) => (
+          <article key={i} className="match-static-scene">
             <div>
               <p className="rules-eyebrow">
-                {String(i + 1).padStart(2, "0")} / {scene.label}
+                {String(index + 1).padStart(2, "0")} / {landing ? "Cơ bản" : matchScenes[i].label}
               </p>
-              <h3>{scene.title}</h3>
-              <p>{scenePrompts[i].brief}</p>
+              <h3>{landing ? basicCopy[i].title : matchScenes[i].title}</h3>
+              <p>{landing ? basicCopy[i].caption : scenePrompts[i].brief}</p>
               <span className="sr-only">
-                {scene.text} {scene.note}
+                {landing ? basicCopy[i].note : `${matchScenes[i].text} ${matchScenes[i].note}`}
               </span>
             </div>
-            <MatchBoard phase={i} />
+            <MatchBoard phase={i} landing={landing} />
           </article>
         ))}
       </section>
@@ -1336,7 +1396,7 @@ export default function MatchStory({
     <section
       ref={root}
       id="van-minh-hoa"
-      className="match-story"
+      className={`match-story${landing ? " match-basic" : ""}`}
       aria-labelledby="van-minh-hoa-title"
       data-phase={phase}
       data-busy={busy}
@@ -1353,7 +1413,7 @@ export default function MatchStory({
             "Ván minh họa"
           )}
         </span>
-        <div className="match-water-status">
+        {landing ? <span className="match-basic-turn">{phase === 9 ? "Đích đến sau nhiều lượt" : "Lượt chơi cơ bản"}</span> : <div className="match-water-status">
           <span>
             Triều <b>{phase >= 7 ? "2" : "1"}</b>
           </span>
@@ -1361,21 +1421,21 @@ export default function MatchStory({
             Hiệp lực{" "}
             <b>{phase === 9 ? "3" : phase === 6 || phase === 7 ? "1" : "0"}</b>
           </span>
-        </div>
+        </div>}
       </div>
       <div className="match-layout">
         <div className="match-copy">
           <p className="rules-eyebrow">
-            {String(phase + 1).padStart(2, "0")} / 10
+            {String(sceneIndex + 1).padStart(2, "0")} / {phases.length}
           </p>
           <h2 id="van-minh-hoa-title" tabIndex={-1}>
-            {phase === 9 && !settled ? "Về doanh." : shotTitles[phase]}
+            {landing ? basicCopy[phase].title : phase === 9 && !settled ? "Về doanh." : shotTitles[phase]}
           </h2>
           <p className="match-brief" key={phase}>
-            {shotCaptions[phase]}
+            {landing ? basicCopy[phase].caption : shotCaptions[phase]}
           </p>
           <span className="sr-only">
-            {scene.text} {scene.note}
+            {landing ? basicCopy[phase].note : `${scene.text} ${scene.note}`}
           </span>
           {phase >= 1 && phase <= 5 && (
             <div
@@ -1388,6 +1448,7 @@ export default function MatchStory({
               <span className="sr-only">
                 {Math.min(phase, 3)} / 3 hành động
               </span>
+              {landing && <small>{Math.min(phase, 3)} / 3 hành động</small>}
             </div>
           )}
         </div>
@@ -1396,7 +1457,8 @@ export default function MatchStory({
           animated
           busy={busy}
           settled={settled}
-          onAdvance={phase === 0 ? () => seek(1) : undefined}
+          landing={landing}
+          onAdvance={!landing && phase === 0 ? () => seek(1) : undefined}
           onOverview={() => setOverview(true)}
         />
       </div>
@@ -1404,30 +1466,30 @@ export default function MatchStory({
         <div className="match-controls">
           <button
             type="button"
-            onClick={() => seek(phase - 1)}
+            onClick={() => seek(sceneIndex - 1)}
             disabled={phase === 0}
             aria-disabled={busy}
           >
             Cảnh trước
           </button>
           <span role="status" aria-live="polite">
-            {String(phase + 1).padStart(2, "0")} / 10
+            {String(sceneIndex + 1).padStart(2, "0")} / {phases.length}
             <span className="sr-only">
               {" "}
-              · {scene.title} {scene.text}
+              · {landing ? `${basicCopy[phase].title} ${basicCopy[phase].caption} ${basicCopy[phase].note}` : `${scene.title} ${scene.text}`}
             </span>
           </span>
           <button
             type="button"
-            className="match-play"
-            onClick={() => seek(phase === 9 ? 0 : phase + 1)}
+            className={landing ? "match-next" : "match-play"}
+            onClick={() => seek(phase === 9 ? 0 : sceneIndex + 1)}
             aria-disabled={busy}
           >
             {phase === 9 ? "Xem lại" : "Cảnh tiếp"}
-            <span className="rules-diamond" aria-hidden="true" />
+            {!landing && <span className="rules-diamond" aria-hidden="true" />}
           </button>
         </div>
-        <span className="match-disclaimer">Ván rút gọn</span>
+        <span className="match-disclaimer">{landing ? "Minh họa cơ bản" : "Ván rút gọn"}</span>
         <button
           type="button"
           className="match-overview"
@@ -1436,8 +1498,9 @@ export default function MatchStory({
         >
           {overview ? "Theo cảnh" : "Toàn bàn"}
         </button>
-        <a href={landing ? "?page=cach-choi#chuan-bi" : "#tra-cuu"}>
-          {landing ? "Đọc luật đầy đủ" : "Tra cứu luật"}
+        <a className={landing ? "match-play match-rules-link" : undefined} href={landing ? "?page=cach-choi#chuan-bi" : "#tra-cuu"}>
+          {landing ? "Xem luật đầy đủ" : "Tra cứu luật"}
+          {landing && <span className="rules-diamond" aria-hidden="true" />}
         </a>
       </div>
     </section>

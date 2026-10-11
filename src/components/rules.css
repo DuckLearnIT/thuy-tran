@@ -102,6 +102,53 @@
 .match-static-scene h3 { color: var(--color-indigo); font-size: 2.5rem; line-height: 1.2; margin-bottom: 1.2rem; }
 .match-static-scene .match-table { max-width: 470px; width: 100%; perspective: none; }
 .match-static-scene .match-hand { height: auto; min-height: 1px; }
+/* Landing: one common rule per shot, with artwork beside the board, no modal. */
+.landing-match-links { flex-direction: column; align-items: flex-start; }
+.landing-match-links .match-play { margin: 0; min-width: 230px; }
+.landing-match .match-basic .match-layout { display: grid; grid-template-columns: minmax(170px, 1fr) min(70svh, calc(100vw - 460px)) minmax(170px, 1fr); gap: 32px; padding: 0 32px; }
+.landing-match .match-basic .match-copy, .landing-match .match-basic .match-sidebar { position: relative; inset: auto; width: auto; max-width: 270px; padding: 0; background: none; margin: auto; }
+.landing-match .match-basic .match-table { position: relative; inset: auto; width: 100%; translate: none; }
+.landing-match .match-basic .match-copy h2 { font-size: clamp(2rem, 3.5vw, 4rem); }
+.landing-match .match-basic .match-copy > .match-brief { font-size: 1rem; line-height: 1.65; }
+.match-basic-context { display: flex; gap: 1rem; text-align: center; }
+.match-basic-context .rules-eyebrow { margin: 0; font-size: .65rem; }
+.match-basic-art, .match-basic-faces { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .9rem; align-items: center; justify-items: center; width: 100%; }
+.match-basic-art[data-count='1'] { grid-template-columns: 1fr; }
+.match-basic-art img { width: min(100%, 140px); height: auto; border-radius: 4%; box-shadow: 0 8px 12px -8px #15345f70; }
+.match-basic-art[data-count='1'] img { width: min(100%, 175px); }
+.match-basic-faces img { width: 100%; border-radius: 4%; }
+.match-basic-faces figcaption { font-size: .8rem; margin-top: .5rem; }
+.rules-page .match-basic-detail { font-size: .85rem; line-height: 1.6; margin: 0; }
+.match-tile-static { width: 100%; height: 100%; }
+.match-basic .match-tile[data-focus='true']::after { border: 2px solid var(--color-vermilion); box-shadow: 0 0 0 3px #f6e9d750; }
+.match-basic .match-action-budget small { font-size: .75rem; }
+.landing-match .match-rules-link { color: var(--color-card); text-decoration: none; font-family: var(--font-display); font-size: 1.5rem; padding: .6rem 1.2rem; min-height: 48px; }
+.landing-match .match-bottomline { gap: 1rem; }
+.landing-match .match-static-scene .match-basic-context { width: 100%; max-width: 270px; display: flex; }
+.landing-match .match-basic .match-pawn { width: calc(100% * .44 / 6); }
+@media (max-width: 900px) {
+  .landing-match .match-basic .match-layout { display: block; padding: 0; }
+  .landing-match .match-basic .match-copy { position: absolute; top: 122px; left: 20px; right: 20px; bottom: auto; max-width: none; margin: 0; }
+  .landing-match .match-basic .match-copy h2 { font-size: 2rem; margin: .2rem 0; }
+  .landing-match .match-basic .match-copy > .match-brief { font-size: .85rem; line-height: 1.5; margin: 0; }
+  .landing-match .match-basic .match-copy .rules-eyebrow { display: none; }
+  .landing-match .match-basic .match-table { position: absolute; top: 47%; left: 50%; translate: -50% -50%; width: min(calc(100vw - 64px), calc(100svh - 450px)); }
+  .landing-match .match-basic .match-sidebar { position: absolute; top: auto; bottom: 122px; left: 20px; right: 20px; width: auto; max-width: none; display: grid; grid-template-columns: 100px 1fr; gap: .5rem 1rem; text-align: left; }
+  .match-basic-context > .rules-eyebrow { display: none; }
+  .match-basic-art { gap: 6px; }
+  .match-basic-art img, .match-basic-art[data-count='1'] img { width: auto; height: 70px; max-width: 100%; object-fit: contain; }
+  .match-basic-faces { gap: 6px; }
+  .match-basic-faces figcaption { font-size: .6rem; }
+  .landing-match .match-basic-detail { font-size: .8rem; }
+  .landing-match .match-basic .match-bottomline { display: grid; grid-template-columns: 1fr auto; gap: .3rem .75rem; }
+  .landing-match .match-controls { grid-column: 1 / -1; justify-content: center; }
+  .landing-match .match-rules-link { font-size: 1.25rem; justify-self: end; }
+  .landing-match .match-basic .match-overview { font-size: .75rem; }
+  .landing-match .match-basic .match-disclaimer { display: none; }
+  .landing-match .match-basic .match-action-budget { margin-top: .5rem; }
+  .landing-match .match-static-scene { padding: 2rem 0; }
+  .landing-match .match-static-scene .match-basic-context { max-width: none; display: grid; grid-template-columns: 100px 1fr; text-align: left; }
+}
 /* The table is the explanation: artwork, a reachable target and a short prompt. */
 .match-table { position: relative; }
 .match-water-status { display: flex; align-items: center; gap: 1.5rem; }
