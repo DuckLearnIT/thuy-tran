@@ -7,6 +7,7 @@
   const root = document.querySelector('.landing-experience:not([inert])')
   const preview = root?.querySelector('.landing-match')
   check(preview, 'Landing includes the match after loading')
+  check(parseFloat(getComputedStyle(preview, '::before').height) <= preview.offsetHeight + 5, 'Match background bleed stays within its section instead of covering the landing')
   check(root.querySelector('#dia-diem').compareDocumentPosition(preview) & Node.DOCUMENT_POSITION_FOLLOWING, 'Match follows the location collection')
   const finale = root.querySelector('#nhan-lenh')
   check(preview.compareDocumentPosition(finale) & Node.DOCUMENT_POSITION_FOLLOWING, 'Match precedes the preorder CTA and footer')

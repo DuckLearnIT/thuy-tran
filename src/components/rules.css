@@ -1,7 +1,7 @@
 /* A field guide on the same paper and river as the landing page. */
 .rules-page { background: var(--color-paper); color: var(--color-ink); overflow-anchor: none; }
 .rules-page :is(h1, h2, h3, h4, h5, h6), .rules-page .rules-button, .rules-page .match-play { text-transform: uppercase; }
-.landing-match.rules-page { background: var(--color-river); }
+.landing-match.rules-page { position: relative; background: var(--color-river); }
 .landing-match-intro { max-width: 1680px; margin: auto; padding: 4rem clamp(1.25rem, 4vw, 4rem) 3rem; display: flex; align-items: end; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; }
 .landing-match-intro h2 { font-size: clamp(2.5rem, 5vw, 5rem); color: var(--color-indigo); line-height: 1.15; }
 .landing-match-links { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; }

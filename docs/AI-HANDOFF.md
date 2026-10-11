@@ -520,3 +520,10 @@ Không có task phát triển nào còn mặc nhiên được phê duyệt. Back
 - Push code `4612eb7` vào `main` của repo preview bằng URL cụ thể, không đổi remote `origin`. Chạy lại typecheck/build và xuất bản bằng `npx gh-pages -d dist --dotfiles -r https://github.com/DuckLearnIT/thuy-tran-preview.git -m "Publish preview from 4612eb7"`.
 - Bản phát hành preview: `gh-pages` ở `a708e01df7de22040028458135c34ff637b24e27`; website `https://ducklearnit.github.io/thuy-tran-preview/`. Pages vẫn lấy `gh-pages` thư mục `/`, build type `legacy`; không bật workflow deploy hoặc thêm trigger push.
 - Nhánh phát hành website chính vẫn là `65b67a92b61be6ccc45671568086ec0e2b803c50`. Commit/push `origin/main` ở những task sau vẫn chỉ lưu code; deploy chỉ khi người dùng yêu cầu rõ đích.
+
+### Sửa nền gameplay phủ lên landing — 11/10
+
+- Người dùng thấy chỉ còn logo trên nền xanh khi mở preview. Artwork đã tải đủ; lỗi nằm ở `.landing-match.rules-page` thiếu `position: relative`. Pseudo-element `::before` dùng chung của landing có `position: absolute; inset: -2px 0; background: inherit`, nên lấy toàn bộ main làm khung thay vì riêng chương gameplay, phủ màu xanh lên các chương trước. DOM/opacity vẫn đúng nên các kiểm tra dữ liệu trước đó không bắt được lỗi; cần xem ảnh hero thực tế.
+- Thêm đúng điểm neo `position: relative` cho wrapper gameplay, không đổi ảnh, timeline, shader hay bố cục hero. Bổ sung kiểm tra chiều cao thực của lớp nền `::before` không lớn hơn section + khoảng bleed; kiểm tra này thất bại ở bản cũ và bảo vệ chính lỗi phủ toàn trang.
+- Đã xác nhận render trực tiếp trong Codex In-app Browser ở 1280px và 920px; hero hiện đủ sáu nhân vật, mặt trời và CTA. Hồi quy hero 46 checks; landing match 33 checks ở 920px (cuộn, reverse, dialog, bỏ qua); typecheck/build đạt. Một lượt chạy ở tab nền không theo kịp scrub, đã chạy lại ở tab hoạt động và đạt; không sửa timing của sản phẩm để phục vụ QA.
+- Bản sửa tiếp tục được push vào origin/main và main của repo preview, xuất bản lại riêng preview trong đợt deploy vừa được người dùng yêu cầu. Website chính giữ nguyên nhánh phát hành; yêu cầu mới vẫn cần quyền deploy riêng.
