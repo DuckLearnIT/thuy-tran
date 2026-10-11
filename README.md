@@ -10,7 +10,7 @@ Repo bản xem thử: https://github.com/DuckLearnIT/thuy-tran-preview. Ngày
 11/10/2026 đã xuất bản bản `4612eb7` tại đây, gồm ván minh họa dùng chung trên landing và trang Cách chơi; website chính thức vẫn giữ bản
 đã phát hành. Push code không tự cập nhật bản xem thử.
 
-Đã bổ sung bản sửa ngày 11/10: lớp nền gameplay chỉ nằm trong chương của nó,
+Đã bổ sung bản sửa `9c51fcc` ngày 11/10: lớp nền gameplay chỉ nằm trong chương của nó,
 không còn phủ lên hero và các phần trước đó.
 
 Khi được yêu cầu cập nhật bản xem thử, chạy typecheck/build trước và chỉ định
