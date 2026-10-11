@@ -6,7 +6,7 @@
 - **Mục đích:** tiếp tục dự án bằng repo và tài liệu này, không cần đoán lại toàn bộ lịch sử chat.
 - **Task địa danh đang dang dở:** xem [handoff thay artwork 24 địa danh](AI-HANDOFF-LOCATION-ARTWORK.md); trạng thái Git hiện tại luôn là nguồn sự thật.
 
-**Cập nhật 11/10/2026:** artwork địa danh đã hoàn tất. Trang `?page=cach-choi` có ván minh họa theo cuộn và phần thử năng lực riêng, xem mục 15. Người dùng vừa sửa trực tiếp hai năng lực Thuyền Nhẹ/Hướng Đạo; thông tin mới này ưu tiên hơn chữ trên artwork cũ. Website chính và preview chưa được deploy trong task này.
+**Cập nhật 11/10/2026:** artwork địa danh đã hoàn tất. Ván minh họa theo cuộn nằm trên landing sau 24 địa danh, trước CTA/footer; dùng chung `MatchStory.tsx` với trang `?page=cach-choi`. Phần đọc luật và thử sáu năng lực vẫn ở trang riêng, xem mục 15. Sửa trực tiếp của người dùng về Thuyền Nhẹ/Hướng Đạo ưu tiên hơn chữ trên artwork cũ. Website chính và preview chưa được deploy trong task này.
 
 ## 1. Đọc phần này trước
 
@@ -94,6 +94,8 @@ Khi được yêu cầu deploy: đọc lại README và cấu hình remote, ch�
 | 6 nhân vật | `src/components/Roles.tsx`, `src/data/cards.ts` | Stack, chữ/kỹ năng, màu theo nhân vật, snap và handoff sang kế sách |
 | 7 kế sách | `src/components/Strategies.tsx`, `src/data/strategies.ts` | Carousel ngang, scroll/drag/snap, wave in, nội dung theo lá |
 | 24 địa danh | `src/components/Locations.tsx`, `src/data/locations.ts` | Spiral, kéo/snap/keyboard, dialog xem F1/F2 và ý nghĩa |
+| Ván minh họa dùng chung | `src/components/MatchStory.tsx`, `src/data/rules.ts`, `src/components/rules.css` | Một component camera/board/timeline cho landing và trang Cách chơi; có bỏ qua/đọc luật đầy đủ trên landing |
+| Đọc luật và thử năng lực | `src/components/Rules.tsx`, `src/components/CharacterAbilities.tsx` | Mục lục, nội dung tra cứu và sáu minh họa năng lực; dùng Header/Footer chung |
 | CTA + footer | `src/components/Finale.tsx`, `src/components/SiteFooter.tsx` | Quạt thẻ tương tác và footer dùng chung landing/checkout |
 | Đặt trước | `src/components/Preorder.tsx`, `src/data/checkout.ts` | Phiếu 3 bước và preview, History API/sessionStorage/validation |
 | Địa giới | `src/data/vietnam-addresses.json` | Danh sách địa phương bundled; không gọi API lúc nhập |
@@ -102,7 +104,7 @@ Khi được yêu cầu deploy: đọc lại README và cấu hình remote, ch�
 | Font/theme/layout | `src/index.css`, `src/assets/fonts/` | Tokens, fonts, section bleed, scrollbar, hero/spiral/checkout/footer |
 | Metadata/build | `.figma/make/site.json`, `index.html`, `vite.config.ts` | Figma-derived config inject title/description/lang; không xóa tùy tiện |
 
-Các route/chapter cần giữ: `/#top`, `/#loi-lenh`, `/#roles`, `/#ke-sach`, `/#dia-diem`, `/#nhan-lenh`; checkout `/?page=dat-truoc&step=1|2|3|preview`.
+Các route/chapter cần giữ: `/#top`, `/#loi-lenh`, `/#roles`, `/#ke-sach`, `/#dia-diem`, `/#van-minh-hoa`, `/#nhan-lenh`; checkout `/?page=dat-truoc&step=1|2|3|preview`; luật `/?page=cach-choi`.
 
 ## 5. Phong cách và tài nguyên
 
@@ -458,7 +460,7 @@ Không có task phát triển nào còn mặc nhiên được phê duyệt. Back
 ### Camera theo cuộn, tranh giữ nguyên độ rõ — chỉnh tiếp 11/10
 
 - Người dùng yêu cầu bàn cao **90% viewport** khi chiều rộng cho phép, ít chữ, zoom/pan/đổi màu như motion graphic. Mốc trải trận đủ 24 lá; mobile giới hạn theo chiều rộng còn lại. Một pin `+=650%`, mười cảnh và trạng thái ván được giữ; không thêm cơ chế bắt cuộn.
-- `Rules.tsx` có `shots`, `shotTitles`, `shotCaptions`; GSAP điều khiển `.match-camera` bao quanh DOM board: cận/trung/toàn, pan vào địa danh, xoay/tilt nhẹ và đổi nền pastel. Đây là CSS 3D + GSAP, **không phải scene Three.js mới**. Người dùng cho phép Three.js nhưng không yêu cầu bắt buộc; tái sử dụng bàn hiện tại tránh thêm renderer và bản hit-test thứ hai.
+- `shots`, `shotTitles`, `shotCaptions` ban đầu ở `Rules.tsx`, hiện đã chuyển sang `MatchStory.tsx` để dùng chung với landing. GSAP điều khiển `.match-camera` bao quanh DOM board: cận/trung/toàn, pan vào địa danh, xoay/tilt nhẹ và đổi nền pastel. Đây là CSS 3D + GSAP, **không phải scene Three.js mới**. Người dùng cho phép Three.js nhưng không yêu cầu bắt buộc; tái sử dụng bàn hiện tại tránh thêm renderer và bản hit-test thứ hai.
 - Chữ trái ngắn, bàn giữa, bài/nhân vật liên quan bên phải. Desktop đủ rộng giữ ba cột; màn hẹp dùng caption phía dưới, sidebar thu gọn. Nút Cảnh tiếp ở thanh dưới; có Toàn bàn/Theo cảnh để thoát cận cảnh mà không đổi tiến trình. Focus bằng bàn phím vào thẻ tự trở về toàn bàn để không có focus ngoài khung. Thẻ mở native dialog vẫn có hai mặt và trả focus như trước.
 - Lật Nguy cấp/Ổn định, quân và bài bay chạy trong cùng timeline, đồng bộ khi cuộn ngược. Các lá ngoài camera được cắt bằng khung sân khấu; vùng logo/caption luôn đọc được. **Người dùng đã phản đối làm nhạt thẻ khi zoom:** không giảm opacity hoặc thêm filter lên ảnh để hướng mắt; không khôi phục CSS dimming của bản thử. Chỉ ô bị loại và bài đang chuyển/thu mới có opacity phục vụ hành động.
 - Bỏ `will-change` cố định ở camera. `overflow-anchor: none` chỉ trên `.rules-page` để browser không cộng thêm một lần dịch cuộn khi ScrollTrigger bảo toàn tiến trình sau resize. Đã xác nhận tiến trình 0.285 giữ nguyên qua 1280 → 920 → 1840 → 1280px, cảnh không nhảy; dừng cuộn camera đứng yên.
@@ -499,3 +501,15 @@ Không có task phát triển nào còn mặc nhiên được phê duyệt. Back
 - Màu nền cảnh cuối trở lại màu xanh sông `#c9e1d5` trong khoảng 9.65–9.95 của timeline, trước điểm dừng nút Cảnh tiếp 9.96. Vì vậy sân khấu gặp nền sóng cùng màu; cuộn ngược khôi phục màu trước đó. Cảnh tĩnh cũng dùng màu xanh sông. Không đổi pin, camera, navbar hay landing.
 - QA `check-rules.js`: **285 checks ở 320/390px, 282 ở 920px, 300 ở 1280/1840px, 128 ở reduced motion 390px**. Kiểm tra target hợp lệ, một lần/lượt, chọn ô Nguy cấp, reset, hai mặt F1/F2, bốn vai còn lại, heading uppercase và màu sân khấu/sóng. Đã xem render desktop/mobile, thử Enter chọn ô và bắt đầu lượt mới. Typecheck và production build đạt; vẫn còn cảnh báo cấu hình Vite đã có từ trước. Phạm vi xác nhận: Edge/Chromium headless, chưa xác nhận thiết bị thật hoặc engine khác.
 - Ảnh đối chiếu mới: `docs/qa/rules-abilities.jpg` (Hướng Đạo), `rules-boat.jpg` (Thuyền Nhẹ), `rules-ending.jpg` (nối sóng cuối ván). Task chỉ commit/push `origin/main`; **không deploy website chính hoặc preview**.
+
+### Đưa ván minh họa lên landing — 11/10
+
+- Người dùng đã duyệt thứ tự **24 địa danh → ván minh họa → CTA đặt trước → footer**. `App.tsx` thêm một đoạn mở ngắn “Theo một ván chơi.” và dùng `<MatchStory unlocked={unlocked} landing />`. Giữ nguyên các chương trước đó, Header, hero, mặt trời và snap.
+- Tách `MatchBoard`, `MatchHand`, `MatchStory` cùng camera/timeline sang `src/components/MatchStory.tsx`. `Rules.tsx` dùng lại đúng component này, không có bản animation thứ hai. Chế độ `landing` chỉ thay hai liên kết; không thay tình huống, artwork, năng lực, thời lượng pin hoặc trạng thái ván.
+- Landing có **Bỏ qua ván minh họa** trước cảnh và **Bỏ qua ván** trong cảnh; native fragment `#nhan-lenh` đưa tới CTA và chuyển focus vào section `Finale` có `tabIndex=-1`. Không bắt người xem hoàn thành ván. **Đọc luật đầy đủ** mở `?page=cach-choi#chuan-bi` để vào phần đọc ngay, không buộc xem lại ván.
+- Landing không chứa phần tra cứu dài hoặc `CharacterAbilities`; các phần đó vẫn ở trang Cách chơi. Hai trang vẫn dùng Header/Footer chung. CSS bổ sung chỉ cho intro và link bỏ qua; nền xanh sông nối địa danh/cảnh/CTA, màu cuối timeline vẫn trở về xanh trước khi thoát pin.
+- App khôi phục deep link `#van-minh-hoa` ở 8% pin như trang luật, để góc toàn bàn đã trải đủ 24 ô. Resize trong pin giữ tiến trình, cuộn ngược khôi phục ô mất. Mỗi trang chỉ tạo một pin của ván minh họa, không có scroll engine mới.
+- Tài nguyên đều đã nằm trong preload hiện có; match cùng tham gia decode ảnh DOM trước khi curtain mở. Không thêm curtain giữa các phần. Reduced motion hoặc chiều cao <=620px giữ mười cảnh tĩnh của component chung, thao tác xem thẻ vẫn hoạt động.
+- Thêm `scripts/check-landing-match.js`: **32 checks** ở 320/390/920/1280/1840px; **33 checks** khi giảm chuyển động ở 390px và ở màn 1280×600. Kiểm tra thứ tự DOM, một navbar/progress, ảnh chuẩn bị, đủ 24 F1/F2 vuông, một pin, trạng thái scene, xem thẻ/khôi phục focus, cuộn ngược, màu cuối và native skip tới CTA. Cho phép đúng 2px `overflow-clip-margin` đã có của landing; nút điều khiển và góc mở toàn bàn phải nằm trong viewport.
+- Hồi quy `check-rules.js`: 300 checks ở 1280px, 285 ở 390px, 128 khi giảm chuyển động ở 390px. Hero 46 checks, checkout đủ ba lượt đạt 73 checks. Đã kiểm tra giữ tiến trình khoảng .285 khi resize 1840 → 920px, xem render desktop/mobile và không có page error ở phiên QA cuối. Typecheck/build đạt; cảnh báo Vite config cũ giữ nguyên. Phạm vi xác nhận vẫn là Edge/Chromium headless, chưa đo trên thiết bị thật hoặc engine khác.
+- Ảnh đối chiếu: `docs/qa/landing-match-desktop.jpg` (1280×900), `docs/qa/landing-match-mobile.jpg` (390×844). Chỉ commit/push `origin/main`, **chưa deploy chính hoặc preview**.

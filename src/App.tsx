@@ -7,6 +7,7 @@ import Manifesto from './components/Manifesto'
 import Roles from './components/Roles'
 import Strategies from './components/Strategies'
 import Locations from './components/Locations'
+import MatchStory from './components/MatchStory'
 import Finale from './components/Finale'
 import Curtain from './components/Curtain'
 import Cursor from './components/Cursor'
@@ -92,7 +93,8 @@ export default function App() {
       const anchor = document.getElementById(decodeURIComponent(window.location.hash.slice(1)))
       if (anchor) {
         const trigger = ScrollTrigger.getAll().find((item) => item.pin && (item.trigger === anchor || item.trigger?.contains(anchor)))
-        window.scrollTo(0, trigger?.start ?? anchor.getBoundingClientRect().top + scrollY)
+        const top = trigger?.start ?? anchor.getBoundingClientRect().top + scrollY
+        window.scrollTo(0, top + (trigger && anchor.id === 'van-minh-hoa' ? (trigger.end - trigger.start) * 0.08 : 0))
       }
     })
     return () => cancelAnimationFrame(frame)
@@ -111,6 +113,19 @@ export default function App() {
           <Roles />
           <Strategies />
           <Locations />
+          <section className="landing-match rules-page" aria-labelledby="landing-match-title">
+            <header className="landing-match-intro">
+              <div>
+                <p className="rules-eyebrow">04 — Ván minh họa</p>
+                <h2 id="landing-match-title">Theo một ván chơi.</h2>
+              </div>
+              <div className="landing-match-links">
+                <a className="rules-text-button" href="#nhan-lenh">Bỏ qua ván minh họa</a>
+                <a className="rules-text-button" href="?page=cach-choi#chuan-bi">Đọc luật đầy đủ</a>
+              </div>
+            </header>
+            <MatchStory unlocked={unlocked} landing />
+          </section>
           <Finale />
         </div>
       )}

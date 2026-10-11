@@ -164,6 +164,7 @@ export default function Finale() {
     <section
       ref={root}
       id="nhan-lenh"
+      tabIndex={-1}
       className="finale relative overflow-hidden bg-ink text-card min-h-svh flex flex-col"
       onKeyDown={(event) => {
         if (event.key === "Escape") stow()
