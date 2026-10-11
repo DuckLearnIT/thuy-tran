@@ -1,4 +1,4 @@
-// Documents provide the turn rules; printed character cards remain authoritative.
+// Turn rules come from the guides; cards.ts follows the user's latest ability corrections.
 
 export const rulesSource =
   "https://docs.google.com/document/d/1WqryE88CVgMAJLq1xULrtpy2IznMl32enYt3hA5XkKE/edit?tab=t.h3zldwgq6rwy"
@@ -129,7 +129,7 @@ export const quickRules = [
     paragraphs: [
       "Ô chỉ chuyển sang Nguy cấp thì nhân vật ở lại. Nếu ô bị mất, từng nhân vật phải lập tức tới một ô liền kề còn tồn tại, kể cả ô Nguy cấp; không tốn hành động.",
 
-      "Theo thẻ nhân vật hiện tại, Thám Quân và Quân Thuyền Nhẹ được thoát theo đường chéo. Các nhân vật còn lại thoát theo cạnh ngang hoặc dọc. Không có nơi thoát hợp lệ thì cả đội thua ngay.",
+      "Mặc định thoát theo cạnh ngang/dọc; Thám Quân được thoát theo đường chéo. Không có nơi thoát hợp lệ thì cả đội thua ngay. Năng lực di chuyển cập nhật của Quân Thuyền Nhẹ và Quân Hướng Đạo được minh họa riêng ở mục Sáu nhân vật.",
     ],
   },
 

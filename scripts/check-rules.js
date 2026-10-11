@@ -16,6 +16,12 @@
     "Rules page is unlocked",
   )
   check(document.title === "Cách chơi — Thủy Trận", "Page title")
+  check(
+    [...root.querySelectorAll("h1,h2,h3,h4,h5,h6")].every(
+      (el) => getComputedStyle(el).textTransform === "uppercase",
+    ),
+    "Rules headings keep the landing uppercase style",
+  )
   check(document.fonts.check('700 16px "NVN Yellost"'), "Display font prepared")
   check(
     [...root.querySelectorAll("img")].every(
@@ -262,6 +268,12 @@
         )
       if (phase === 9) {
         check(
+          getComputedStyle(story).backgroundColor ===
+            getComputedStyle(root.querySelector(".rules-story-wave"))
+              .backgroundColor,
+          "Final scene meets the wave with the same background color",
+        )
+        check(
           story.querySelectorAll('.match-strategies [data-complete="true"]')
             .length === 4,
           "All four strategies completed",
@@ -437,6 +449,12 @@
     await seek(0)
   } else {
     check(
+      getComputedStyle(root.querySelector(".match-static")).backgroundColor ===
+        getComputedStyle(root.querySelector(".rules-story-wave"))
+          .backgroundColor,
+      "Static sequence also meets the wave without a color seam",
+    )
+    check(
       root.querySelectorAll(".match-static-scene").length === 10,
       "All ten scenes readable without motion",
     )
@@ -500,7 +518,7 @@
     )
     check(
       abilities.querySelectorAll(".ability-tile button").length ===
-        (i === 1 ? 2 : 1),
+        (i === 1 ? 2 : i === 5 ? 7 : 1),
       "Only the illustrated action targets are interactive",
     )
     check(
@@ -530,7 +548,7 @@
       )
     else if (i === 1)
       check(stable(3) && stable(5), "Nha Binh reinforces two adjacent cells")
-    else if (i === 2 || i === 3) {
+    else if (i === 2) {
       check(
         atCell(".ability-actor", 4),
         "Diagonal movement reaches one diagonal cell",
@@ -564,6 +582,60 @@
         abilities.querySelector(".ability-cost").dataset.free === "true" &&
           abilities.querySelector(".ability-cost").dataset.spent === "0",
         "Escaping a lost tile is free, not an action",
+      )
+    } else if (i === 3) {
+      check(
+        !abilities.querySelector(".ability-modes") &&
+          !stable(1) &&
+          !stable(3) &&
+          abilities.querySelector(
+            '.ability-tile-2 [aria-label="Khoảng trống, không còn địa danh"]',
+          ),
+        "Boat has consecutive dangerous tiles and a real gap, not diagonal controls",
+      )
+      check(
+        atPoint(".ability-actor", 0.9, 0.5),
+        "Boat crosses the entire sequence to an existing destination",
+      )
+    } else if (i === 5) {
+      check(
+        !abilities.querySelector(".ability-flight") &&
+          !abilities.querySelector(".ability-modes") &&
+          !abilities.querySelector(".ability-tile-4 button"),
+        "Scout illustrates travel and cannot select the lost tile",
+      )
+      check(
+        atCell(".ability-actor", 2),
+        "Scout reaches a distant tile in one action",
+      )
+      check(
+        [...abilities.querySelectorAll(".ability-tile button")].every(
+          (el) => el.disabled,
+        ),
+        "Scout ability is locked after one use in the turn",
+      )
+      abilities.querySelector(".ability-tile-0 button").click()
+      await frame()
+      check(
+        atCell(".ability-actor", 2) && abilities.dataset.phase === "done",
+        "A second scout jump is rejected in the same turn",
+      )
+      abilities.querySelector(".ability-play").click()
+      await frame()
+      await frame()
+      check(
+        abilities.dataset.phase === "ready" && atCell(".ability-actor", 6),
+        "New turn restores the scout allowance",
+      )
+      abilities.querySelector(".ability-tile-1 button").click()
+      const deadline = performance.now() + 4000
+      while (performance.now() < deadline && abilities.dataset.done !== "true")
+        await frame()
+      check(
+        abilities.dataset.done === "true" &&
+          atCell(".ability-actor", 1) &&
+          !stable(1),
+        "Scout can choose a dangerous tile that still exists",
       )
     } else
       check(

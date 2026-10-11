@@ -5,9 +5,9 @@ import { locations } from "../data/locations"
 import { strategies } from "../data/strategies"
 import useReducedMotion from "../hooks/useReducedMotion"
 
-const place = (cell: number) => ({
-  left: `${(((cell % 3) + 0.5) / 3) * 100}%`,
-  top: `${((Math.floor(cell / 3) + 0.5) / 3) * 100}%`,
+const place = (cell: number, crossing = false) => ({
+  left: `${(((cell % (crossing ? 5 : 3)) + 0.5) / (crossing ? 5 : 3)) * 100}%`,
+  top: crossing ? "50%" : `${((Math.floor(cell / 3) + 0.5) / 3) * 100}%`,
 })
 const name = (card: typeof cards[number]) =>
   [card.prefix, card.role].filter(Boolean).join(" ")
@@ -22,74 +22,111 @@ export default function CharacterAbilities() {
   const [run, setRun] = useState(0)
   const [phase, setPhase] = useState("ready")
   const [beat, setBeat] = useState(0)
+  const [destination, setDestination] = useState(2)
   const card = cards[selected]
   const commander = card.id === "nha-tuong"
   const repair = card.id === "nha-binh"
-  const diagonal = ["tham-quan", "thuyen-nhe"].includes(card.id)
-  const remote = ["truyen-lenh-lam", "huong-dao-luc"].includes(card.id)
+  const diagonal = card.id === "tham-quan"
+  const remote = card.id === "truyen-lenh-lam"
+  const boat = card.id === "thuyen-nhe"
+  const scout = card.id === "huong-dao-luc"
   const escape = diagonal && mode === "thoat-hiem"
-  const actorCell = commander ? 0 : repair ? 4 : 6
+  const actorCell = commander || boat ? 0 : repair ? 4 : 6
   const mate = byId("nha-binh")
   const danger = repair
     ? [3, 5]
-    : diagonal && mode === "cung-co"
-      ? [4]
-      : escape
-        ? [6]
-        : []
-  const targets = commander ? [8] : repair ? [3, 5] : remote ? [2] : [4]
+    : boat
+      ? [1, 3]
+      : scout
+        ? [1]
+        : diagonal && mode === "cung-co"
+          ? [4]
+          : escape
+            ? [6]
+            : []
+  const targets = commander
+    ? [8]
+    : repair
+      ? [3, 5]
+      : remote
+        ? [2]
+        : boat
+          ? [4]
+          : scout
+            ? [0, 1, 2, 3, 5, 7, 8]
+            : [4]
+  const gaps = boat ? [2] : scout ? [4] : []
+  const tiles = boat ? sampleTiles.slice(0, 5) : sampleTiles
   const action = commander
     ? "Điều động đồng đội"
     : repair
       ? "Củng cố hai ô"
-      : remote
-        ? "Chuyển Cọc Ngầm"
-        : mode === "di"
-          ? "Đi chéo"
-          : mode === "cung-co"
-            ? "Củng cố chéo"
-            : "Thoát hiểm chéo"
+      : boat
+        ? "Vượt dòng nước"
+        : scout
+          ? "Đến ô xa"
+          : remote
+            ? "Chuyển Cọc Ngầm"
+            : mode === "di"
+              ? "Đi chéo"
+              : mode === "cung-co"
+                ? "Củng cố chéo"
+                : "Thoát hiểm chéo"
   const prompt = commander
     ? "Đồng đội đi tối đa hai ô. Bạn giữ vị trí."
     : repair
       ? "Hai ô kề cùng Nguy cấp. Cứu cả hai."
-      : remote
-        ? "Cho một lá Kế sách. Không cần cùng ô."
-        : mode === "di"
-          ? "Sang một ô theo đường chéo."
-          : mode === "cung-co"
-            ? "Cứu ô chéo. Nhân vật giữ vị trí."
-            : "Ô đang đứng bị mất. Thoát sang ô chéo."
+      : boat
+        ? "Vượt ô Nguy cấp và khoảng trống liên tiếp."
+        : scout
+          ? "Chọn bất kỳ ô còn tồn tại."
+          : remote
+            ? "Cho một lá Kế sách. Không cần cùng ô."
+            : mode === "di"
+              ? "Sang một ô theo đường chéo."
+              : mode === "cung-co"
+                ? "Cứu ô chéo. Nhân vật giữ vị trí."
+                : "Ô đang đứng bị mất. Thoát sang ô chéo."
   const result = commander
     ? "Đồng đội đã đi hai ô. Nha Tướng đứng yên."
     : repair
       ? "Hai ô trở về Ổn định. Nha Binh đứng yên."
-      : remote
-        ? `${name(mate)} nhận Cọc Ngầm. Hai quân giữ vị trí.`
-        : mode === "di"
-          ? "Đã đi một ô chéo."
-          : mode === "cung-co"
-            ? "Ô chéo trở về Ổn định. Nhân vật đứng yên."
-            : "Đã thoát khỏi ô mất. Không tốn hành động."
+      : boat
+        ? "Đã vượt hai ô Nguy cấp và một khoảng trống."
+        : scout
+          ? `Đã tới ${sampleTiles[destination].name}. Kỹ năng lượt này đã dùng.`
+          : remote
+            ? `${name(mate)} nhận Cọc Ngầm. Hai quân giữ vị trí.`
+            : mode === "di"
+              ? "Đã đi một ô chéo."
+              : mode === "cung-co"
+                ? "Ô chéo trở về Ổn định. Nhân vật đứng yên."
+                : "Đã thoát khỏi ô mất. Không tốn hành động."
   const path = commander
     ? "M16.7 83.3 H83.3"
     : repair
       ? "M50 50 H16.7 M50 50 H83.3"
-      : remote
-        ? "M29 83.3 Q65 75 71 16.7"
-        : "M16.7 83.3 L50 50"
+      : boat
+        ? "M10 50 H90"
+        : scout
+          ? `M16.7 83.3 Q16.7 16.7 ${parseFloat(place(destination).left)} ${parseFloat(place(destination).top)}`
+          : remote
+            ? "M29 83.3 Q65 75 71 16.7"
+            : "M16.7 83.3 L50 50"
 
   useLayoutEffect(() => {
     setPhase(run ? "playing" : "ready")
     setBeat(0)
     const ctx = gsap.context(() => {
-      gsap.set(".ability-actor", place(actorCell))
+      gsap.set(".ability-token", { xPercent: -50, yPercent: -50, x: 0, y: 0 })
+      gsap.set(".ability-actor", place(actorCell, boat))
       if (commander || remote) gsap.set(".ability-mate", place(remote ? 2 : 6))
       if (remote)
         gsap.set(".ability-flight", { left: "29%", top: "83.3%", rotation: -8 })
       gsap.set(".ability-route", { strokeDashoffset: 1 })
       gsap.set(".ability-tile-paper", {
-        rotationY: (i) => (danger.includes(i) ? 180 : 0),
+        rotationY: (_i, target) =>
+          target.closest(".ability-tile")?.dataset.danger === "true" ? 180 : 0,
         opacity: 1,
         yPercent: 0,
       })
@@ -98,7 +135,11 @@ export default function CharacterAbilities() {
       const timeline = gsap.timeline({ onComplete: () => setPhase("done") })
       timeline.to(
         ".ability-route",
-        { strokeDashoffset: 0, duration: reduced ? 0 : 1.5, ease: "none" },
+        {
+          strokeDashoffset: 0,
+          duration: reduced ? 0 : boat ? 1.8 : 1.5,
+          ease: "none",
+        },
         0,
       )
       if (commander) {
@@ -126,6 +167,38 @@ export default function CharacterAbilities() {
             ".ability-tile-5 .ability-tile-paper",
             { rotationY: 0, duration },
             duration + (reduced ? 0 : 0.2),
+          )
+      } else if (boat) {
+        const crossingDuration = reduced ? 0 : 0.45
+        for (let cell = 1; cell <= 4; cell++) {
+          timeline
+            .to(
+              ".ability-actor",
+              {
+                ...place(cell, true),
+                duration: crossingDuration,
+                ease: "none",
+              },
+              (cell - 1) * crossingDuration,
+            )
+            .call(() => setBeat(cell), [], cell * crossingDuration)
+        }
+      } else if (scout) {
+        timeline
+          .to(".ability-actor", { y: -24, duration: reduced ? 0 : 0.2 }, 0)
+          .to(
+            ".ability-actor",
+            {
+              ...place(destination),
+              duration: reduced ? 0 : 0.85,
+              ease: "power2.inOut",
+            },
+            reduced ? 0 : 0.2,
+          )
+          .to(
+            ".ability-actor",
+            { y: 0, duration: reduced ? 0 : 0.2 },
+            reduced ? 0 : 1.05,
           )
       } else if (remote) {
         timeline
@@ -179,15 +252,22 @@ export default function CharacterAbilities() {
       }
     }, root)
     return () => ctx.revert()
-  }, [selected, mode, run, reduced])
+  }, [selected, mode, run, reduced, destination])
 
-  const play = () => {
-    if (phase !== "playing") setRun((value) => value + 1)
+  const play = (target = destination) => {
+    if (phase === "playing" || (scout && phase === "done")) return
+    if (scout) setDestination(target)
+    setRun((value) => value + 1)
+  }
+  const reset = () => {
+    setRun(0)
+    setDestination(2)
   }
   const choose = (index: number) => {
     setSelected(index)
     setRun(0)
     setMode("di")
+    setDestination(2)
   }
   const spent = run > 0 && !escape ? 1 : 0
   return (
@@ -223,7 +303,9 @@ export default function CharacterAbilities() {
             <h3>{name(card)}</h3>
             <p className="rules-character-skill">{card.skill}</p>
             <details className="ability-explanation">
-              <summary>Luật trên thẻ</summary>
+              <summary>
+                {boat || scout ? "Năng lực cập nhật" : "Năng lực"}
+              </summary>
               <p>{card.text}</p>
               {remote && (
                 <p>
@@ -243,7 +325,19 @@ export default function CharacterAbilities() {
                   không tốn hành động; đích đến phải là ô còn tồn tại.
                 </p>
               )}
+              {scout && (
+                <p>
+                  Chọn một ô bất kỳ còn tồn tại, kể cả Nguy cấp. Chỉ dùng kỹ
+                  năng này một lần mỗi lượt.
+                </p>
+              )}
             </details>
+            {(boat || scout) && (
+              <p className="rules-note">
+                Áp dụng năng lực cập nhật; phần chữ trên tranh thẻ vẫn là bản
+                trước.
+              </p>
+            )}
           </div>
         </div>
         <div className="ability-scene">
@@ -262,6 +356,13 @@ export default function CharacterAbilities() {
                   ? "Đã dùng 1 hành động"
                   : "1 hành động"}
             </span>
+            {scout && (
+              <p className="ability-once">
+                {phase === "done"
+                  ? "Một lần trong lượt · đã dùng"
+                  : "Một lần trong lượt"}
+              </p>
+            )}
           </div>
           {diagonal && (
             <div
@@ -291,9 +392,10 @@ export default function CharacterAbilities() {
           <div className="ability-field">
             <div
               className="ability-arena"
-              aria-label="Cụm chín địa danh minh họa, không phải bàn chơi thật"
+              data-crossing={boat}
+              aria-label="Tình huống minh họa năng lực, không phải bàn chơi thật"
             >
-              {sampleTiles.map((tile, i) => {
+              {tiles.map((tile, i) => {
                 const target = targets.includes(i)
                 const paper = (
                   <div className="ability-tile-paper">
@@ -306,13 +408,25 @@ export default function CharacterAbilities() {
                     key={tile.id}
                     className={`ability-tile ability-tile-${i}`}
                     data-target={target}
+                    data-danger={danger.includes(i)}
+                    data-gap={gaps.includes(i)}
                     data-lost={escape && i === 6 && beat > 0}
                   >
-                    {target ? (
+                    {gaps.includes(i) ? (
+                      <span
+                        className="ability-empty"
+                        role="img"
+                        aria-label="Khoảng trống, không còn địa danh"
+                      >
+                        <span>Khoảng trống</span>
+                      </span>
+                    ) : target ? (
                       <button
                         type="button"
-                        onClick={play}
-                        disabled={phase === "playing"}
+                        onClick={() => play(i)}
+                        disabled={
+                          phase === "playing" || (scout && phase === "done")
+                        }
                         aria-label={`${
                           phase === "done" ? "Xem lại" : action
                         } · ${tile.name}`}
@@ -340,7 +454,7 @@ export default function CharacterAbilities() {
               </svg>
               <span
                 className="ability-token ability-actor"
-                style={{ ...place(actorCell), background: card.bg }}
+                style={{ ...place(actorCell, boat), background: card.bg }}
                 role="img"
                 aria-label={name(card)}
               >
@@ -376,20 +490,22 @@ export default function CharacterAbilities() {
               type="button"
               className="rules-button ability-play"
               aria-describedby="ability-prompt ability-cost"
-              onClick={play}
+              onClick={() => (scout && phase === "done" ? reset() : play())}
               disabled={phase === "playing"}
             >
               {phase === "playing"
                 ? "Đang minh họa…"
                 : phase === "done"
-                  ? "Xem lại"
+                  ? scout
+                    ? "Lượt mới"
+                    : "Xem lại"
                   : action}
               <span className="rules-diamond" aria-hidden="true" />
             </button>
             <button
               type="button"
               className="rules-text-button ability-reset"
-              onClick={() => setRun(0)}
+              onClick={reset}
               disabled={run === 0}
             >
               Đặt lại
@@ -399,13 +515,17 @@ export default function CharacterAbilities() {
             {phase === "done"
               ? result
               : phase === "playing"
-                ? commander && beat
-                  ? "Đã đi một ô. Còn một ô nữa."
-                  : repair && beat
-                    ? "Một ô đã Ổn định. Cứu ô thứ hai."
-                    : escape && beat
-                      ? "Ô đã mất. Nhân vật phải thoát ngay."
-                      : action
+                ? boat
+                  ? beat === 2
+                    ? "Vượt khoảng trống. Tiếp tục cùng một hành động."
+                    : "Vượt qua chuỗi ô Nguy cấp."
+                  : commander && beat
+                    ? "Đã đi một ô. Còn một ô nữa."
+                    : repair && beat
+                      ? "Một ô đã Ổn định. Cứu ô thứ hai."
+                      : escape && beat
+                        ? "Ô đã mất. Nhân vật phải thoát ngay."
+                        : action
                 : "Chạm ô viền màu hoặc bấm nút để xem."}
           </p>
         </div>

@@ -6,7 +6,7 @@
 - **Mục đích:** tiếp tục dự án bằng repo và tài liệu này, không cần đoán lại toàn bộ lịch sử chat.
 - **Task địa danh đang dang dở:** xem [handoff thay artwork 24 địa danh](AI-HANDOFF-LOCATION-ARTWORK.md); trạng thái Git hiện tại luôn là nguồn sự thật.
 
-**Cập nhật 11/10/2026:** artwork địa danh đã hoàn tất. Trang `?page=cach-choi` đã được người dùng phê duyệt và triển khai, xem mục 15. Yêu cầu mới nhất đổi ba minh họa rời thành một ván minh họa theo cuộn; không quay lại thiết kế ba widget. Website chính và preview chưa được deploy trong task này.
+**Cập nhật 11/10/2026:** artwork địa danh đã hoàn tất. Trang `?page=cach-choi` có ván minh họa theo cuộn và phần thử năng lực riêng, xem mục 15. Người dùng vừa sửa trực tiếp hai năng lực Thuyền Nhẹ/Hướng Đạo; thông tin mới này ưu tiên hơn chữ trên artwork cũ. Website chính và preview chưa được deploy trong task này.
 
 ## 1. Đọc phần này trước
 
@@ -219,7 +219,7 @@ Phân biệt phần này với showcase 24 lá trong mở hộp: đây là nơi 
 | `truyen-lenh-lam` | Quân Truyền Lệnh | Xanh biển; không được thay nhầm bằng thẻ xanh lá |
 | `huong-dao-luc` | Quân Hướng Đạo | Xanh lá |
 
-Prefix `Quân` là trường dữ liệu riêng; không thêm prefix lần hai khi render. Kỹ năng/text/quote trong `cards.ts` là nội dung hiện tại; không tự sửa luật vì thấy hai kỹ năng có vẻ giống nhau.
+Prefix `Quân` là trường dữ liệu riêng; không thêm prefix lần hai khi render. Kỹ năng/text/quote trong `cards.ts` là nội dung hiện tại. Ngày 11/10 người dùng sửa trực tiếp: Thuyền Nhẹ vượt nhiều ô Nguy cấp/khoảng trống liên tiếp; Hướng Đạo một lần trong lượt đến bất kỳ ô còn tồn tại. Chữ trên hai artwork chưa đổi; không khôi phục năng lực cũ theo tranh.
 
 7 kế sách theo `strategies.ts`: Triều Biến, Cờ Lệnh, Gia Cố, Nghi Binh, Cọc Ngầm, Dò Luồng, Mai Phục. Một số mô tả là copy giới thiệu; không đủ để tự dựng toàn bộ luật thắng/thua.
 
@@ -420,7 +420,7 @@ Không có task phát triển nào còn mặc nhiên được phê duyệt. Back
 
 - Route `?page=cach-choi`, liên kết từ menu landing và footer chung. CSS riêng `src/components/rules.css`; component `src/components/Rules.tsx`; nội dung `src/data/rules.ts`. Không thêm thư viện, router, storage hay API.
 - Nguồn chính: [hướng dẫn ngắn](https://docs.google.com/document/d/1WqryE88CVgMAJLq1xULrtpy2IznMl32enYt3hA5XkKE/edit?tab=t.h3zldwgq6rwy). [Bản dài](https://docs.google.com/document/d/1WqryE88CVgMAJLq1xULrtpy2IznMl32enYt3hA5XkKE/edit?tab=t.0) bổ sung tra cứu. Nội dung được lưu trong repo, không gọi Docs khi chạy trang.
-- Người dùng chọn **thẻ in làm nguồn năng lực** khi tài liệu mâu thuẫn: Hướng Đạo chuyển bài từ xa; Thuyền Nhẹ đi/củng cố/thoát hiểm đường chéo. Không tự đưa năng lực Hoa tiêu/Kình ngư cũ vào trang. Thẻ Nha Binh giữ nguyên câu chữ hiện tại.
+- Nguồn năng lực hiện tại là `cards.ts`, đã cập nhật theo sửa trực tiếp của người dùng ngày 11/10: **Thuyền Nhẹ vượt nhiều ô Nguy cấp/khoảng trống liên tiếp; Hướng Đạo một lần trong lượt đến bất kỳ ô còn tồn tại.** Quyết định dùng chữ trên thẻ in trước đây đã được thay thế cho hai vai này. Bốn vai khác giữ nguyên; artwork không bị sửa.
 - Người dùng đã chê bố cục ba cảnh độc lập, yêu cầu xem luật như một ván game. Trang hiện có **một pin GSAP `+=650%`, scrub .35**, mười cảnh: chuẩn bị → đi → củng cố → cho bài → rút Kế sách → Biến động → hoàn thành Cọc Ngầm → Triều Biến/ô mất → Hiệp lực → tập kết/dùng Cờ Lệnh thắng.
 - Ván cố định minh họa bốn người; có ghi rõ rút gọn các lượt, không phải mô phỏng toàn bộ ván hợp lệ. Các lượt bị bỏ qua được nêu trong diễn giải. Bố trí địa danh chỉ là một ví dụ, không phải thứ tự chơi bắt buộc.
 - Bàn dùng đủ 24 F1/F2, hàng 2–4–6–6–4–2; F3 không dùng. Quân di chuyển bằng timeline, ô đổi mặt/biến mất, kế sách được đánh dấu; không thêm số lên artwork. Có Cảnh trước/Cảnh tiếp và liên kết bỏ qua tới tra cứu. Resize đang trong pin giữ tiến trình; cuộn ngược khôi phục trạng thái.
@@ -462,7 +462,7 @@ Không có task phát triển nào còn mặc nhiên được phê duyệt. Back
 - Chữ trái ngắn, bàn giữa, bài/nhân vật liên quan bên phải. Desktop đủ rộng giữ ba cột; màn hẹp dùng caption phía dưới, sidebar thu gọn. Nút Cảnh tiếp ở thanh dưới; có Toàn bàn/Theo cảnh để thoát cận cảnh mà không đổi tiến trình. Focus bằng bàn phím vào thẻ tự trở về toàn bàn để không có focus ngoài khung. Thẻ mở native dialog vẫn có hai mặt và trả focus như trước.
 - Lật Nguy cấp/Ổn định, quân và bài bay chạy trong cùng timeline, đồng bộ khi cuộn ngược. Các lá ngoài camera được cắt bằng khung sân khấu; vùng logo/caption luôn đọc được. **Người dùng đã phản đối làm nhạt thẻ khi zoom:** không giảm opacity hoặc thêm filter lên ảnh để hướng mắt; không khôi phục CSS dimming của bản thử. Chỉ ô bị loại và bài đang chuyển/thu mới có opacity phục vụ hành động.
 - Bỏ `will-change` cố định ở camera. `overflow-anchor: none` chỉ trên `.rules-page` để browser không cộng thêm một lần dịch cuộn khi ScrollTrigger bảo toàn tiến trình sau resize. Đã xác nhận tiến trình 0.285 giữ nguyên qua 1280 → 920 → 1840 → 1280px, cảnh không nhảy; dừng cuộn camera đứng yên.
-- Người dùng cũng yêu cầu ai muốn đọc thêm có thể xem năng lực từng nhân vật bằng hành động. `CharacterAbilities.tsx` dùng dữ liệu cards/locations/strategies sẵn có và một cụm 3×3: Nha Tướng điều đồng đội hai ô ngang/dọc; Nha Binh củng cố hai ô kề; Thám Quân/Quân Thuyền Nhẹ có ba ví dụ đi/củng cố/thoát hiểm chéo; Truyền Lệnh/Hướng Đạo trao kế sách từ xa. Có chọn vai, thử/thử lại và Đọc năng lực; toàn bộ sáu thẻ gốc còn trong disclosure tra cứu. Không có game engine, tiến độ hoặc storage mới.
+- Người dùng cũng yêu cầu ai muốn đọc thêm có thể xem năng lực từng nhân vật bằng hành động. `CharacterAbilities.tsx` dùng dữ liệu cards/locations/strategies sẵn có, có chọn vai, thử/thử lại và Đọc năng lực; toàn bộ sáu thẻ gốc còn trong disclosure tra cứu. Bản đầu ghép Thuyền Nhẹ với Thám Quân, Hướng Đạo với Truyền Lệnh đã được sửa theo yêu cầu mới bên dưới. Không có game engine, tiến độ hoặc storage mới.
 - Reduced motion/chiều cao <=620px vẫn đọc mười cảnh tĩnh, không pin; thao tác năng lực đổi ngay sang kết quả. Vùng kết quả có thông báo cho screen reader; dùng native button với focus rõ.
 - QA cập nhật: `check-rules.js` đạt 218 checks tại 320/390px, 215 tại 920px, 233 tại 1280/1840px; reduced motion 89 tại 390px. Kiểm tra đủ mặt/ô, camera, giữ màu/opacity ảnh, chuyển cảnh/cuộn ngược, reset và toàn bộ sáu năng lực. Đã xem render năm kích thước. Hồi quy hero 46 checks, checkout đủ ba lượt đạt 73; typecheck/build đạt. Phạm vi xác nhận là Edge/Chromium headless, chưa đo trên thiết bị thật hoặc browser engine khác.
 - Ảnh `docs/qa/rules-desktop.jpg` (1280×900, củng cố), `rules-mobile.jpg` (390×844, Biến động), `rules-abilities.jpg` (1280×900, trao bài từ xa). Commit/push origin/main; **không deploy chính hoặc preview**.
@@ -472,20 +472,30 @@ Không có task phát triển nào còn mặc nhiên được phê duyệt. Back
 - Yêu cầu tiếp theo: bỏ khung chữ nhật riêng đang cắt bàn khi zoom, tăng rõ kích thước quân, sửa nhòe và đối chiếu/làm lại minh họa cả sáu năng lực. Phần này thay thế mô tả khung cắt và demo nhỏ ở mục trước.
 - Bỏ `clip-path` của `.match-table`; tranh có thể vượt vùng bố cục bàn, chỉ bị cắt ở mép sân khấu toàn viewport. Các cận cảnh vẫn chủ ý không hiện cả 24 ô; nút **Toàn bàn** và cảnh mở đầu hiện đủ bộ. Một pin, timeline, các nút tiến/lùi và trang đọc luật được giữ.
 - Zoom bằng kích thước layout `width` của `.match-camera`, không phóng lớp raster bằng `scale`. Vẫn pan/xoay/tilt bằng GSAP. Nhãn hover là một phần tử ngoài camera, chữ 16px ở kích thước thật, theo thẻ bằng tọa độ viewport; không làm nhạt/filter tranh. Nhãn tự bỏ khi ô mất. Quân rộng 38% cạnh ô, dùng crop chân dung từ artwork gốc, nằm trên lá đang hover.
-- Đã mở và đọc cả sáu WebP được `cards.ts` import. **Dữ liệu năng lực hiện khớp chữ in, không sửa tranh/data để tạo sáu năng lực khác nhau.** Hai cặp trùng năng lực trên bản in là chủ ý được giữ theo nguồn đã chốt:
+- Đã mở và đọc cả sáu WebP được `cards.ts` import. Ở `aee0d7f` giữ hai cặp trùng theo chữ in; **người dùng sau đó sửa trực tiếp hai năng lực**, nên bảng sau ghi hành vi mới. Không suy luật hiện tại từ chữ trên hai artwork cũ:
 
 | Thẻ | Minh họa đúng năng lực hiện tại |
 | --- | --- |
 | Nha Tướng | Nha Binh đi hai ô theo cạnh; Nha Tướng đứng yên; cả việc tốn một hành động |
 | Nha Binh | Hai ô Nguy cấp kề ngang được lật F2 → F1 lần lượt; nhân vật đứng yên; một hành động |
 | Thám Quân | Ba chế độ: đi chéo một ô, củng cố ô chéo, thoát chéo khỏi ô bị loại |
-| Quân Thuyền Nhẹ | Cùng ba quyền đường chéo theo chính thẻ in; không thay bằng năng lực Kình ngư cũ |
+| Quân Thuyền Nhẹ | Đi qua hai ô Nguy cấp và một khoảng trống liên tiếp, tới ô còn tồn tại; cùng một hành động |
 | Quân Truyền Lệnh | Cọc Ngầm từ tay mình bay tới Nha Binh ở xa; hai quân giữ vị trí; một hành động |
-| Quân Hướng Đạo | Cùng quyền chuyển Kế sách từ xa theo thẻ in; không thay bằng năng lực Hoa tiêu cũ |
+| Quân Hướng Đạo | Chọn bất kỳ ô còn tồn tại, kể cả Nguy cấp; di chuyển một lần trong lượt; không cho chọn ô mất |
 
-- `CharacterAbilities.tsx` tái sử dụng cụm chín F1/F2 và GSAP, nhưng bàn lớn tối đa 520px, quân bằng 15% cạnh bàn (42–78px), có tên người cho/nhận, đường hành động được vẽ theo chuyển động và ô đích viền màu. Bấm ô đích hoặc nút dải cờ đều chạy cùng minh họa. Luật nguyên văn nằm trong disclosure **Luật trên thẻ**; tra cứu cả sáu thẻ vẫn còn.
+- `CharacterAbilities.tsx` tái sử dụng F1/F2 và GSAP, bàn lớn tối đa 520px, quân bằng 15% cạnh bàn (42–78px), có tên quân, đường hành động và ô đích viền màu. Bấm ô đích hoặc nút dải cờ đều chạy cùng minh họa. Luật nằm trong disclosure **Năng lực**/**Năng lực cập nhật**; tra cứu cả sáu thẻ vẫn còn. Thuyền Nhẹ dùng dải năm vị trí; các vai khác dùng cụm 3×3.
 - Đi/củng cố/chuyển bài/điều động dùng đúng một hành động; **thoát hiểm không tốn hành động**. Chỉ lá bị mất có animation rời bàn và để khoảng trống. Các ô còn lại không bị làm nhạt. Giới hạn minh họa vẫn là tình huống cố định, không có engine/lưu tiến độ hay thứ tự địa danh bắt buộc mới.
 - Nút bị khóa lúc animation chạy, nhưng chọn vai/chế độ khác hoặc **Đặt lại** hủy timeline trước sạch sẽ. **Xem lại** chạy lại từ trạng thái đầu. Reduced motion đổi ngay sang kết quả. Native button/Enter, focus rõ, lời nhắc + chi phí trong `aria-describedby`, kết quả trong `role=status`.
 - QA cập nhật `check-rules.js`: 283 checks ở 320/390px, 280 ở 920px, 298 ở 1280/1840px; reduced motion 126 ở 390px. Bao gồm cả mười cảnh, native layout zoom, nhãn ngoài camera, quân lớn, đủ sáu vai/ba chế độ chéo, F2 ban đầu, hai quân giữ vị trí khi cho bài, chi phí, reset và đổi vai giữa animation. Kiểm tra chờ kỹ năng theo thời gian thực thay vì giả định tần số màn hình.
 - Đã xem render ở năm chiều rộng, thử Enter/nhấn ô đích thật, focus nút cờ và đặt lại giữa chuyển động; không có page error trong Edge/Chromium headless. Resize/cuộn ngược giữ tiến trình của ván. Hồi quy hero 46 checks và checkout đủ ba lượt 73 checks đạt. Typecheck/build đạt; cảnh báo cấu hình Vite cũ giữ nguyên. Chưa xác nhận trên thiết bị thật hoặc engine khác.
-- Ảnh `docs/qa/rules-desktop.jpg`, `rules-mobile.jpg` là cận cảnh bàn không còn khung riêng; `rules-zoom-hover.png` đối chiếu chữ hover; `rules-abilities.jpg` là Hướng Đạo chuyển bài từ xa tại 1280×900. Chỉ commit/push `origin/main`, **chưa deploy chính hoặc preview**.
+- Ảnh `docs/qa/rules-desktop.jpg`, `rules-mobile.jpg` là cận cảnh bàn không còn khung riêng; `rules-zoom-hover.png` đối chiếu chữ hover. `rules-abilities.jpg` đã thay bằng minh họa Hướng Đạo chọn ô còn tồn tại tại 1280×900; xem thêm `rules-boat.jpg` và `rules-ending.jpg`. Chỉ commit/push `origin/main`, **chưa deploy chính hoặc preview**.
+
+### Sửa năng lực theo người dùng, heading và màu kết ván — 11/10
+
+- Đây là quyết định mới nhất, thay thế nguồn chữ in cho **hai vai**: `cards.ts` ghi đúng câu Thuyền Nhẹ vượt nhiều ô Nguy cấp/khoảng trống liên tiếp; Hướng Đạo một lần trong lượt có thể đến bất kỳ ô còn tồn tại. Landing, hộp xem thẻ và trang luật dùng chung dữ liệu này. Artwork giữ nguyên, có ghi chú ngắn ở hai minh họa rằng chữ trên tranh là bản trước. Chỉ Thám Quân có ba demo chéo, chỉ Truyền Lệnh có demo chuyển bài từ xa.
+- Thuyền Nhẹ dùng năm vị trí ngang: Ổn định → Nguy cấp → khoảng trống → Nguy cấp → Ổn định. Quân đi liên tục qua cả chuỗi với một hành động; ô trống không có tranh. Hướng Đạo chọn trong mọi ô còn tồn tại của cụm 3×3, gồm cả một ô Nguy cấp; ô mất không có nút. Sau một lần dùng, các ô đích bị khóa, **Lượt mới** hoặc **Đặt lại** phục hồi lượt. Không tạo engine game hay lưu tiến độ.
+- Chuẩn hóa điểm neo quân bằng GSAP `xPercent/yPercent: -50`, `x/y: 0` trước mỗi minh họa. Không phối hợp CSS `translate` với tween `y` để tránh lệch nửa quân khi GSAP hấp thụ transform. Chọn vai, đặt lại và reduced motion vẫn hoạt động.
+- Heading h1–h6 cùng nút dải cờ ở trang luật dùng `text-transform: uppercase`; nội dung đọc giữ cách viết bình thường. Quy tắc chỉ nằm trong `.rules-page`.
+- Màu nền cảnh cuối trở lại màu xanh sông `#c9e1d5` trong khoảng 9.65–9.95 của timeline, trước điểm dừng nút Cảnh tiếp 9.96. Vì vậy sân khấu gặp nền sóng cùng màu; cuộn ngược khôi phục màu trước đó. Cảnh tĩnh cũng dùng màu xanh sông. Không đổi pin, camera, navbar hay landing.
+- QA `check-rules.js`: **285 checks ở 320/390px, 282 ở 920px, 300 ở 1280/1840px, 128 ở reduced motion 390px**. Kiểm tra target hợp lệ, một lần/lượt, chọn ô Nguy cấp, reset, hai mặt F1/F2, bốn vai còn lại, heading uppercase và màu sân khấu/sóng. Đã xem render desktop/mobile, thử Enter chọn ô và bắt đầu lượt mới. Typecheck và production build đạt; vẫn còn cảnh báo cấu hình Vite đã có từ trước. Phạm vi xác nhận: Edge/Chromium headless, chưa xác nhận thiết bị thật hoặc engine khác.
+- Ảnh đối chiếu mới: `docs/qa/rules-abilities.jpg` (Hướng Đạo), `rules-boat.jpg` (Thuyền Nhẹ), `rules-ending.jpg` (nối sóng cuối ván). Task chỉ commit/push `origin/main`; **không deploy website chính hoặc preview**.

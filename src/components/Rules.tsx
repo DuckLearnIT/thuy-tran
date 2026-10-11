@@ -215,9 +215,11 @@ const shotCaptions = [
   "4 kế sách · về doanh · Cờ Lệnh",
 ]
 
+const storyRiver = "#c9e1d5"
+
 // One camera over the existing board; the scroll timeline remains the match state.
 const shots = [
-  { focus: "", zoom: 1, roll: 0, tilt: 0, bg: "#c9e0d4" },
+  { focus: "", zoom: 1, roll: 0, tilt: 0, bg: storyRiver },
   { focus: "ben-tap-ket", zoom: 1.6, roll: -3, tilt: 8, bg: "#dce3ca" },
   { focus: "bai-tiep-luong", zoom: 1.8, roll: 2, tilt: 0, bg: "#d4e4dd" },
   { focus: "ben-chuyen-go", zoom: 1.25, roll: -4, tilt: 10, bg: "#ede1c9" },
@@ -948,6 +950,11 @@ function MatchStory({ unlocked }: { unlocked: boolean }) {
         },
         9.65,
       )
+      timeline.to(
+        root.current,
+        { backgroundColor: storyRiver, duration: 0.3, ease: "none" },
+        9.65,
+      )
 
       gsap.set(".match-tile-paper", {
         rotationY: (i) => (initialDanger.includes(cells[i].tile.id) ? 180 : 0),
@@ -1589,7 +1596,7 @@ export default function Rules() {
             <p>Bốn kế sách. Một mục tiêu chung.</p>
           </div>
         </div>
-        <Wave fill="#c9e1d5" className="rules-story-entry" />
+        <Wave fill={storyRiver} className="rules-story-entry" />
         <MatchStory unlocked={unlocked} />
         <Wave fill="#ecdcc0" className="rules-story-wave" />
         <div className="rules-reading-intro">
@@ -1779,9 +1786,7 @@ export default function Rules() {
                             người được di chuyển.
                           </p>
                         )}
-                        {["truyen-lenh-lam", "huong-dao-luc"].includes(
-                          card.id,
-                        ) && (
+                        {card.id === "truyen-lenh-lam" && (
                           <p className="rules-note">
                             Mỗi lá cho đi vẫn tốn một hành động; chỉ chuyển bài
                             thuộc bốn kế sách.
