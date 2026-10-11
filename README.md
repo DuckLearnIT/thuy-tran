@@ -7,7 +7,7 @@ Website: https://ducklearnit.github.io/thuy-tran/
 Bản xem thử riêng: https://ducklearnit.github.io/thuy-tran-preview/
 
 Repo bản xem thử: https://github.com/DuckLearnIT/thuy-tran-preview. Ngày
-10/10/2026 đã xuất bản bản `81b4d20` tại đây; website chính thức vẫn giữ bản
+11/10/2026 đã xuất bản bản `4612eb7` tại đây, gồm ván minh họa dùng chung trên landing và trang Cách chơi; website chính thức vẫn giữ bản
 đã phát hành. Push code không tự cập nhật bản xem thử.
 
 Khi được yêu cầu cập nhật bản xem thử, chạy typecheck/build trước và chỉ định

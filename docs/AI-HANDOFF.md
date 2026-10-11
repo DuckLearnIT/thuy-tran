@@ -6,7 +6,7 @@
 - **Mục đích:** tiếp tục dự án bằng repo và tài liệu này, không cần đoán lại toàn bộ lịch sử chat.
 - **Task địa danh đang dang dở:** xem [handoff thay artwork 24 địa danh](AI-HANDOFF-LOCATION-ARTWORK.md); trạng thái Git hiện tại luôn là nguồn sự thật.
 
-**Cập nhật 11/10/2026:** artwork địa danh đã hoàn tất. Ván minh họa theo cuộn nằm trên landing sau 24 địa danh, trước CTA/footer; dùng chung `MatchStory.tsx` với trang `?page=cach-choi`. Phần đọc luật và thử sáu năng lực vẫn ở trang riêng, xem mục 15. Sửa trực tiếp của người dùng về Thuyền Nhẹ/Hướng Đạo ưu tiên hơn chữ trên artwork cũ. Website chính và preview chưa được deploy trong task này.
+**Cập nhật 11/10/2026:** artwork địa danh đã hoàn tất. Ván minh họa theo cuộn nằm trên landing sau 24 địa danh, trước CTA/footer; dùng chung `MatchStory.tsx` với trang `?page=cach-choi`. Phần đọc luật và thử sáu năng lực vẫn ở trang riêng, xem mục 15. Sửa trực tiếp của người dùng về Thuyền Nhẹ/Hướng Đạo ưu tiên hơn chữ trên artwork cũ. Người dùng sau đó yêu cầu push và deploy riêng lên `thuy-tran-preview`; bản `4612eb7` đã được xuất bản tại đó. Website chính vẫn giữ bản cũ.
 
 ## 1. Đọc phần này trước
 
@@ -513,3 +513,10 @@ Không có task phát triển nào còn mặc nhiên được phê duyệt. Back
 - Thêm `scripts/check-landing-match.js`: **32 checks** ở 320/390/920/1280/1840px; **33 checks** khi giảm chuyển động ở 390px và ở màn 1280×600. Kiểm tra thứ tự DOM, một navbar/progress, ảnh chuẩn bị, đủ 24 F1/F2 vuông, một pin, trạng thái scene, xem thẻ/khôi phục focus, cuộn ngược, màu cuối và native skip tới CTA. Cho phép đúng 2px `overflow-clip-margin` đã có của landing; nút điều khiển và góc mở toàn bàn phải nằm trong viewport.
 - Hồi quy `check-rules.js`: 300 checks ở 1280px, 285 ở 390px, 128 khi giảm chuyển động ở 390px. Hero 46 checks, checkout đủ ba lượt đạt 73 checks. Đã kiểm tra giữ tiến trình khoảng .285 khi resize 1840 → 920px, xem render desktop/mobile và không có page error ở phiên QA cuối. Typecheck/build đạt; cảnh báo Vite config cũ giữ nguyên. Phạm vi xác nhận vẫn là Edge/Chromium headless, chưa đo trên thiết bị thật hoặc engine khác.
 - Ảnh đối chiếu: `docs/qa/landing-match-desktop.jpg` (1280×900), `docs/qa/landing-match-mobile.jpg` (390×844). Chỉ commit/push `origin/main`, **chưa deploy chính hoặc preview**.
+
+### Xuất bản preview theo yêu cầu riêng — 11/10
+
+- Sau task trên, người dùng yêu cầu push sang `https://github.com/DuckLearnIT/thuy-tran-preview` và tiếp tục yêu cầu deploy website của repo đó. Đây là quyền xuất bản riêng cho preview, không phải quyền tự deploy những task tiếp theo hoặc website chính.
+- Push code `4612eb7` vào `main` của repo preview bằng URL cụ thể, không đổi remote `origin`. Chạy lại typecheck/build và xuất bản bằng `npx gh-pages -d dist --dotfiles -r https://github.com/DuckLearnIT/thuy-tran-preview.git -m "Publish preview from 4612eb7"`.
+- Bản phát hành preview: `gh-pages` ở `a708e01df7de22040028458135c34ff637b24e27`; website `https://ducklearnit.github.io/thuy-tran-preview/`. Pages vẫn lấy `gh-pages` thư mục `/`, build type `legacy`; không bật workflow deploy hoặc thêm trigger push.
+- Nhánh phát hành website chính vẫn là `65b67a92b61be6ccc45671568086ec0e2b803c50`. Commit/push `origin/main` ở những task sau vẫn chỉ lưu code; deploy chỉ khi người dùng yêu cầu rõ đích.
