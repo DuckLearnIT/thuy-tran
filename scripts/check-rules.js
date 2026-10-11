@@ -37,7 +37,9 @@
   await frame()
   check(sharedNav.dataset.open === "true", "Shared menu opens")
   check(
-    [...sharedNav.querySelectorAll(".nav-chapters a")].map(a => a.getAttribute("href")).join() ===
+    [...sharedNav.querySelectorAll(".nav-chapters a")]
+      .map((a) => a.getAttribute("href"))
+      .join() ===
       "./#top,./#loi-lenh,./#roles,./#ke-sach,./#dia-diem,#cach-choi",
     "Original landing menu is reused on Rules",
   )
@@ -88,7 +90,7 @@
         top:
           pin.getBoundingClientRect().top +
           scrollY +
-          ((pin.offsetHeight - story.offsetHeight) * (phase + 0.8)) / 10,
+          ((pin.offsetHeight - story.offsetHeight) * (phase + 0.96)) / 10,
         behavior: "instant",
       })
       for (let i = 0; i < 180; i++) {
@@ -105,27 +107,17 @@
         .querySelector(".match-bottomline")
         .getBoundingClientRect()
       check(
-        board.left >= 0 &&
-          board.right <= innerWidth + 1 &&
-          board.bottom <= controls.top + 1,
-        "Board fits above controls",
+        board.left >= 0 && board.right <= innerWidth + 1,
+        "Board frame fits horizontally",
       )
       check(controls.bottom <= innerHeight + 1, "Scene controls fit viewport")
       const text = story.querySelector(".match-copy").getBoundingClientRect()
       const side = story.querySelector(".match-sidebar").getBoundingClientRect()
-      if (innerWidth <= 900) {
-        check(text.bottom <= board.top, "Mobile text does not overlap board")
-        check(
-          board.bottom <= side.top + 1 && side.bottom <= controls.top + 1,
-          "Mobile card rail stays outside board and controls",
-        )
-        check(
-          text.top >=
-            story.querySelector(".match-topline").getBoundingClientRect()
-              .bottom,
-          "Mobile title does not overlap scene label",
-        )
-      } else
+      check(
+        text.bottom < controls.top && text.top >= 100,
+        "Film caption stays clear of controls and header",
+      )
+      if (innerWidth > 1200)
         check(
           text.right <= board.left && board.right <= side.left,
           "Text, board and card rail occupy separate columns",
@@ -134,6 +126,59 @@
         side.left >= 0 && side.right <= innerWidth + 1,
         "Card rail fits viewport",
       )
+      const camera = new DOMMatrix(
+        getComputedStyle(story.querySelector(".match-camera")).transform,
+      )
+      if (phase === 0) {
+        check(
+          Math.abs(camera.m11 - 1) < 0.02,
+          "Opening camera settles at full board",
+        )
+        check(
+          Math.abs(
+            board.height -
+              Math.min(
+                innerHeight * 0.9,
+                innerWidth - (innerWidth <= 900 ? 32 : 48),
+              ),
+          ) < 3,
+          "Full board uses 90 percent viewport height when width permits",
+        )
+        check(
+          [...story.querySelectorAll(".match-tile")].every((tile) => {
+            const r = tile.getBoundingClientRect()
+            return (
+              r.left >= 0 &&
+              r.right <= innerWidth + 1 &&
+              r.top >= 0 &&
+              r.bottom <= innerHeight
+            )
+          }),
+          "All 24 locations fit in the wide shot",
+        )
+      }
+      if (phase === 2 || phase === 5 || phase === 7 || phase === 8) {
+        check(camera.m11 > 1.5, "Camera zooms in on the rule being shown")
+        check(
+          [...story.querySelectorAll(".match-tile-paper img")].every((img) => {
+            const style = getComputedStyle(img)
+            return style.opacity === "1" && style.filter === "none"
+          }),
+          "Zoom preserves the opacity and colors of every card",
+        )
+        const tile = story
+          .querySelector(
+            `[data-id="${phase === 7 ? "song-chanh" : "bai-tiep-luong"}"]`,
+          )
+          .getBoundingClientRect()
+        check(
+          tile.left + tile.width / 2 > innerWidth * 0.2 &&
+            tile.left + tile.width / 2 < innerWidth * 0.8 &&
+            tile.top + tile.height / 2 > innerHeight * 0.2 &&
+            tile.top + tile.height / 2 < innerHeight * 0.8,
+          "Pan keeps the important location in frame",
+        )
+      }
     }
     await seek(0)
     check(
@@ -159,9 +204,18 @@
           story.querySelectorAll(".match-hand-fan img").length === 4,
           "Transfer provides fourth matching card",
         )
-      if (phase >= 1 && phase <= 3) {
-        const roster = story.querySelector('.match-roster').getBoundingClientRect()
-        check([...story.querySelectorAll('.match-hand-fan img')].every(img => img.getBoundingClientRect().bottom < roster.top || img.getBoundingClientRect().right < roster.left), "Card fan does not cover the character roster")
+      if (phase === 3) {
+        const roster = story
+          .querySelector(".match-roster")
+          .getBoundingClientRect()
+        check(
+          [...story.querySelectorAll(".match-hand-fan img")].every(
+            (img) =>
+              img.getBoundingClientRect().bottom < roster.top ||
+              img.getBoundingClientRect().right < roster.left,
+          ),
+          "Card fan does not cover the character roster",
+        )
       }
       if (phase === 4)
         check(
@@ -228,6 +282,28 @@
       "Reverse scroll restores removed tile",
     )
     await seek(0)
+    const overview = story.querySelector(".match-overview")
+    await seek(2)
+    const background = getComputedStyle(story).backgroundColor
+    overview.click()
+    await frame()
+    check(
+      story.dataset.overview === "true" &&
+        getComputedStyle(story.querySelector(".match-camera")).transform ===
+          "none",
+      "Full board control overrides the camera",
+    )
+    overview.click()
+    await frame()
+    check(
+      story.dataset.overview === "false",
+      "Camera view can be restored without changing the match",
+    )
+    await seek(0)
+    check(
+      background !== getComputedStyle(story).backgroundColor,
+      "Background follows the film sequence",
+    )
     check(
       story.querySelectorAll('.match-tile[data-danger="true"]').length === 4,
       "Reverse restores initial board",
@@ -335,6 +411,94 @@
     root.querySelectorAll(".rules-characters article").length === 6,
     "All six printed roles",
   )
+  const abilities = root.querySelector(".rules-abilities")
+  check(
+    abilities.querySelectorAll(".ability-picker button").length === 6,
+    "Six roles can be tried visually",
+  )
+  const abilityRun = async () => {
+    abilities.querySelector(".ability-play").click()
+    for (let i = 0; i < 180 && abilities.dataset.done !== "true"; i++)
+      await frame()
+    check(abilities.dataset.done === "true", "Ability demonstration finishes")
+  }
+  const atCell = (selector, cell) => {
+    const arena = abilities
+      .querySelector(".ability-arena")
+      .getBoundingClientRect()
+    const token = abilities.querySelector(selector).getBoundingClientRect()
+    return (
+      Math.abs(
+        (token.left + token.width / 2 - arena.left) / arena.width -
+          ((cell % 3) + 0.5) / 3,
+      ) < 0.01 &&
+      Math.abs(
+        (token.top + token.height / 2 - arena.top) / arena.height -
+          (Math.floor(cell / 3) + 0.5) / 3,
+      ) < 0.01
+    )
+  }
+  const stable = (cell) =>
+    Math.abs(
+      new DOMMatrix(
+        getComputedStyle(
+          abilities.querySelector(`.ability-tile-${cell} .ability-tile-paper`),
+        ).transform,
+      ).m11 - 1,
+    ) < 0.01
+  for (let i = 0; i < 6; i++) {
+    abilities.querySelectorAll(".ability-picker button")[i].click()
+    await frame()
+    await frame()
+    await abilityRun()
+    check(
+      abilities.querySelectorAll('.ability-picker [aria-pressed="true"]')
+        .length === 1,
+      "Only the selected role is marked",
+    )
+    if (i === 0)
+      check(
+        atCell(".ability-mate", 8) && atCell(".ability-actor", 0),
+        "Commander moves the teammate two orthogonal cells",
+      )
+    else if (i === 1)
+      check(stable(3) && stable(5), "Nha Binh reinforces two adjacent cells")
+    else if (i === 2 || i === 3) {
+      check(
+        atCell(".ability-actor", 4),
+        "Diagonal movement reaches one diagonal cell",
+      )
+      abilities.querySelectorAll(".ability-modes button")[1].click()
+      await frame()
+      await frame()
+      await abilityRun()
+      check(
+        stable(4) && atCell(".ability-actor", 6),
+        "Diagonal reinforcement leaves the actor in place",
+      )
+      abilities.querySelectorAll(".ability-modes button")[2].click()
+      await frame()
+      await frame()
+      await abilityRun()
+      check(
+        atCell(".ability-actor", 4) &&
+          Number(
+            getComputedStyle(
+              abilities.querySelector(".ability-tile-6 .ability-tile-paper"),
+            ).opacity,
+          ) === 0,
+        "Diagonal escape leaves the lost cell",
+      )
+    } else
+      check(
+        atCell(".ability-flight", 2) && atCell(".ability-actor", 6),
+        "Remote transfer reaches the distant teammate",
+      )
+    check(
+      abilities.querySelector(".ability-result").textContent.length > 0,
+      "Result is announced in plain text",
+    )
+  }
   check(
     root.querySelector('.site-footer a[href="./#roles"]'),
     "Footer returns to landing chapters",
