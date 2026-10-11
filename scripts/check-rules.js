@@ -7,6 +7,7 @@
     passed++
   }
   const frame = () => new Promise(requestAnimationFrame)
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches
   // Allow the browser's delayed resize refresh to settle before seeking scenes.
   for (let i = 0; i < 30; i++) await frame()
   const root = document.querySelector(".rules-page")
@@ -129,9 +130,18 @@
       const camera = new DOMMatrix(
         getComputedStyle(story.querySelector(".match-camera")).transform,
       )
+      const cameraElement = story.querySelector(".match-camera")
+      const zoom =
+        cameraElement.clientWidth /
+        story.querySelector(".match-table").clientWidth
+      check(
+        getComputedStyle(story.querySelector(".match-table")).clipPath ===
+          "none",
+        "The board has no private clipping frame",
+      )
       if (phase === 0) {
         check(
-          Math.abs(camera.m11 - 1) < 0.02,
+          Math.abs(zoom - 1) < 0.02 && Math.abs(camera.m11 - 1) < 0.02,
           "Opening camera settles at full board",
         )
         check(
@@ -158,7 +168,11 @@
         )
       }
       if (phase === 2 || phase === 5 || phase === 7 || phase === 8) {
-        check(camera.m11 > 1.5, "Camera zooms in on the rule being shown")
+        check(zoom > 1.5, "Camera zooms in on the rule being shown")
+        check(
+          Math.abs(Math.hypot(camera.m11, camera.m12, camera.m13) - 1) < 0.02,
+          "Zoom enlarges the actual board layout rather than a rasterized layer",
+        )
         check(
           [...story.querySelectorAll(".match-tile-paper img")].every((img) => {
             const style = getComputedStyle(img)
@@ -277,6 +291,35 @@
       }
     }
     await seek(2)
+    const hoverTarget = story.querySelector('[data-id="ben-chuyen-go"] button')
+    hoverTarget.dispatchEvent(
+      new PointerEvent("pointerover", { bubbles: true, pointerType: "mouse" }),
+    )
+    await frame()
+    await frame()
+    const hoverLabel = story.querySelector(".match-tile-caption")
+    check(
+      hoverLabel &&
+        !hoverLabel.closest(".match-camera") &&
+        getComputedStyle(hoverLabel).transform === "none" &&
+        parseFloat(getComputedStyle(hoverLabel).fontSize) >= 16,
+      "Hover label stays upright at native text size outside the camera",
+    )
+    const hoverBox = hoverLabel.getBoundingClientRect()
+    check(
+      hoverBox.left >= 0 && hoverBox.right <= innerWidth && hoverBox.top >= 72,
+      "Hover label stays inside the viewport and clear of the logo",
+    )
+    hoverTarget.dispatchEvent(
+      new PointerEvent("pointerout", { bubbles: true, pointerType: "mouse" }),
+    )
+    await frame()
+    check(
+      story.querySelector(".match-pawn").clientWidth /
+        story.querySelector(".match-tile").clientWidth >=
+        0.35,
+      "Character pawns remain large relative to the cards at every zoom",
+    )
     check(
       !story.querySelector('.match-tile[data-removed="true"]'),
       "Reverse scroll restores removed tile",
@@ -289,8 +332,10 @@
     await frame()
     check(
       story.dataset.overview === "true" &&
-        getComputedStyle(story.querySelector(".match-camera")).transform ===
-          "none",
+        Math.abs(
+          story.querySelector(".match-camera").clientWidth -
+            story.querySelector(".match-table").clientWidth,
+        ) < 1,
       "Full board control overrides the camera",
     )
     overview.click()
@@ -418,26 +463,25 @@
   )
   const abilityRun = async () => {
     abilities.querySelector(".ability-play").click()
-    for (let i = 0; i < 180 && abilities.dataset.done !== "true"; i++)
+    const deadline = performance.now() + 4000
+    while (performance.now() < deadline && abilities.dataset.done !== "true")
       await frame()
     check(abilities.dataset.done === "true", "Ability demonstration finishes")
   }
-  const atCell = (selector, cell) => {
+  const atPoint = (selector, x, y) => {
     const arena = abilities
       .querySelector(".ability-arena")
       .getBoundingClientRect()
     const token = abilities.querySelector(selector).getBoundingClientRect()
     return (
-      Math.abs(
-        (token.left + token.width / 2 - arena.left) / arena.width -
-          ((cell % 3) + 0.5) / 3,
-      ) < 0.01 &&
-      Math.abs(
-        (token.top + token.height / 2 - arena.top) / arena.height -
-          (Math.floor(cell / 3) + 0.5) / 3,
-      ) < 0.01
+      Math.abs((token.left + token.width / 2 - arena.left) / arena.width - x) <
+        0.01 &&
+      Math.abs((token.top + token.height / 2 - arena.top) / arena.height - y) <
+        0.01
     )
   }
+  const atCell = (selector, cell) =>
+    atPoint(selector, ((cell % 3) + 0.5) / 3, (Math.floor(cell / 3) + 0.5) / 3)
   const stable = (cell) =>
     Math.abs(
       new DOMMatrix(
@@ -450,7 +494,30 @@
     abilities.querySelectorAll(".ability-picker button")[i].click()
     await frame()
     await frame()
+    check(
+      abilities.querySelector(".ability-cost").dataset.spent === "0",
+      "Changing roles restores the action budget",
+    )
+    check(
+      abilities.querySelectorAll(".ability-tile button").length ===
+        (i === 1 ? 2 : 1),
+      "Only the illustrated action targets are interactive",
+    )
+    check(
+      abilities.querySelector(".ability-token").getBoundingClientRect().width >=
+        40,
+      "Ability pawns are large enough to identify",
+    )
+    if (i === 1)
+      check(
+        !stable(3) && !stable(5),
+        "Two adjacent tiles start on their dangerous faces",
+      )
     await abilityRun()
+    check(
+      abilities.querySelector(".ability-cost").dataset.spent === "1",
+      "The complete ability uses exactly one action",
+    )
     check(
       abilities.querySelectorAll('.ability-picker [aria-pressed="true"]')
         .length === 1,
@@ -471,6 +538,10 @@
       abilities.querySelectorAll(".ability-modes button")[1].click()
       await frame()
       await frame()
+      check(
+        !stable(4),
+        "Diagonal reinforcement starts with a dangerous destination",
+      )
       await abilityRun()
       check(
         stable(4) && atCell(".ability-actor", 6),
@@ -489,16 +560,57 @@
           ) === 0,
         "Diagonal escape leaves the lost cell",
       )
+      check(
+        abilities.querySelector(".ability-cost").dataset.free === "true" &&
+          abilities.querySelector(".ability-cost").dataset.spent === "0",
+        "Escaping a lost tile is free, not an action",
+      )
     } else
       check(
-        atCell(".ability-flight", 2) && atCell(".ability-actor", 6),
-        "Remote transfer reaches the distant teammate",
+        atPoint(".ability-flight", 0.71, 0.167) &&
+          atCell(".ability-actor", 6) &&
+          atCell(".ability-mate", 2),
+        "The strategy reaches the remote teammate while both pawns stay in place",
       )
     check(
       abilities.querySelector(".ability-result").textContent.length > 0,
       "Result is announced in plain text",
     )
+    abilities.querySelector(".ability-reset").click()
+    await frame()
+    await frame()
+    check(
+      abilities.dataset.phase === "ready" &&
+        abilities.querySelector(".ability-cost").dataset.spent === "0",
+      "Reset restores the example and its action budget",
+    )
   }
+  abilities.querySelectorAll(".ability-picker button")[0].click()
+  await frame()
+  await frame()
+  abilities.querySelector(".ability-tile button").focus()
+  check(
+    document.activeElement.matches(".ability-tile button"),
+    "Ability targets can receive keyboard focus",
+  )
+  abilities.querySelector(".ability-tile button").click()
+  await frame()
+  if (!reduced)
+    check(
+      abilities.querySelector(".ability-play").disabled &&
+        abilities.querySelector(".ability-tile button").disabled,
+      "Repeated actions are blocked during the animation",
+    )
+  abilities.querySelectorAll(".ability-picker button")[1].click()
+  await frame()
+  await frame()
+  check(
+    abilities.dataset.role === "nha-binh" &&
+      abilities.dataset.phase === "ready" &&
+      atCell(".ability-actor", 4) &&
+      !stable(3),
+    "Changing roles cancels the previous demonstration cleanly",
+  )
   check(
     root.querySelector('.site-footer a[href="./#roles"]'),
     "Footer returns to landing chapters",
@@ -532,7 +644,12 @@
   )
   check(
     [...root.querySelectorAll("button, h1, h2")]
-      .filter((el) => el.getClientRects().length)
+      // Zoomed artwork can extend beyond the viewport; its overview is checked above.
+      .filter(
+        (el) =>
+          el.getClientRects().length &&
+          !el.closest(".match-story .match-camera"),
+      )
       .every((el) => {
         const box = el.getBoundingClientRect()
         return box.left >= -1 && box.right <= innerWidth + 1

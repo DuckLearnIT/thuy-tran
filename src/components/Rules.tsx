@@ -255,6 +255,37 @@ function MatchBoard({
   } | null>(null)
 
   const [back, setBack] = useState(false)
+  const [hovered, setHovered] = useState<{
+    button: HTMLButtonElement
+    name: string
+  } | null>(null)
+  const table = useRef<HTMLDivElement>(null)
+  const caption = useRef<HTMLSpanElement>(null)
+
+  // Labels stay in screen space instead of being enlarged as part of the 3D plane.
+  useLayoutEffect(() => {
+    if (!hovered) return
+    let frame = 0
+    const position = () => {
+      if (hovered.button.disabled) {
+        setHovered(null)
+        return
+      }
+      const target = hovered.button.getBoundingClientRect()
+      const bounds = table.current!.getBoundingClientRect()
+      const label = caption.current!
+      const half = label.offsetWidth / 2 + 8
+      const x = Math.max(
+        half,
+        Math.min(innerWidth - half, target.left + target.width / 2),
+      )
+      label.style.left = `${x - bounds.left}px`
+      label.style.top = `${Math.max(110 + label.offsetHeight, target.top - 8) - bounds.top}px`
+      frame = requestAnimationFrame(position)
+    }
+    position()
+    return () => cancelAnimationFrame(frame)
+  }, [hovered])
 
   const dialog = useRef<HTMLDialogElement>(null)
 
@@ -284,6 +315,7 @@ function MatchBoard({
   }, [inspection])
 
   const inspect = (kind: "tile" | "person" | "strategy", index: number) => {
+    setHovered(null)
     setBack(kind === "tile" && dangerous(locations[index].id, phase))
 
     setInspection({ kind, index })
@@ -297,7 +329,7 @@ function MatchBoard({
 
   return (
     <>
-      <div className="match-table" data-scene={phase}>
+      <div ref={table} className="match-table" data-scene={phase}>
         <div className="match-camera">
           <div
             className="match-board"
@@ -335,6 +367,22 @@ function MatchBoard({
                   <button
                     type="button"
                     className="match-tile-hit"
+                    onPointerEnter={(event) => {
+                      if (event.pointerType !== "touch")
+                        setHovered({
+                          button: event.currentTarget,
+                          name: tile.name,
+                        })
+                    }}
+                    onPointerLeave={() => setHovered(null)}
+                    onFocus={(event) => {
+                      if (event.currentTarget.matches(":focus-visible"))
+                        setHovered({
+                          button: event.currentTarget,
+                          name: tile.name,
+                        })
+                    }}
+                    onBlur={() => setHovered(null)}
                     disabled={removed}
                     aria-disabled={busy}
                     aria-label={
@@ -369,7 +417,6 @@ function MatchBoard({
                         draggable={false}
                       />
                     </div>
-                    <span className="match-tile-caption">{tile.name}</span>
                   </button>
                 </figure>
               )
@@ -464,6 +511,11 @@ function MatchBoard({
             })}
           </div>
         </div>
+        {hovered && (
+          <span ref={caption} className="match-tile-caption" aria-hidden="true">
+            {hovered.name}
+          </span>
+        )}
       </div>
       <aside className="match-sidebar" aria-label="Bài và nhân vật liên quan">
         <MatchHand
@@ -844,9 +896,15 @@ function MatchStory({ unlocked }: { unlocked: boolean }) {
 
       timeline.fromTo(
         ".match-camera",
-        { scale: 0.72, rotation: -9, rotationX: 20 },
         {
-          scale: 1,
+          width: "72%",
+          xPercent: -50,
+          yPercent: -50,
+          rotation: -9,
+          rotationX: 20,
+        },
+        {
+          width: "100%",
           rotation: 0,
           rotationX: 0,
           duration: 0.8,
@@ -861,11 +919,9 @@ function MatchStory({ unlocked }: { unlocked: boolean }) {
         timeline.to(
           ".match-camera",
           {
-            scale: zoom,
-            xPercent: () =>
-              cell ? (50 - ((cell.col + 0.5) / 6) * 100) * zoom() : 0,
-            yPercent: () =>
-              cell ? (50 - ((cell.row + 0.5) / 6) * 100) * zoom() : 0,
+            width: () => `${zoom() * 100}%`,
+            xPercent: () => (cell ? -((cell.col + 0.5) / 6) * 100 : -50),
+            yPercent: () => (cell ? -((cell.row + 0.5) / 6) * 100 : -50),
             rotation: shot.roll,
             rotationX: shot.tilt,
             duration: 0.65,
@@ -882,9 +938,9 @@ function MatchStory({ unlocked }: { unlocked: boolean }) {
       timeline.to(
         ".match-camera",
         {
-          scale: 1,
-          xPercent: 0,
-          yPercent: 0,
+          width: "100%",
+          xPercent: -50,
+          yPercent: -50,
           rotation: 0,
           rotationX: 0,
           duration: 0.35,

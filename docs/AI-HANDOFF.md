@@ -466,3 +466,26 @@ Không có task phát triển nào còn mặc nhiên được phê duyệt. Back
 - Reduced motion/chiều cao <=620px vẫn đọc mười cảnh tĩnh, không pin; thao tác năng lực đổi ngay sang kết quả. Vùng kết quả có thông báo cho screen reader; dùng native button với focus rõ.
 - QA cập nhật: `check-rules.js` đạt 218 checks tại 320/390px, 215 tại 920px, 233 tại 1280/1840px; reduced motion 89 tại 390px. Kiểm tra đủ mặt/ô, camera, giữ màu/opacity ảnh, chuyển cảnh/cuộn ngược, reset và toàn bộ sáu năng lực. Đã xem render năm kích thước. Hồi quy hero 46 checks, checkout đủ ba lượt đạt 73; typecheck/build đạt. Phạm vi xác nhận là Edge/Chromium headless, chưa đo trên thiết bị thật hoặc browser engine khác.
 - Ảnh `docs/qa/rules-desktop.jpg` (1280×900, củng cố), `rules-mobile.jpg` (390×844, Biến động), `rules-abilities.jpg` (1280×900, trao bài từ xa). Commit/push origin/main; **không deploy chính hoặc preview**.
+
+### Bỏ khung cắt, phóng rõ và làm lại minh họa sáu kỹ năng — 11/10
+
+- Yêu cầu tiếp theo: bỏ khung chữ nhật riêng đang cắt bàn khi zoom, tăng rõ kích thước quân, sửa nhòe và đối chiếu/làm lại minh họa cả sáu năng lực. Phần này thay thế mô tả khung cắt và demo nhỏ ở mục trước.
+- Bỏ `clip-path` của `.match-table`; tranh có thể vượt vùng bố cục bàn, chỉ bị cắt ở mép sân khấu toàn viewport. Các cận cảnh vẫn chủ ý không hiện cả 24 ô; nút **Toàn bàn** và cảnh mở đầu hiện đủ bộ. Một pin, timeline, các nút tiến/lùi và trang đọc luật được giữ.
+- Zoom bằng kích thước layout `width` của `.match-camera`, không phóng lớp raster bằng `scale`. Vẫn pan/xoay/tilt bằng GSAP. Nhãn hover là một phần tử ngoài camera, chữ 16px ở kích thước thật, theo thẻ bằng tọa độ viewport; không làm nhạt/filter tranh. Nhãn tự bỏ khi ô mất. Quân rộng 38% cạnh ô, dùng crop chân dung từ artwork gốc, nằm trên lá đang hover.
+- Đã mở và đọc cả sáu WebP được `cards.ts` import. **Dữ liệu năng lực hiện khớp chữ in, không sửa tranh/data để tạo sáu năng lực khác nhau.** Hai cặp trùng năng lực trên bản in là chủ ý được giữ theo nguồn đã chốt:
+
+| Thẻ | Minh họa đúng năng lực hiện tại |
+| --- | --- |
+| Nha Tướng | Nha Binh đi hai ô theo cạnh; Nha Tướng đứng yên; cả việc tốn một hành động |
+| Nha Binh | Hai ô Nguy cấp kề ngang được lật F2 → F1 lần lượt; nhân vật đứng yên; một hành động |
+| Thám Quân | Ba chế độ: đi chéo một ô, củng cố ô chéo, thoát chéo khỏi ô bị loại |
+| Quân Thuyền Nhẹ | Cùng ba quyền đường chéo theo chính thẻ in; không thay bằng năng lực Kình ngư cũ |
+| Quân Truyền Lệnh | Cọc Ngầm từ tay mình bay tới Nha Binh ở xa; hai quân giữ vị trí; một hành động |
+| Quân Hướng Đạo | Cùng quyền chuyển Kế sách từ xa theo thẻ in; không thay bằng năng lực Hoa tiêu cũ |
+
+- `CharacterAbilities.tsx` tái sử dụng cụm chín F1/F2 và GSAP, nhưng bàn lớn tối đa 520px, quân bằng 15% cạnh bàn (42–78px), có tên người cho/nhận, đường hành động được vẽ theo chuyển động và ô đích viền màu. Bấm ô đích hoặc nút dải cờ đều chạy cùng minh họa. Luật nguyên văn nằm trong disclosure **Luật trên thẻ**; tra cứu cả sáu thẻ vẫn còn.
+- Đi/củng cố/chuyển bài/điều động dùng đúng một hành động; **thoát hiểm không tốn hành động**. Chỉ lá bị mất có animation rời bàn và để khoảng trống. Các ô còn lại không bị làm nhạt. Giới hạn minh họa vẫn là tình huống cố định, không có engine/lưu tiến độ hay thứ tự địa danh bắt buộc mới.
+- Nút bị khóa lúc animation chạy, nhưng chọn vai/chế độ khác hoặc **Đặt lại** hủy timeline trước sạch sẽ. **Xem lại** chạy lại từ trạng thái đầu. Reduced motion đổi ngay sang kết quả. Native button/Enter, focus rõ, lời nhắc + chi phí trong `aria-describedby`, kết quả trong `role=status`.
+- QA cập nhật `check-rules.js`: 283 checks ở 320/390px, 280 ở 920px, 298 ở 1280/1840px; reduced motion 126 ở 390px. Bao gồm cả mười cảnh, native layout zoom, nhãn ngoài camera, quân lớn, đủ sáu vai/ba chế độ chéo, F2 ban đầu, hai quân giữ vị trí khi cho bài, chi phí, reset và đổi vai giữa animation. Kiểm tra chờ kỹ năng theo thời gian thực thay vì giả định tần số màn hình.
+- Đã xem render ở năm chiều rộng, thử Enter/nhấn ô đích thật, focus nút cờ và đặt lại giữa chuyển động; không có page error trong Edge/Chromium headless. Resize/cuộn ngược giữ tiến trình của ván. Hồi quy hero 46 checks và checkout đủ ba lượt 73 checks đạt. Typecheck/build đạt; cảnh báo cấu hình Vite cũ giữ nguyên. Chưa xác nhận trên thiết bị thật hoặc engine khác.
+- Ảnh `docs/qa/rules-desktop.jpg`, `rules-mobile.jpg` là cận cảnh bàn không còn khung riêng; `rules-zoom-hover.png` đối chiếu chữ hover; `rules-abilities.jpg` là Hướng Đạo chuyển bài từ xa tại 1280×900. Chỉ commit/push `origin/main`, **chưa deploy chính hoặc preview**.
