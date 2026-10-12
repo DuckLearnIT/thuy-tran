@@ -18,6 +18,7 @@ export default defineConfig(({ mode }) => {
       minify: !emitSourcemaps,
       chunkSizeWarningLimit: 1000,
       rollupOptions: {
+        input: { main: path.resolve(__dirname, 'index.html'), play: path.resolve(__dirname, 'play.html') },
         output: {
           manualChunks(id) {
             if (id.includes('node_modules/three')) {
