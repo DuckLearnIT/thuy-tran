@@ -106,6 +106,11 @@
 .landing-match-links { flex-direction: column; align-items: flex-start; }
 .landing-match-links .match-play { margin: 0; min-width: 230px; }
 .landing-match .match-basic .match-layout { display: grid; grid-template-columns: minmax(170px, 1fr) min(70svh, calc(100vw - 460px)) minmax(170px, 1fr); gap: 32px; padding: 0 32px; }
+/* Soft scene-colored wings keep copy readable while the camera crosses columns. */
+.landing-match .match-basic:not([data-phase='0']):not([data-overview='true']) .match-layout::before,
+.landing-match .match-basic:not([data-phase='0']):not([data-overview='true']) .match-layout::after { content: ''; position: absolute; z-index: 5; top: 0; bottom: 0; width: calc((100% - min(70svh, calc(100vw - 460px))) / 2); background: inherit; pointer-events: none; }
+.landing-match .match-basic .match-layout::before { left: 0; mask-image: linear-gradient(to right, #000 90%, transparent); }
+.landing-match .match-basic .match-layout::after { right: 0; mask-image: linear-gradient(to left, #000 90%, transparent); }
 .landing-match .match-basic .match-copy, .landing-match .match-basic .match-sidebar { position: relative; inset: auto; width: auto; max-width: 270px; padding: 0; background: none; margin: auto; }
 .landing-match .match-basic .match-table { position: relative; inset: auto; width: 100%; translate: none; }
 .landing-match .match-basic .match-copy h2 { font-size: clamp(2rem, 3.5vw, 4rem); }
@@ -128,6 +133,8 @@
 .landing-match .match-basic .match-pawn { width: calc(100% * .44 / 6); }
 @media (max-width: 900px) {
   .landing-match .match-basic .match-layout { display: block; padding: 0; }
+  .landing-match .match-basic:not([data-phase='0']):not([data-overview='true']) .match-layout::before { width: 100%; height: 260px; bottom: auto; mask-image: linear-gradient(to bottom, #000 86%, transparent); }
+  .landing-match .match-basic:not([data-phase='0']):not([data-overview='true']) .match-layout::after { width: 100%; height: 240px; top: auto; mask-image: linear-gradient(to top, #000 78%, transparent); }
   .landing-match .match-basic .match-copy { position: absolute; top: 122px; left: 20px; right: 20px; bottom: auto; max-width: none; margin: 0; }
   .landing-match .match-basic .match-copy h2 { font-size: 2rem; margin: .2rem 0; }
   .landing-match .match-basic .match-copy > .match-brief { font-size: .85rem; line-height: 1.5; margin: 0; }

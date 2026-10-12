@@ -49,19 +49,34 @@
       return r.left >= -1 && r.right <= innerWidth + 1 && r.top >= 0 && r.bottom <= innerHeight + 1
     }), 'Opening shot shows all 24 tiles')
     await seek(3)
+    const camera = story.querySelector('.match-camera')
+    const table = story.querySelector('.match-table')
+    const cameraZoom = () => parseFloat(getComputedStyle(camera).width) / table.clientWidth
+    check(cameraZoom() > 1.5, 'Sharing uses a close camera shot instead of a capped whole-board view')
     check(story.querySelector('.match-brief').textContent.includes('Đứng cùng ô'), 'Sharing explains the common same-tile precondition')
     const tile = story.querySelector('[data-id="ben-tap-ket"]').getBoundingClientRect()
+    const boardFrame = table.getBoundingClientRect()
+    const nearCameraCenter = rect => Math.hypot(rect.left + rect.width / 2 - boardFrame.left - boardFrame.width / 2, rect.top + rect.height / 2 - boardFrame.top - boardFrame.height / 2) < boardFrame.width * .2
+    check(nearCameraCenter(tile), 'Camera pans toward the tile where both characters share')
     check([...story.querySelectorAll('.match-pawn')].slice(0, 2).every(pawn => {
       const r = pawn.getBoundingClientRect()
       return r.left + r.width / 2 >= tile.left && r.left + r.width / 2 <= tile.right && r.top + r.height / 2 >= tile.top && r.top + r.height / 2 <= tile.bottom
     }), 'Both characters actually stand on the sharing tile')
     check(story.querySelector('.match-basic-art img').getBoundingClientRect().height >= 60, 'Related strategy artwork is readable instead of a tiny thumbnail')
+    story.querySelector('.match-overview').click()
+    await settle()
+    check(Math.abs(cameraZoom() - 1) < .02 && story.dataset.overview === 'true', 'Whole-board control temporarily zooms out')
+    story.querySelector('.match-overview').click()
+    await settle()
+    check(cameraZoom() > 1.5 && story.dataset.overview === 'false', 'Returning to the scene restores its close camera shot')
     await seek(5)
+    check(cameraZoom() > 1.8 && nearCameraCenter(story.querySelector('[data-id="bai-tiep-luong"]').getBoundingClientRect()), 'Flood pans to its new target with a closer shot')
     check(story.querySelector('[data-id="bai-tiep-luong"]').dataset.danger === 'true', 'Flood illustrates the basic stable-to-danger change')
     await seek(9)
     check(story.dataset.won === 'true', 'The match reaches its ending')
     check(getComputedStyle(story).backgroundColor === getComputedStyle(finale.querySelector('.finale-wave')).backgroundColor, 'Match ending meets the CTA wave with the same color')
     await seek(0)
+    check(Math.abs(cameraZoom() - 1) < .02, 'Reverse scrolling restores the opening whole-board camera')
     check(story.querySelector('[data-id="song-chanh"]').dataset.removed !== 'true', 'Reverse restores the tile')
     story.querySelector('.match-skip').click()
   } else {

@@ -1054,7 +1054,7 @@ export default function MatchStory({
         const shot = landing && phase === 3 ? { ...shots[phase], focus: "ben-tap-ket", zoom: 1.6 } : shots[phase]
         const cell = cells.find((c) => c.tile.id === shot.focus)
 
-        const zoom = () => landing ? Math.min(shot.zoom, 1.12) :
+        const zoom = () =>
           shot.zoom * (innerWidth <= 900 && shot.focus ? 1.18 : 1)
 
         timeline.to(
@@ -1063,9 +1063,9 @@ export default function MatchStory({
           {
             width: () => `${zoom() * 100}%`,
 
-            xPercent: () => (landing ? -50 : cell ? -((cell.col + 0.5) / 6) * 100 : -50),
+            xPercent: () => (cell ? -((cell.col + 0.5) / 6) * 100 : -50),
 
-            yPercent: () => (landing ? -50 : cell ? -((cell.row + 0.5) / 6) * 100 : -50),
+            yPercent: () => (cell ? -((cell.row + 0.5) / 6) * 100 : -50),
 
             rotation: shot.roll,
 
