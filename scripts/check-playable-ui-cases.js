@@ -3,6 +3,7 @@
   const { createGame, validateGame } = await import('/src/game/engine.ts')
   const { locations } = await import('/src/data/locations.ts')
   const { cards } = await import('/src/data/cards.ts')
+  const { strategies } = await import('/src/data/strategies.ts')
   const catalog = { locations, roles: cards.map(c => c.id) }
   let passed = 0
   const check = (ok, text) => { if (!ok) throw Error(text); passed++ }
@@ -25,15 +26,21 @@
   }
   const tileClick = id => click(`.pt-tile[data-id="${id}"]`)
 
+  // A selected hand card must replace an older location event in the preview.
+  let previewState = seed('nha-tuong'); give(previewState, 'nha-tuong', ['co-lenh'])
+  previewState.lastEvent = { type: 'move', text: 'Vừa di chuyển.', tile: previewState.players[previewState.active].tile }
+  await load(previewState); await click('.pt-hand > button')
+  check(document.querySelector('.pt-event-card img').getAttribute('src') === strategies.find(s => s.id === 'co-lenh').image, 'Selected hand card takes priority over the previous tile event')
+
   let s = seed('nha-binh'), own = tileAt(s, 2, 2), near = tileAt(s, 2, 3)
   p(s, 'nha-binh').tile = own.locationId; own.status = near.status = 'danger'
   await load(s); await click('.pt-actions > button:nth-child(2)'); await tileClick(own.locationId); await tileClick(near.locationId)
-  await click('.pt-action-panel > .pt-small-flag')
+  await click('.pt-command-scroll > .pt-small-flag')
   check(saved().actionsLeft === 2 && saved().board.filter(t => [own.locationId, near.locationId].includes(t.locationId)).every(t => t.status === 'stable'), 'Nha Binh fortifies both tiles with one action')
 
   s = seed('nha-tuong'); own = tileAt(s, 2, 0); near = tileAt(s, 2, 2); p(s, 'nha-binh').tile = own.locationId
   await load(s); await click('.pt-actions > button:last-child')
-  const select = document.querySelector('.pt-action-panel > label select'); select.value = 'nha-binh'; select.dispatchEvent(new Event('change', { bubbles: true })); await pause()
+  const select = document.querySelector('.pt-command-scroll > label select'); select.value = 'nha-binh'; select.dispatchEvent(new Event('change', { bubbles: true })); await pause()
   await tileClick(near.locationId); check(p(saved(), 'nha-binh').tile === near.locationId && saved().actionsLeft === 2, 'Commander moves chosen teammate two steps')
 
   s = seed('huong-dao-luc'); await load(s); await click('.pt-actions > button:last-child')
@@ -66,5 +73,10 @@
   await tileClick('luong-xam')
   check(!saved().pendingEscape.length && saved().phase === 'flood' && p(saved(), 'nha-binh').tile === 'luong-xam' && p(saved(), 'tham-quan').tile === 'luong-xam', 'Flag holder can rescue a remote group during escape')
   check(validateGame(saved(), catalog), 'UI special-card result remains save-valid')
+  await click('.pt-game-menu > summary'); await click('.pt-menu-sheet > button:first-child')
+  const invalid = new DataTransfer(); invalid.items.add(new File(['not-json'], 'invalid.json', { type: 'application/json' }))
+  const input = document.querySelector('input[type=file]'); input.files = invalid.files; input.dispatchEvent(new Event('change', { bubbles: true })); await pause()
+  check(document.querySelector('.pt-setup-error[role=alert]')?.textContent.includes('JSON'), 'Setup reports a malformed game file in Vietnamese')
+  await click('.pt-setup-sheet > .pt-text-button')
   return { passed, width: innerWidth }
 })()

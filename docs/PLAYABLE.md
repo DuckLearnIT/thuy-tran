@@ -1,8 +1,14 @@
-# Bàn chơi riêng cho quay content
+# Thủy Trận — bản playable trên desktop
 
 Mở `http://127.0.0.1:8443/play.html` khi server local chạy. Đây là entry riêng,
 không có liên kết từ hoặc về landing, trang luật, checkout hay footer.
 Không xuất bản trang này trong task tạo bản local.
+
+Ưu tiên desktop: bàn trận lớn ở giữa, hành động và tay bài bên trái, đội hình
+và dòng nước bên phải. Một màn hình chứa đủ bàn, tay bài và nút chuyển bước.
+Thanh trên cùng đánh dấu ba giai đoạn của lượt. Chọn lá trên tay để đọc ảnh lớn
+ở bên phải; các lựa chọn không liên quan được tạm ẩn, **Hủy chọn** đưa chúng
+trở lại. Mở **Tùy chọn** để tạo/mở/lưu ván hoặc đọc nhật ký.
 
 ## Dùng bàn chơi
 
@@ -29,7 +35,7 @@ Không xuất bản trang này trong task tạo bản local.
 - **Toàn màn hình:** dùng khả năng fullscreen của trình duyệt nếu được hỗ trợ.
 - Tự lưu riêng vào `localStorage` với khóa `thuy-tran-playable-v1`. Tải lại mở
   đúng ván. Storage bị chặn thì ván vẫn chạy trong bộ nhớ.
-- **Lưu file / Mở file / Mở ván:** xuất/nhập JSON dưới 1 MB, kiểm tra dữ liệu
+- **Tùy chọn → Lưu file ván / Mở ván:** xuất/nhập JSON dưới 1 MB, kiểm tra dữ liệu
   trước khi nhận. File không chứa ảnh; cần cùng bộ tài nguyên và phiên bản code.
 - **Hoàn tác:** tối đa 40 bước trong phiên đang mở, giữ cả trạng thái RNG nên
   rút lại cùng lá. Lịch sử hoàn tác không lưu khi tải lại hoặc mở file.
@@ -72,7 +78,8 @@ không thêm dependency. F1/F2 dùng trên bàn; F3 không được dùng ở tr
 - Kiểm tra engine: `node scripts/check-playable-engine.ts` (Node hỗ trợ strip
   TypeScript, local đang dùng Node 24).
 - Kiểm tra qua console của trang local đã mở curtain:
-  `scripts/check-playable.js` và `scripts/check-playable-ui-cases.js`.
+  `scripts/check-playable.js`, `scripts/check-playable-ui-cases.js` và
+  `scripts/check-playable-layout.js` (đo layout desktop, tay sáu lá và menu).
   Hai script có thay đổi ván local và nhập các fixture kiểm thử; chạy trên ván
   thử riêng, không chạy trên ván content chưa lưu.
 - `npx tsc --noEmit`, `npm run build`; không chạy `npm run deploy`.

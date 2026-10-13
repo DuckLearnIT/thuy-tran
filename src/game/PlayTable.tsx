@@ -142,6 +142,7 @@ export default function PlayTable() {
   const [unlocked, setUnlocked] = useState(false)
   const fileInput = useRef<HTMLInputElement>(null)
   const helpDialog = useRef<HTMLDialogElement>(null)
+  const gameMenu = useRef<HTMLDetailsElement>(null)
   const page = useRef<HTMLDivElement>(null)
   const reduced = useReducedMotion()
   const opened = useCallback(() => {}, [])
@@ -170,8 +171,14 @@ export default function PlayTable() {
   }, [game?.active, game?.turn, setup])
   useEffect(() => { if (help) helpDialog.current?.showModal(); else helpDialog.current?.close() }, [help])
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape' && clean) setClean(false) }
-    window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey)
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      if (clean) setClean(false)
+      if (gameMenu.current?.open) { gameMenu.current.open = false; gameMenu.current.querySelector('summary')?.focus() }
+    }
+    const outside = (e: PointerEvent) => { if (gameMenu.current?.open && !gameMenu.current.contains(e.target as Node)) gameMenu.current.open = false }
+    window.addEventListener('keydown', onKey); document.addEventListener('pointerdown', outside)
+    return () => { window.removeEventListener('keydown', onKey); document.removeEventListener('pointerdown', outside) }
   }, [clean])
 
   const dispatch = (action: Action) => {
@@ -199,7 +206,12 @@ export default function PlayTable() {
     if (tool === 'synergy') return game.board.filter(t => t.status === 'danger').map(t => t.locationId)
     return []
   }, [game, actor, tool, commandPlayer, flagGroup, flagOrigin, canAct, ended])
-  const chooseTool = (next: Tool) => { setTool(next); setSelectedTiles([]); setSelectedCard(null); setError(''); if (next === 'share' && actor) setInspected(actor.id) }
+  const wholeBoard = () => { setFocus({ x: .5, y: .5 }); setZoom(1) }
+  const chooseTool = (next: Tool) => {
+    setTool(next); setSelectedTiles([]); setSelectedCard(null); setError('')
+    if (next === 'share' && actor) setInspected(actor.id)
+    if (['scout', 'command', 'synergy'].includes(next)) wholeBoard()
+  }
   const tileClick = (id: string) => {
     if (!game || !actor) return
     if (!targets.includes(id)) { setInspectTile(id); return }
@@ -215,14 +227,15 @@ export default function PlayTable() {
   }
   const selectHand = (i: number) => {
     if (!owner || !game) return
-    setError(''); setSelectedCard(i); setSelectedTiles([])
+    setError(''); setSelectedCard(i); setSelectedTiles([]); setInspectTile(null)
     const id = owner.hand[i]
-    if (id === 'gia-co') setTool('reinforce')
-    else if (id === 'co-lenh') { setTool('flag'); setFlagOrigin(owner.tile); setFlagGroup(game.players.filter(p => p.tile === owner.tile).map(p => p.id)) }
-    else if (owner.id === actor?.id) setTool('share')
+    if (id === 'gia-co') { setTool('reinforce'); wholeBoard() }
+    else if (id === 'co-lenh') { setTool('flag'); setFlagOrigin(owner.tile); setFlagGroup(game.players.filter(p => p.tile === owner.tile).map(p => p.id)); wholeBoard() }
+    else if (owner.id === actor?.id && canAct) setTool('share')
     else setTool('inspect')
   }
   const start = (g: GameState) => {
+    if (gameMenu.current) gameMenu.current.open = false
     setSelectedCard(null); setSelectedTiles([]); setTool('move'); setInspected(g.players[g.active].id); setFlagGroup([]); setFlagOrigin('')
     setCommandPlayer(g.players.find(p => p.id !== g.players[g.active].id)?.id || '')
     setSession({ game: g, history: [] }); setSetup(false); setZoom(1); setFocus({ x: .5, y: .5 }); setInspectTile(null); setClean(false); setError('')
@@ -239,7 +252,7 @@ export default function PlayTable() {
   const importGame = async (file?: File) => {
     if (!file) return
     try { if (file.size > 1_000_000) throw Error('File ván chơi phải nhỏ hơn 1 MB.'); const restored = validateGame(JSON.parse(await file.text()), catalog); if (!restored) throw Error('File ván chơi không hợp lệ hoặc khác phiên bản.'); start(restored) }
-    catch (e) { setError(e instanceof Error ? e.message : 'Không đọc được file ván chơi.') }
+    catch (e) { setError(e instanceof SyntaxError ? 'File chưa đúng định dạng ván chơi JSON.' : e instanceof Error ? e.message : 'Không đọc được file ván chơi.') }
     if (fileInput.current) fileInput.current.value = ''
   }
   const panToActor = () => {
@@ -263,20 +276,47 @@ export default function PlayTable() {
     : tool === 'command' ? 'Chọn đồng đội rồi chọn ô đích trong hai bước theo cạnh.'
     : tool === 'scout' ? 'Chọn bất kỳ ô còn tồn tại. Một lần trong lượt.'
     : canAct ? 'Chọn hành động, rồi chạm ô có viền son.' : 'Rút từng lá; cả đội có thể dùng bài đặc biệt trước lá tiếp theo.'
-  const eventLocation = inspectTile || (game?.lastEvent.tile && locations.some(l => l.id === game.lastEvent.tile) ? game.lastEvent.tile : null)
-  const eventStrategy = game?.lastEvent.card && strategies.some(s => s.id === game.lastEvent.card) ? game.lastEvent.card : null
+  const handCard = owner && selectedCard !== null ? owner.hand[selectedCard] : null
+  const eventLocation = inspectTile || (!handCard && game?.lastEvent.tile && locations.some(l => l.id === game.lastEvent.tile) ? game.lastEvent.tile : null)
+  const eventStrategy = handCard || (game?.lastEvent.card && strategies.some(s => s.id === game.lastEvent.card) ? game.lastEvent.card : null)
+  useEffect(() => {
+    if (handCard || inspectTile) page.current?.querySelector('.pt-event-card')?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: reduced ? 'instant' : 'smooth' })
+    const choice = tool === 'share' ? '.pt-recipients' : tool === 'flag' ? '.pt-group' : null
+    if (handCard && choice) page.current?.querySelector(choice)?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: reduced ? 'instant' : 'smooth' })
+  }, [handCard, inspectTile, tool, reduced])
+  const stage = game?.phase === 'escape' ? 'flood' : game?.phase
+  const handTray = game && owner && <section className="pt-hand-area" aria-label={`Tay bài ${roleName(owner.id)}`}>
+    <p className="pt-eyebrow">TAY BÀI</p>
+    <div className="pt-hand-heading"><p><strong>{roleName(owner.id)}</strong><span>{owner.hand.length} / 5 lá</span></p></div>
+    {overLimit && <button className="pt-small-flag" onClick={() => { setInspected(overLimit.id); setSelectedCard(null) }}>XỬ LÝ TAY BÀI {roleName(overLimit.id)}</button>}
+    <div className="pt-hand">{owner.hand.map((id, i) => <button key={`${i}-${id}`} data-card={id} aria-pressed={selectedCard === i} onClick={() => selectHand(i)} disabled={ended} title={strategy(id).name}><img src={strategy(id).image} alt={strategy(id).name} /><span>{strategy(id).name}</span></button>)}
+      {!owner.hand.length && <p className="pt-empty-hand">Chưa có lá bài trên tay.</p>}</div>
+    {selectedCard !== null && <div className="pt-card-choices"><strong>{strategy(owner.hand[selectedCard]).name}</strong>
+      <button disabled={ended || owner.hand.length <= 5} onClick={() => dispatch({ type: 'discard', player: owner.id, cardIndex: selectedCard })}>Bỏ lá này</button>
+      {owner.hand[selectedCard] === 'co-lenh' && <button disabled={ended || game.completed.length !== 4 || game.players.some(p => p.tile !== 'luong-xam')} className="pt-small-flag" onClick={() => dispatch({ type: 'victory', owner: owner.id, cardIndex: selectedCard })}>PHÁT LỆNH · THẮNG VÁN</button>}
+      <button className="pt-text-button" onClick={() => { setSelectedCard(null); setTool('move') }}>Hủy chọn</button></div>}
+    <div className="pt-hand-tools"><button disabled={!session.history.length} onClick={undo}>Hoàn tác</button></div>
+  </section>
+  const team = game && actor && owner && <div className="pt-team" aria-label="Tay bài các nhân vật">{game.players.map(p => <button key={p.id} data-active={p.id === actor.id} aria-pressed={owner.id === p.id} onClick={() => { setInspected(p.id); setSelectedCard(null); setTool('inspect') }}>
+    <img src={role(p.id).image} alt="" /><span>{roleName(p.id)}<small>{p.hand.length} lá{p.id === actor.id ? ' · Có lượt' : ''}</small></span></button>)}</div>
 
-  return <div ref={page} className="pt-page grain" data-clean={clean} data-ready={unlocked} data-phase={game?.phase}>
+  return <div ref={page} className="pt-page grain" data-clean={clean} data-ready={unlocked} data-phase={game?.phase} data-playing={!!game && !setup} data-card-selected={selectedCard !== null}>
     <Curtain ready={loading.ready} progress={loading.progress} failed={loading.failed} onRetry={() => setLoadAttempt(n => n + 1)} onOpen={opened} onComplete={completeLoading} />
     <main inert={!unlocked} className="pt-shell">
-      <header className="pt-header"><h1 tabIndex={-1}>THỦY TRẬN</h1><span className="pt-eyebrow">BÀN CHƠI · BẠCH ĐẰNG 938</span>
-        <div className="pt-toolbar"><button onClick={() => setHelp(true)}>Luật tại bàn</button><button aria-pressed={clean} onClick={() => setClean(c => !c)}>Quay content</button>
+      <header className="pt-header"><h1 tabIndex={-1}>THỦY TRẬN</h1>
+        {game && !setup ? <ol className="pt-phases" aria-label="Giai đoạn lượt chơi">{([['actions', 'Hành động'], ['draw', 'Rút Kế sách'], ['flood', 'Dòng nước']] as const).map(([id, label], i) => <li key={id} data-current={stage === id} aria-current={stage === id ? 'step' : undefined}><span>{i + 1}</span>{label}</li>)}</ol> : <span className="pt-eyebrow">BÀN CHƠI · BẠCH ĐẰNG 938</span>}
+        <div className="pt-toolbar"><button onClick={() => setHelp(true)}>Luật tại bàn</button><button disabled={!game || setup} aria-pressed={clean} onClick={() => setClean(c => !c)}>Quay content</button>
           <button onClick={() => { if (!document.fullscreenElement) page.current?.requestFullscreen().catch(() => setError('Trình duyệt chưa cho phép toàn màn hình.')); else document.exitFullscreen() }}>Toàn màn hình</button>
-          <button onClick={() => setSetup(true)}>Ván mới</button><button onClick={() => fileInput.current?.click()}>Mở ván</button></div></header>
-      {setup || !game || !actor || !owner ? <Setup hasGame={!!game} onCancel={() => setSetup(false)} onStart={start} /> : <>
-        <div className="pt-status-strip"><p role="status" aria-live="polite">{error || game.lastEvent.text}</p><span>LƯỢT {game.turn} · {difficultyNames[game.difficulty]}</span></div>
+          <details className="pt-game-menu" ref={gameMenu}><summary>Tùy chọn</summary><div className="pt-menu-sheet">
+            <button onClick={() => { if (gameMenu.current) gameMenu.current.open = false; setSetup(true) }}>Ván mới</button>
+            <button onClick={() => fileInput.current?.click()}>Mở ván</button><button disabled={!game} onClick={exportGame}>Lưu file ván</button>
+            {game && <details className="pt-log"><summary>Nhật ký ván · {game.seed}</summary><ol>{game.log.slice().reverse().map((line, i) => <li key={i}>{line}</li>)}</ol></details>}
+          </div></details></div></header>
+      {setup || !game || !actor || !owner ? <>{error && <p className="pt-setup-error" role="alert">{error}</p>}<Setup hasGame={!!game} onCancel={() => setSetup(false)} onStart={start} /></> : <>
+        <div className="pt-status-strip"><p role={error ? 'alert' : 'status'} aria-live="polite">{error || game.lastEvent.text}</p><span>LƯỢT {game.turn} · {difficultyNames[game.difficulty]}</span></div>
         <section className="pt-table-layout">
           <aside className="pt-action-panel" aria-label="Hành động của người có lượt">
+            <div className="pt-command-scroll">
             <p className="pt-eyebrow">ĐẾN LƯỢT</p><div className="pt-role-heading"><img src={role(actor.id).image} alt={roleName(actor.id)} /><div><h2>{roleName(actor.id)}</h2><p>{place(actor.tile).name}</p></div></div>
             <div className="pt-action-count" aria-label={`Còn ${game.actionsLeft} trên 3 hành động`}>{[1, 2, 3].map(n => <i key={n} data-used={n > game.actionsLeft}>◆</i>)}<span>{game.actionsLeft} hành động</span></div>
             <div className="pt-actions">
@@ -288,29 +328,30 @@ export default function PlayTable() {
             <p className="pt-hint">{hint}</p>
             {tool === 'fortify' && actor.id === 'nha-binh' && <button className="pt-small-flag" disabled={!selectedTiles.length} onClick={() => dispatch({ type: 'fortify', targets: selectedTiles })}>CỦNG CỐ {selectedTiles.length} Ô</button>}
             {tool === 'command' && <label>Điều động<select value={commandPlayer} onChange={e => setCommandPlayer(e.target.value)}>{game.players.filter(p => p.id !== actor.id).map(p => <option value={p.id} key={p.id}>{roleName(p.id)}</option>)}</select></label>}
-            {tool === 'share' && selectedCard !== null && owner.id === actor.id && regularStrategyIds.includes(owner.hand[selectedCard]) && <div className="pt-recipients">{game.players.filter(p => p.id !== actor.id).map(p => <button key={p.id} disabled={!canAct || (p.tile !== actor.tile && actor.id !== 'truyen-lenh-lam')} onClick={() => dispatch({ type: 'share', cardIndex: selectedCard, recipient: p.id })}>Cho {roleName(p.id)}{p.tile !== actor.tile && actor.id !== 'truyen-lenh-lam' && <small>Khác ô</small>}</button>)}</div>}
+            {canAct && tool === 'share' && selectedCard !== null && owner.id === actor.id && regularStrategyIds.includes(owner.hand[selectedCard]) && <div className="pt-recipients">{game.players.filter(p => p.id !== actor.id).map(p => <button key={p.id} disabled={p.tile !== actor.tile && actor.id !== 'truyen-lenh-lam'} onClick={() => dispatch({ type: 'share', cardIndex: selectedCard, recipient: p.id })}>Cho {roleName(p.id)}{p.tile !== actor.tile && actor.id !== 'truyen-lenh-lam' && <small>Khác ô</small>}</button>)}</div>}
             {tool === 'flag' && <fieldset className="pt-group"><legend>Nhóm dùng Cờ Lệnh</legend><select aria-label="Chọn ô của nhóm" value={flagOrigin} onChange={e => { setFlagOrigin(e.target.value); setFlagGroup(game.players.filter(p => p.tile === e.target.value).map(p => p.id)) }}>{[...new Set(game.players.map(p => p.tile))].map(id => <option value={id} key={id}>{place(id).name}</option>)}</select>
               {game.players.filter(p => p.tile === flagOrigin).map(p => <label key={p.id}><input type="checkbox" checked={flagGroup.includes(p.id)} onChange={() => setFlagGroup(g => g.includes(p.id) ? g.filter(id => id !== p.id) : [...g, p.id])} />{roleName(p.id)}</label>)}
             </fieldset>}
             <details><summary>Năng lực · {role(actor.id).skill}</summary><p>{role(actor.id).text}</p></details>
+            </div>
             <button className="pt-flag pt-next" disabled={ended || game.phase === 'escape' || !!overLimit} onClick={next}>{nextLabel} <span aria-hidden="true">◆</span></button>
+            {handTray}
           </aside>
           <div className="pt-board-column">
-            <div className="pt-board-tools"><button className="pt-text-button" onClick={() => { setFocus({ x: .5, y: .5 }); setZoom(1) }}>Toàn bàn</button><button className="pt-text-button" onClick={panToActor}>Theo quân</button>
+            <div className="pt-board-tools"><button className="pt-text-button" onClick={wholeBoard}>Toàn bàn</button><button className="pt-text-button" onClick={panToActor}>Theo quân</button>
               <label aria-label="Phóng bàn"><span>Zoom</span><input aria-label="Độ phóng bàn" type="range" min="1" max="2.2" step=".1" value={zoom} onChange={e => setZoom(Number(e.target.value))} /></label>
               <button aria-pressed={angled} onClick={() => setAngled(v => !v)}>Góc nghiêng</button></div>
             <Board game={game} targets={targets} selected={selectedTiles} onTile={tileClick} zoom={zoom} focus={focus} angled={angled} />
-            <div className="pt-team" style={{ gridTemplateColumns: `repeat(${game.players.length <= 4 ? 4 : 3}, minmax(0, 1fr))` }} aria-label="Tay bài các nhân vật">{game.players.map(p => <button key={p.id} data-active={p.id === actor.id} aria-pressed={owner.id === p.id} onClick={() => { setInspected(p.id); setSelectedCard(null); setTool('inspect') }}>
-              <img src={role(p.id).image} alt="" /><span>{roleName(p.id)}<small>{p.hand.length} lá{p.id === actor.id ? ' · Có lượt' : ''}</small></span></button>)}</div>
           </div>
           <aside className="pt-river-panel" aria-label="Thủy triều và bộ bài">
             <div className="pt-tide-heading"><h2>CON NƯỚC</h2><strong>{game.tide}<small> / 8</small></strong></div>
             <div className="pt-tide-track" aria-label={`Thủy triều nấc ${game.tide}`}>{[1, 2, 3, 4, 5, 6, 7, 8].map(n => <span key={n} data-current={n === game.tide} data-passed={n < game.tide}>{n}</span>)}</div>
+            {team}
             <div className="pt-goals">{regularStrategyIds.map(id => <button key={id} data-complete={game.completed.includes(id)} disabled={!canAct || !canComplete(game, id)} onClick={() => dispatch({ type: 'complete', strategy: id })} title={game.completed.includes(id) ? 'Đã hoàn thành' : 'Cần 4 lá cùng loại và đứng ở địa danh tương ứng'}>
               <img src={strategy(id).image} alt="" /><span>{strategy(id).name}<small>{game.completed.includes(id) ? '◆ Đã hoàn thành' : `${actor.hand.filter(c => c === id).length} / 4 lá`}</small></span></button>)}</div>
             <button className="pt-synergy" disabled={ended || !game.synergy || game.phase === 'escape' || !!overLimit} aria-pressed={tool === 'synergy'} onClick={() => chooseTool('synergy')}><span>HIỆP LỰC</span><strong>{game.synergy}</strong><small>Cứu 1 ô trước khi công bố</small></button>
-            <div className="pt-decks"><div className="pt-deck" data-kind="strategy"><span>KẾ SÁCH</span><strong>{game.strategyDeck.length}</strong><small>{game.strategyDiscard.length} lá bỏ</small></div>
-              <div className="pt-deck" data-kind="flood"><span>BIẾN ĐỘNG</span><strong>{game.floodDeck.length}</strong><small>{game.floodDiscard.length} lá bỏ</small></div></div>
+            <div className="pt-decks"><button className="pt-deck" data-kind="strategy" disabled={game.phase !== 'draw' || !!overLimit} onClick={next} aria-label="Rút Kế sách"><span>KẾ SÁCH</span><strong>{game.strategyDeck.length}</strong><small>{game.strategyDiscard.length} lá bỏ</small></button>
+              <button className="pt-deck" data-kind="flood" disabled={game.phase !== 'flood' || !!overLimit} onClick={next} aria-label="Công bố Biến động"><span>BIẾN ĐỘNG</span><strong>{game.floodDeck.length}</strong><small>{game.floodDiscard.length} lá bỏ</small></button></div>
             {game.forecast && <p className="pt-forecast">◆ DỰ BÁO<br /><strong>{place(game.forecast).name}</strong></p>}
             {(eventLocation || eventStrategy) && <figure className="pt-event-card" key={`${eventLocation}-${eventStrategy}-${game.turn}-${game.lastEvent.type}`}>
               <img src={eventLocation ? (game.board.find(t => t.locationId === eventLocation)?.status === 'danger' ? place(eventLocation).back : place(eventLocation).image) : strategy(eventStrategy!).image} alt={eventLocation ? place(eventLocation).name : strategy(eventStrategy!).name} />
@@ -318,19 +359,6 @@ export default function PlayTable() {
             </figure>}
           </aside>
         </section>
-        <section className="pt-hand-area" aria-label={`Tay bài ${roleName(owner.id)}`}>
-          <div className="pt-hand-heading"><p><strong>{roleName(owner.id)}</strong><span>{owner.hand.length} / 5 lá</span></p>
-            {overLimit && <button className="pt-small-flag" onClick={() => { setInspected(overLimit.id); setSelectedCard(null) }}>XỬ LÝ TAY BÀI {roleName(overLimit.id)}</button>}
-            <div className="pt-hand-tools"><button disabled={!session.history.length} onClick={undo}>Hoàn tác</button><button onClick={exportGame}>Lưu file</button><button onClick={() => fileInput.current?.click()}>Mở file</button></div>
-          </div>
-          <div className="pt-hand">{owner.hand.map((id, i) => <button key={`${i}-${id}`} data-card={id} aria-pressed={selectedCard === i} onClick={() => selectHand(i)} disabled={ended} title={strategy(id).name}><img src={strategy(id).image} alt={strategy(id).name} /><span>{strategy(id).name}</span></button>)}
-            {!owner.hand.length && <p className="pt-empty-hand">Chưa có lá bài trên tay.</p>}</div>
-          {selectedCard !== null && <div className="pt-card-choices"><strong>{strategy(owner.hand[selectedCard]).name}</strong>
-            <button disabled={ended || owner.hand.length <= 5} onClick={() => dispatch({ type: 'discard', player: owner.id, cardIndex: selectedCard })}>Bỏ lá này</button>
-            {owner.hand[selectedCard] === 'co-lenh' && <button disabled={ended || game.completed.length !== 4 || game.players.some(p => p.tile !== 'luong-xam')} className="pt-small-flag" onClick={() => dispatch({ type: 'victory', owner: owner.id, cardIndex: selectedCard })}>PHÁT LỆNH · THẮNG VÁN</button>}
-            <button className="pt-text-button" onClick={() => { setSelectedCard(null); setTool('move') }}>Hủy chọn</button></div>}
-        </section>
-        <details className="pt-log"><summary>Nhật ký ván · {game.seed}</summary><ol>{game.log.slice().reverse().map((line, i) => <li key={i}>{line}</li>)}</ol></details>
         {ended && <section className="pt-ending" role="status"><p className="pt-eyebrow">CẢ ĐỘI {game.phase === 'won' ? 'CÙNG THẮNG' : 'CÙNG THUA'}</p><h2>{game.phase === 'won' ? 'THẾ TRẬN ĐÃ THÀNH.' : 'DÒNG NƯỚC ĐÃ ĐỔI.'}</h2><p>{game.lastEvent.text}</p><div><button className="pt-flag" onClick={() => setSetup(true)}>VÁN MỚI ◆</button><button disabled={!session.history.length} onClick={undo}>Hoàn tác bước cuối</button></div></section>}
       </>}
       <input ref={fileInput} type="file" accept="application/json,.json" hidden onChange={e => importGame(e.target.files?.[0])} />
