@@ -1,3 +1,5 @@
+import { floodRate, tideLimit } from './tide.ts'
+
 export type Difficulty = 'learn' | 'standard' | 'hard' | 'legend'
 export const regularStrategyIds = ['coc-ngam', 'do-luong', 'mai-phuc', 'nghi-binh'] as const
 export type LocationStatus = 'stable' | 'danger' | 'removed'
@@ -108,16 +110,30 @@ function prepareFlood(s: GameState) {
   // Finish both strategy draws before flooding; combine two Tide cards once
   // and preserve the untouched lower flood pile in its original order.
   if (s.floodTriubien) { s.floodDeck = [...shuffle(s, s.floodDiscard), ...s.floodDeck]; s.floodDiscard = []; s.floodTriubien = 0 }
-  const rates = s.difficulty === 'learn' ? [1, 1, 2, 2, 2, 3, 3, 4] : [2, 2, 3, 3, 3, 4, 4, 5]
-  s.phase = 'flood'; s.floodRemaining = rates[s.tide - 1]; s.floodBatch = s.floodRemaining
+  s.phase = 'flood'; s.floodRemaining = floodRate(s.difficulty, s.tide); s.floodBatch = s.floodRemaining
+}
+function riseAfterRound(s: GameState) {
+  s.tide++
+  const text = `Thủy triều lên nấc ${s.tide} sau một vòng nhân vật.`
+  if (s.tide > tideLimit) {
+    const previous = s.lastEvent
+    lose(s, 'Thủy triều vượt nấc cuối. Cả đội thua.')
+    if (previous.card !== undefined) s.lastEvent.card = previous.card
+    if (previous.tile !== undefined) s.lastEvent.tile = previous.tile
+    return
+  }
+  s.lastEvent = { ...s.lastEvent, text: `${s.lastEvent.text} ${text}` }
+  s.log = [...s.log, text].slice(-150)
 }
 function resumeFlood(s: GameState) {
   if (s.phase === 'lost') return
   if (s.pendingEscape.length) { s.phase = 'escape'; return }
   if (s.floodRemaining) s.phase = 'flood'
   else {
+    const roundComplete = s.turn % s.players.length === 0
     s.phase = 'actions'; s.active = (s.active + 1) % s.players.length; s.turn++; s.actionsLeft = 3; s.guideUsed = false
     s.drawsRemaining = 0; s.floodBatch = 0
+    if (roundComplete) riseAfterRound(s)
   }
 }
 function removeCard(s: GameState, id: string, i: number) { const [c] = player(s, id).hand.splice(i, 1); s.strategyDiscard.push(c) }
@@ -202,7 +218,7 @@ export function transition(state: GameState, action: Action): GameState {
       s.drawsRemaining--
       if (c === 'trieu-bien') {
         s.tide++; s.strategyDiscard.push(c); s.forecast = null; s.floodTriubien++
-        if (s.tide > 8) { lose(s, 'Thủy triều vượt nấc tám. Cả đội thua.'); s.lastEvent.card = c; break }
+        if (s.tide > tideLimit) { lose(s, 'Thủy triều vượt nấc cuối. Cả đội thua.'); s.lastEvent.card = c; break }
       } else active(s).hand.push(c)
       event(s, { type: 'drawStrategy', text: c === 'trieu-bien' ? `Triều Biến: Thủy triều lên nấc ${s.tide}. Không rút bù.` : `Đã rút ${name(c)}.`, card: c })
       prepareFlood(s); break
@@ -292,8 +308,8 @@ export function validateGame(value: unknown, catalog: Catalog): GameState | null
       roles.add(p.id)
     }
     if (s.pendingEscape.some(id => !roles.has(id) || loc(s, player(s, id).tile)?.status !== 'removed')) return null
-    if (!['actions', 'draw', 'flood', 'escape', 'won', 'lost'].includes(s.phase) || !int(s.active, 0, s.players.length - 1) || !int(s.turn, 1, 100000) || !int(s.actionsLeft, 0, 3) || !int(s.drawsRemaining, 0, 2) || !int(s.floodRemaining, 0, 5) || !int(s.floodBatch, 0, 5) || !int(s.floodTriubien, 0, 2) || !int(s.tide, 1, 9) || !int(s.synergy, 0, Math.min(4, s.completed.length)) || typeof s.guideUsed !== 'boolean') return null
-    if (s.phase !== 'lost' && (s.tide === 9 || loc(s, 'luong-xam')?.status === 'removed')) return null
+    if (!['actions', 'draw', 'flood', 'escape', 'won', 'lost'].includes(s.phase) || !int(s.active, 0, s.players.length - 1) || !int(s.turn, 1, 100000) || !int(s.actionsLeft, 0, 3) || !int(s.drawsRemaining, 0, 2) || !int(s.floodRemaining, 0, 5) || !int(s.floodBatch, 0, 5) || !int(s.floodTriubien, 0, 2) || !int(s.tide, 1, tideLimit + 1) || !int(s.synergy, 0, Math.min(4, s.completed.length)) || typeof s.guideUsed !== 'boolean') return null
+    if (s.phase !== 'lost' && (s.tide === tideLimit + 1 || loc(s, 'luong-xam')?.status === 'removed')) return null
     if ((s.phase === 'escape') !== !!s.pendingEscape.length && s.phase !== 'lost') return null
     if (s.phase !== 'lost' && s.players.some(p => loc(s, p.tile)?.status === 'removed' && !s.pendingEscape.includes(p.id))) return null
     if (s.phase === 'won' && (s.completed.length !== 4 || s.players.some(p => p.tile !== 'luong-xam'))) return null

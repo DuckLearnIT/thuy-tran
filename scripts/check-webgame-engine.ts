@@ -7,7 +7,7 @@ const strategyAt: Record<string, string[]> = { 'coc-ngam': ['bai-coc-ngam', 'bai
 const catalog: Catalog = { locations: ids.map(id => ({ id, characterId: Object.entries(roleAt).find(([, tile]) => tile === id)?.[0], strategyId: Object.entries(strategyAt).find(([, tiles]) => tiles.includes(id))?.[0] })), roles }
 const failures: string[] = []
 const pass = (label: string, test: () => void) => { try { test(); console.log(`PASS ${label}`) } catch (error) { const message = error instanceof Error ? error.message : String(error); failures.push(`${label}: ${message}`); console.error(`FAIL ${label}: ${message}`) } }
-const game = (difficulty: 'learn' | 'standard', seed: string) => createGame({ playerCount: 4, difficulty, seed }, catalog)
+const game = (difficulty: 'learn' | 'standard', seed: string, playerCount: 4 | 5 | 6 = 4) => createGame({ playerCount, difficulty, seed }, catalog)
 const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T
 const player = (state: GameState, id: string) => state.players.find(item => item.id === id)!
 const tile = (state: GameState, id: string) => state.board.find(item => item.locationId === id)!
@@ -65,6 +65,66 @@ pass('forced actual loss at headquarters', () => {
   tile(state, 'luong-xam').status = 'danger'
   const next = transition(state, { type: 'drawFlood' })
   if (next.phase !== 'lost' || next.lastEvent.type !== 'lost' || tile(next, 'luong-xam').status !== 'removed') throw Error('headquarters loss transition failed')
+})
+
+pass('round tide rises exactly once for 4, 5 and 6 players', () => {
+  for (const playerCount of [4, 5, 6] as const) {
+    const state = game('standard', `webgame-round-${playerCount}`, playerCount)
+    const trapped = tile(state, 'bach-dang'); trapped.status = 'removed'; state.players[0].tile = trapped.locationId
+    state.phase = 'escape'; state.pendingEscape = [state.players[0].id]; state.floodRemaining = 0; state.floodBatch = 0; state.turn = playerCount
+    const before = state.tide
+    const target = moveTargets(state, state.players[0].id, 'escape')[0]
+    if (!target) throw Error(`${playerCount} player escape fixture has no target`)
+    const next = transition(state, { type: 'escape', target })
+    if (next.phase !== 'actions' || next.tide !== before + 1 || next.turn !== playerCount + 1) throw Error(`${playerCount} player round did not rise once`)
+    const again = tile(next, 'cua-nam-trieu'); again.status = 'removed'; next.players[0].tile = again.locationId
+    const target2 = moveTargets(next, next.players[0].id, 'escape')[0]
+    if (!target2) throw Error(`${playerCount} player second escape fixture has no target`)
+    const following = transition({ ...next, phase: 'escape', pendingEscape: [next.players[0].id] }, { type: 'escape', target: target2 })
+    if (following.tide !== next.tide) throw Error(`${playerCount} player rose before a full next round`)
+  }
+})
+
+pass('final flood waits for escapes and Flag rescues once at round boundary', () => {
+  const state = game('standard', 'webgame-round-escape', 4)
+  state.phase = 'escape'; state.floodRemaining = 0; state.floodBatch = 0; state.turn = 4
+  const removed = tile(state, 'bach-dang'); removed.status = 'removed'
+  state.players[0].tile = removed.locationId; state.players[1].tile = removed.locationId
+  state.pendingEscape = [state.players[0].id, state.players[1].id]
+  const escapeTarget = moveTargets(state, state.players[0].id, 'escape')[0]
+  if (!escapeTarget) throw Error('final flood escape fixture has no target')
+  const waiting = transition(state, { type: 'escape', target: escapeTarget })
+  if (waiting.phase !== 'escape' || waiting.tide !== state.tide) throw Error('tide rose before remaining escape')
+  const owner = waiting.players[2]
+  owner.hand = ['co-lenh']
+  const rescued = transition(waiting, { type: 'flag', owner: owner.id, cardIndex: 0, players: [waiting.players[1].id], target: 'luong-xam' })
+  if (rescued.phase !== 'actions' || rescued.pendingEscape.length || rescued.tide !== state.tide + 1) throw Error('Flag end-round rescue did not rise once')
+  const count = rescued.log.filter(line => line.includes('sau một vòng nhân vật')).length
+  if (count !== 1) throw Error('Flag rescue produced duplicate round rise')
+})
+
+pass('Triều Biến plus round boundary adds two rises and preserves event metadata', () => {
+  const state = game('standard', 'webgame-round-tide-card', 4)
+  state.phase = 'draw'; state.drawsRemaining = 1; state.turn = 4; state.strategyDeck = ['trieu-bien']; state.strategyDiscard = []
+  const next = transition(state, { type: 'drawStrategy' })
+  if (next.tide !== state.tide + 1 || next.phase !== 'flood') throw Error('Triều Biến did not rise once')
+  next.floodRemaining = 0; next.floodBatch = 0; next.lastEvent = { type: 'removed', text: 'Ô thử nghiệm bị loại.', tile: 'bach-dang', card: 'trieu-bien' }
+  const trapped = tile(next, 'bach-dang'); trapped.status = 'removed'; next.players[0].tile = trapped.locationId
+  next.phase = 'escape'; next.pendingEscape = [next.players[0].id]
+  const owner = next.players[2]; owner.hand = ['co-lenh']
+  const round = transition(next, { type: 'flag', owner: owner.id, cardIndex: 0, players: [next.players[0].id], target: 'luong-xam' })
+  if (round.tide !== next.tide + 1 || round.lastEvent.type !== 'flag' || round.lastEvent.tile !== 'luong-xam' || round.lastEvent.card !== 'co-lenh') throw Error('round rise overwrote event metadata')
+})
+
+pass('end-of-round tide loss preserves triggering flood tile', () => {
+  const state = game('standard', 'webgame-round-loss', 4)
+  state.tide = 8; state.turn = 4; state.phase = 'flood'; state.floodRemaining = 0; state.floodBatch = 0
+  state.lastEvent = { type: 'removed', text: 'Ô cuối bị loại.', tile: 'bach-dang' }
+  const trapped = tile(state, 'bach-dang'); trapped.status = 'removed'; state.players[0].tile = trapped.locationId
+  state.phase = 'escape'; state.pendingEscape = [state.players[0].id]
+  const owner = state.players[2]; owner.hand = ['co-lenh']
+  const next = transition(state, { type: 'flag', owner: owner.id, cardIndex: 0, players: [state.players[0].id], target: 'luong-xam' })
+  if (next.phase !== 'lost' || next.tide !== 9 || next.lastEvent.type !== 'lost' || next.lastEvent.tile !== 'luong-xam' || next.lastEvent.card !== 'co-lenh') throw Error('round tide loss or event metadata preservation failed')
 })
 
 console.log(`\n${failures.length ? `FAILURES ${failures.length}` : 'ALL WEBGAME ENGINE CHECKS PASSED'}`)

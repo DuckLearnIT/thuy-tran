@@ -1,17 +1,20 @@
-// Local-browser gameplay checks for the standalone four-player web game.
+// Local-browser gameplay checks for the standalone four-to-six-player web game.
 // Run in the game's dev-console page; setup(name) writes one valid save and
 // test(name) exercises only the rendered .wg-* controls after the page reloads.
 ;(async () => {
   const engine = await import('/src/game/engine.ts')
+  const { floodRate } = await import('/src/game/tide.ts')
   const { locations } = await import('/src/data/locations.ts')
   const { cards } = await import('/src/data/cards.ts')
   const catalog = { locations, roles: cards.map(c => c.id) }
   const key = 'thuy-tran-webgame-v2'
-  const names = ['share-same', 'share-remote', 'fortify-two', 'command-two', 'guide-once', 'boat-cross', 'overflow-discard', 'complete-four', 'tide-overflow-stack', 'flag-escape', 'gia-co', 'win', 'hq-loss']
+  const names = ['share-same', 'share-remote', 'fortify-two', 'command-two', 'guide-once', 'boat-cross', 'overflow-discard', 'complete-four', 'tide-overflow-stack', 'flag-escape', 'gia-co', 'win', 'hq-loss', 'flood-center', 'round-four']
+  const difficulties = ['learn', 'standard', 'hard', 'legend']
   const regular = [...engine.regularStrategyIds]
   let assertions = 0
   const check = (ok, text) => { if (!ok) throw Error(text); assertions++ }
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+  const frame = () => new Promise(requestAnimationFrame)
   const saved = () => JSON.parse(localStorage.getItem(key) || 'null')
   const p = (s, id) => s.players.find(item => item.id === id)
   const t = (s, id) => s.board.find(item => item.locationId === id)
@@ -74,12 +77,16 @@
       s = base(name, 'nha-tuong', roles.slice(0, 4)); s.completed = regular.slice(); s.players.forEach(item => { item.tile = 'luong-xam' }); allocate(s, { 'nha-tuong': ['co-lenh'] }); s.phase = 'actions'; s.actionsLeft = 3
     } else if (name === 'hq-loss') {
       s = base(name, 'nha-tuong', roles.slice(0, 4)); t(s, 'luong-xam').status = 'danger'; s.phase = 'flood'; s.floodRemaining = s.floodBatch = 1; const all = s.board.map(x => x.locationId); s.floodDeck = ['luong-xam', ...all.filter(id => id !== 'luong-xam')]; s.floodDiscard = []
+    } else if (name === 'flood-center' || name === 'round-four' || name === 'flood-rescue') {
+      s = base(name, 'nha-tuong', roles.slice(0, 4)); const center = rowTile(s, 2, 3); center.status = 'stable'; s.floodDiscard = s.floodDiscard.filter(id => id !== center.locationId); s.floodDeck = [center.locationId, ...s.floodDeck.filter(id => id !== center.locationId)]; s.phase = 'flood'; s.floodRemaining = s.floodBatch = 1
+      if (name === 'round-four') s.turn = s.players.length
+      if (name === 'flood-rescue') { s.floodRemaining = s.floodBatch = 2; allocate(s, { 'nha-tuong': ['gia-co'] }) }
     }
     return save(s)
   }
 
   const waitIdle = async () => {
-    const deadline = performance.now() + 15000
+    const deadline = performance.now() + 30000
     while (performance.now() < deadline) {
       const root = document.querySelector('.wg-game')
       if (root?.dataset.ready === 'true' && root.dataset.busy === 'false') {
@@ -90,15 +97,45 @@
     }
     throw Error('Timed out waiting for .wg-game data-busy=false')
   }
-  const click = async selector => { const node = document.querySelector(selector); check(node && !node.disabled, `Clickable: ${selector}`); node.click(); await new Promise(requestAnimationFrame); await new Promise(requestAnimationFrame); await waitIdle() }
+  const click = async selector => { const node = document.querySelector(selector); check(node && !node.disabled, `Clickable: ${selector}`); node.click(); await frame(); await frame(); await waitIdle() }
   const tileClick = id => click(`.wg-tile[data-id="${id}"]`)
   const assertSave = () => check(engine.validateGame(saved(), catalog), 'Persisted state is save-valid')
 
-  const test = async name => {
+  const resumeFixture = async () => {
+    await waitIdle()
+    const resume = document.querySelector('.wg-menu-secondary')
+    if (resume) { resume.click(); await frame(); await frame() }
+    await waitIdle()
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) await sleep(1500)
+  }
+
+  const testMenu = async ({ playerCount = 4, difficulty = 'learn' } = {}) => {
     assertions = 0
     await waitIdle()
-    // Let the initial deal of location tiles finish before clicking their positions.
-    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) await sleep(1500)
+    const menu = document.querySelector('.wg-menu')
+    check(menu, 'Fresh game menu is visible')
+    check(document.querySelectorAll('input[name=player-count]').length === 3, 'Menu has 4, 5, 6 player options')
+    check(document.querySelectorAll('input[name=difficulty]').length === 4, 'Menu has four difficulty options')
+    check([...document.querySelectorAll('input[name=player-count]')].every(input => ['4', '5', '6'].includes(input.value)), 'Player options use native radio inputs')
+    check([...document.querySelectorAll('input[name=difficulty]')].every(input => difficulties.includes(input.value)), 'Difficulty options use native radio inputs')
+    const players = document.querySelector(`input[name=player-count][value="${playerCount}"]`)
+    const level = document.querySelector(`input[name=difficulty][value="${difficulty}"]`)
+    check(players && level, 'Requested menu settings exist')
+    players.click(); level.click()
+    check(players.checked && level.checked, 'Requested menu settings selected')
+    await click('.wg-menu-primary')
+    const s = saved()
+    check(s.players.length === playerCount && s.difficulty === difficulty && s.seed, 'Started game keeps menu settings and seed')
+    check(new Set(s.players.map(item => item.id)).size === playerCount, 'Started game has unique roles')
+    check(s.players.every(item => item.hand.length === 2 && !item.hand.includes('trieu-bien')), 'Each player starts with two non-Triều cards')
+    check(document.querySelector('.wg-water-rate')?.textContent.includes(`${floodRate(difficulty, s.tide)} lá / lượt`), 'Flood rate is rendered')
+    check(document.querySelector('.wg-water-track > img')?.src.includes('water-track'), 'Menu game uses actual water track')
+    return { name: 'menu', playerCount, difficulty, passed: true, assertions }
+  }
+
+  const test = async name => {
+    assertions = 0
+    await resumeFixture()
     let s = saved(); check(s?.players?.length === 4, 'Standalone game has four players')
     if (name === 'share-same') {
       await click('[data-action="share"]'); await click('.wg-hand-card[data-card="coc-ngam"]');
@@ -129,11 +166,30 @@
       await click('.wg-hand-card[data-card="co-lenh"]'); await click('.wg-win'); check(document.querySelector('.wg-result[data-result="won"]'), 'Victory transition renders winner result')
     } else if (name === 'hq-loss') {
       await click('.wg-deck[data-deck="flood"]'); check(document.querySelector('.wg-result[data-result="lost"]') && saved().phase === 'lost', 'HQ flood transition renders loser result')
+    } else if (name === 'flood-center' || name === 'round-four' || name === 'flood-rescue') {
+      const target = rowTile(s, 2, 3).locationId
+      const deck = document.querySelector('.wg-deck[data-deck="flood"]'); check(deck && !deck.disabled, 'Center flood deck is unlocked')
+      deck.click(); await frame(); await frame()
+      const revealDeadline = Date.now() + 5000
+      while (!document.querySelector(`.wg-tile[data-id="${target}"][data-hit="true"]`) && Date.now() < revealDeadline) await sleep(40)
+      const root = document.querySelector('.wg-game'), flight = document.querySelector('.wg-flight[data-kind="flood"]'), front = document.querySelector('.wg-flight-front')
+      check(root?.dataset.busy === 'true' && deck.disabled, 'Flood draw locks controls while held')
+      check(flight && front && flight.getBoundingClientRect().height > flight.getBoundingClientRect().width * 1.15 && front.naturalHeight > front.naturalWidth * 1.15, 'Flood reveal holds a centered portrait F3')
+      const r = flight.getBoundingClientRect()
+      check(Math.abs(r.left+r.width/2-innerWidth/2)<2 && Math.abs(r.top+r.height/2-innerHeight/2)<2 && front.src.includes('-f3'), 'Portrait F3 is centered in the viewport')
+      check(document.querySelector(`.wg-tile[data-id="${target}"][data-hit="true"]`), 'Flood reveal marks the correct center tile')
+      await waitIdle(); const after = saved(); check(t(after, target).status === 'danger' && !document.querySelector('.wg-flight'), 'Flood completes onto the F2 danger face')
+      if (name === 'round-four') check(after.turn === 5 && after.tide === s.tide + 1 && after.lastEvent.tile === target && after.lastEvent.text.includes('sau một vòng nhân vật'), 'Fourth turn raises tide with flood metadata')
+      if (name === 'flood-rescue') {
+        await click('.wg-hand-card[data-card="gia-co"]'); await tileClick(target)
+        check(t(saved(), target).status === 'stable' && document.querySelector(`.wg-tile[data-id="${target}"]`).dataset.status === 'stable', 'Immediate rescue clears the stale flood preview')
+      }
     }
     assertSave()
     return { name, passed: true, assertions }
   }
 
-  window.__webgameQA = { setup, test, scenarios: names }
+  names.push('flood-rescue')
+  window.__webgameQA = { setup, test, testMenu, scenarios: names }
   return window.__webgameQA
 })()

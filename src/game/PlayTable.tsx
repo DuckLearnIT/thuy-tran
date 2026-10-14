@@ -4,11 +4,14 @@ import { locations } from '../data/locations'
 import { strategies } from '../data/strategies'
 import useReducedMotion from '../hooks/useReducedMotion'
 import Curtain from '../components/Curtain'
-import Board from './Board'
+import Board, { type WaterCue } from './Board'
+import GameMenu, { type GameMenuOptions } from './GameMenu'
 import CardFlight, { type CardMotion, type FlightRect } from './CardMotion'
 import { createGame, transition, validateGame, moveTargets, fortifyTargets, canComplete, regularStrategyIds, type GameState, type Action } from './engine'
 import strategyBack from '../assets/game/back-ke-sach.jpg'
 import floodBack from '../assets/game/back-the-nuoc.jpg'
+import waterTrack from '../assets/game/water-track.png'
+import { floodRate, tideLimit, tideStops } from './tide'
 import './play.css'
 
 const STORAGE = 'thuy-tran-webgame-v2'
@@ -17,16 +20,16 @@ const role = (id: string) => cards.find(c => c.id === id)!
 const place = (id: string) => locations.find(c => c.id === id)!
 const strategy = (id: string) => strategies.find(c => c.id === id)!
 const roleName = (id: string) => [role(id).prefix, role(id).role].filter(Boolean).join(' ')
-const images = [strategyBack, floodBack, ...cards.map(c => c.image), ...strategies.map(c => c.image), ...locations.flatMap(l => [l.image, l.back])]
+const images = [strategyBack, floodBack, waterTrack, ...cards.map(c => c.image), ...strategies.map(c => c.image), ...locations.flatMap(l => [l.image, l.back, l.spiralImage])]
 type Tool = 'move' | 'fortify' | 'share' | 'command' | 'scout' | 'reinforce' | 'flag' | 'synergy' | 'inspect'
-type Session = { game: GameState; needsDeal: boolean }
-type FlightStep = { motion: CardMotion; after?: () => void }
+type Session = { game: GameState; needsDeal: boolean; started: boolean }
+type FlightStep = { motion: CardMotion; after?: () => void; onArrive?: () => void }
 
-function freshGame(): Session {
-  return { game: createGame({ playerCount: 4, difficulty: 'learn', seed: crypto.randomUUID() }, catalog), needsDeal: true }
+function freshGame(options: GameMenuOptions = { playerCount: 4, difficulty: 'learn' }, started = false): Session {
+  return { game: createGame({ ...options, seed: crypto.randomUUID() }, catalog), needsDeal: true, started }
 }
 function loadGame(): Session {
-  try { const game = validateGame(JSON.parse(localStorage.getItem(STORAGE) || 'null'), catalog); if (game?.players.length === 4) return { game, needsDeal: false } }
+  try { const game = validateGame(JSON.parse(localStorage.getItem(STORAGE) || 'null'), catalog); if (game) return { game, needsDeal: false, started: true } }
   catch { /* A blocked or corrupt save does not prevent play. */ }
   return freshGame()
 }
@@ -34,6 +37,8 @@ function loadGame(): Session {
 export default function PlayTable() {
   const [session, setSession] = useState<Session>(loadGame)
   const { game, needsDeal } = session
+  const [menu, setMenu] = useState(true)
+  const resume = useCallback(() => setMenu(false), [])
   const [tool, setTool] = useState<Tool>('move')
   const [inspected, setInspected] = useState(game.players[game.active].id)
   const [selectedCard, setSelectedCard] = useState<number | null>(null)
@@ -45,6 +50,7 @@ export default function PlayTable() {
   const [error, setError] = useState('')
   const [paused, setPaused] = useState(false)
   const [flight, setFlight] = useState<CardMotion | null>(null)
+  const [waterCue, setWaterCue] = useState<WaterCue | null>(null)
   const [busy, setBusy] = useState(false)
   const [dealt, setDealt] = useState<Record<string, number> | null>(() => needsDeal ? Object.fromEntries(game.players.map(p => [p.id, 0])) : null)
   const [loading, setLoading] = useState({ progress: 0, ready: false, failed: false })
@@ -61,7 +67,7 @@ export default function PlayTable() {
   const owner = game.players.find(p => p.id === inspected) || actor
   const overLimit = game.players.find(p => p.hand.length > 5)
   const ended = game.phase === 'won' || game.phase === 'lost'
-  const canAct = !busy && !needsDeal && !paused && !overLimit && game.phase === 'actions' && game.actionsLeft > 0
+  const canAct = !menu && !busy && !needsDeal && !paused && !overLimit && game.phase === 'actions' && game.actionsLeft > 0
   const selected = selectedCard === null ? null : owner.hand[selectedCard]
 
   useEffect(() => {
@@ -79,19 +85,20 @@ export default function PlayTable() {
     })
     return () => { live = false }
   }, [loadAttempt])
-  useEffect(() => { try { localStorage.setItem(STORAGE, JSON.stringify(game)) } catch { /* Continue in memory. */ } }, [game])
+  useEffect(() => { if (session.started) try { localStorage.setItem(STORAGE, JSON.stringify(game)) } catch { /* Continue in memory. */ } }, [game, session.started])
   useEffect(() => { if (!notice) return; const timer = setTimeout(() => setNotice(''), 2600); return () => clearTimeout(timer) }, [notice])
+  useEffect(() => { if (!waterCue || busy) return; const timer = setTimeout(() => setWaterCue(null), 1200); return () => clearTimeout(timer) }, [waterCue, busy])
   useEffect(() => {
     const escape = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape' || busyRef.current || needsDeal || ended) return
+      if (e.key !== 'Escape' || menu || busyRef.current || needsDeal || ended) return
       if (paused) setPaused(false)
       else if (selectedCard !== null || selectedTiles.length) { setSelectedCard(null); setSelectedTiles([]); setTool('move') }
       else setPaused(p => !p)
     }
     window.addEventListener('keydown', escape); return () => window.removeEventListener('keydown', escape)
-  }, [selectedCard, selectedTiles.length, needsDeal, ended, paused])
+  }, [selectedCard, selectedTiles.length, needsDeal, ended, paused, menu])
   useEffect(() => {
-    if (!paused && !ended) return
+    if (menu || (!paused && !ended)) return
     const dialog = root.current?.querySelector<HTMLElement>('[role=dialog]')
     const buttons = dialog?.querySelectorAll<HTMLButtonElement>('button')
     if (!buttons?.length) return
@@ -107,7 +114,7 @@ export default function PlayTable() {
       dialog?.removeEventListener('keydown', trap)
       root.current?.querySelector<HTMLButtonElement>('.wg-pause')?.focus()
     }
-  }, [paused, ended])
+  }, [paused, ended, menu])
 
   const rect = (selector: string): FlightRect => {
     const r = root.current?.querySelector(selector)?.getBoundingClientRect()
@@ -131,7 +138,7 @@ export default function PlayTable() {
   }, [])
 
   useEffect(() => {
-    if (!unlocked || !needsDeal || busyRef.current) return
+    if (menu || !session.started || !unlocked || !needsDeal || busyRef.current) return
     if (reduced) { setDealt(null); setSession(s => ({ ...s, needsDeal: false })); return }
     const steps: FlightStep[] = []
     for (let round = 0; round < 2; round++) game.players.forEach(p => {
@@ -141,20 +148,22 @@ export default function PlayTable() {
     })
     steps[steps.length - 1].after = () => { setDealt(null); setSession(s => ({ ...s, needsDeal: false })) }
     run(steps)
-  }, [unlocked, needsDeal, game.seed, reduced])
+  }, [unlocked, needsDeal, game.seed, reduced, menu, session.started])
 
   const clearChoice = () => { setSelectedCard(null); setSelectedTiles([]); setTool('move'); setError('') }
   const commit = (next: GameState) => {
-    setSession({ game: next, needsDeal: false }); clearChoice(); setNotice(next.lastEvent.text)
+    setSession({ game: next, needsDeal: false, started: true }); clearChoice(); setNotice(next.lastEvent.text)
+    setWaterCue(cue => cue ? { ...cue, applied: false } : null)
     const overflow = next.players.find(p => p.hand.length > 5)
     if (overflow) setInspected(overflow.id)
     else if (next.active !== game.active || next.turn !== game.turn) setInspected(next.players[next.active].id)
     setCommandPlayer(next.players.find(p => p.id !== next.players[next.active].id)!.id)
   }
   const perform = (action: Action) => {
-    if (busyRef.current || needsDeal || paused || ended) return
+    if (menu || busyRef.current || needsDeal || paused || ended) return
     try {
       const next = transition(game, action)
+      setWaterCue(null)
       const steps: FlightStep[] = []
       const ksDeck = rect('.wg-deck[data-deck=strategy]'), ksDiscard = rect('.wg-discard[data-deck=strategy]')
       const waterDeck = rect('.wg-deck[data-deck=flood]'), waterDiscard = rect('.wg-discard[data-deck=flood]')
@@ -163,7 +172,7 @@ export default function PlayTable() {
         steps.push({ motion: makeFlight('stack', strategy(id).image, strategyBack, ksDiscard, ksDeck) })
       })
       if ((action.type === 'drawFlood' || action.type === 'forecast') && !game.floodDeck.length) game.floodDiscard.forEach(id => {
-        steps.push({ motion: makeFlight('stack', place(id).image, floodBack, waterDiscard, waterDeck) })
+        steps.push({ motion: makeFlight('stack', place(id).spiralImage, floodBack, waterDiscard, waterDeck) })
       })
       if (action.type === 'drawStrategy') {
         setInspected(actor.id)
@@ -172,9 +181,20 @@ export default function PlayTable() {
         if (id === 'trieu-bien') steps.push({ motion: makeFlight('discard', strategy(id).image, strategyBack, reveal, ksDiscard, .22) })
       } else if (action.type === 'drawFlood') {
         const id = next.lastEvent.tile!
-        steps.push({ motion: makeFlight('flood', place(id).image, floodBack, waterDeck, reveal) })
+        const tile = rect(`.wg-tile[data-id="${id}"]`)
+        const status = next.board.find(t => t.locationId === id)!.status
+        const toRight = tile.left + tile.width / 2 >= reveal.left + reveal.width / 2
+        const nearEdge = toRight ? tile.left >= reveal.left + reveal.width : tile.left + tile.width <= reveal.left
+        // Use the outer edge when the enlarged card covers its target tile.
+        const targetX = toRight === nearEdge ? tile.left + 12 : tile.left + tile.width - 12
+        const cue: WaterCue = { tile: id, status, applied: false,
+          from: { x: toRight ? reveal.left + reveal.width + 7 : reveal.left - 7, y: reveal.top + reveal.height / 2 },
+          to: { x: targetX, y: tile.top + 12 } }
+        steps.push({ motion: { ...makeFlight('flood', place(id).spiralImage, floodBack, waterDeck, reveal), hold: 1.1 },
+          onArrive: () => setWaterCue(cue), after: () => setWaterCue({ ...cue, applied: true }) })
         const removed = next.board.find(t => t.locationId === id)!.status === 'removed'
-        steps.push({ motion: makeFlight('discard', place(id).image, floodBack, reveal, removed ? { ...waterDiscard, top: innerHeight + 30 } : waterDiscard, .2) })
+        steps.push({ motion: makeFlight('discard', place(id).spiralImage, floodBack, reveal, removed ? { ...waterDiscard, top: innerHeight + 30 } : waterDiscard, .15) })
+        if (reduced) setWaterCue({ ...cue, applied: true })
       } else if (action.type === 'share') {
         const id = actor.hand[action.cardIndex]
         steps.push({ motion: makeFlight('share', strategy(id).image, strategyBack, rect(`.wg-hand-card[data-index="${action.cardIndex}"]`), handDestination(action.recipient, game.players.find(p => p.id === action.recipient)!.hand.length)) })
@@ -188,7 +208,7 @@ export default function PlayTable() {
         matches.forEach(c => steps.push({ motion: makeFlight('discard', strategy(c.id).image, strategyBack, rect(`.wg-hand-card[data-index="${c.i}"]`), ksDiscard) }))
       }
       if (game.phase === 'draw' && next.phase === 'flood' && (game.floodTriubien || next.lastEvent.card === 'trieu-bien')) game.floodDiscard.forEach(id => {
-        steps.push({ motion: makeFlight('stack', place(id).image, floodBack, waterDiscard, waterDeck) })
+        steps.push({ motion: makeFlight('stack', place(id).spiralImage, floodBack, waterDiscard, waterDeck) })
       })
       if (!steps.length || reduced) commit(next)
       else { steps[steps.length - 1].after = () => commit(next); run(steps) }
@@ -196,7 +216,7 @@ export default function PlayTable() {
   }
 
   const targets = useMemo(() => {
-    if (ended || busy || needsDeal || paused) return []
+    if (menu || ended || busy || needsDeal || paused) return []
     if (tool === 'reinforce' || tool === 'synergy') return game.board.filter(t => t.status === 'danger').map(t => t.locationId)
     if (tool === 'flag') return flagGroup.length ? game.board.filter(t => t.status !== 'removed' && t.locationId !== flagOrigin).map(t => t.locationId) : []
     if (game.phase === 'escape') return moveTargets(game, game.pendingEscape[0], 'escape')
@@ -205,7 +225,7 @@ export default function PlayTable() {
     if (tool === 'command') return moveTargets(game, commandPlayer, 'command')
     if (tool === 'scout') return moveTargets(game, actor.id, 'scout')
     return tool === 'move' ? moveTargets(game, actor.id) : []
-  }, [game, tool, commandPlayer, flagOrigin, flagGroup, ended, busy, needsDeal, paused, canAct])
+  }, [game, tool, commandPlayer, flagOrigin, flagGroup, ended, busy, needsDeal, paused, canAct, menu])
   const chooseTool = (next: Tool) => { clearChoice(); setTool(next); if (next === 'share') setInspected(actor.id) }
   const chooseCard = (i: number) => {
     if (busy || needsDeal || ended || paused) return
@@ -227,12 +247,13 @@ export default function PlayTable() {
     else if (tool === 'synergy') perform({ type: 'synergy', target: id })
     else perform({ type: 'move', target: id })
   }
-  const restart = () => {
+  const startGame = (options: GameMenuOptions) => {
     if (busyRef.current) return
-    const next = freshGame(); setSession(next); setDealt(Object.fromEntries(next.game.players.map(p => [p.id, 0])))
+    const next = freshGame(options, true); setSession(next); setDealt(Object.fromEntries(next.game.players.map(p => [p.id, 0])))
     setInspected(next.game.players[next.game.active].id); setCommandPlayer(next.game.players.find(p => p.id !== next.game.players[next.game.active].id)!.id)
-    clearChoice(); setPaused(false); setNotice(''); setFlagGroup([])
+    clearChoice(); setPaused(false); setMenu(false); setNotice(''); setFlagGroup([]); setWaterCue(null)
   }
+  const openMenu = () => { if (!busyRef.current) { setPaused(false); setMenu(true); setWaterCue(null) } }
   const advance = () => {
     if (tool === 'fortify' && selectedTiles.length) perform({ type: 'fortify', targets: selectedTiles })
     else if (game.phase === 'actions') perform({ type: 'finishActions' })
@@ -249,23 +270,24 @@ export default function PlayTable() {
   const isLocked = busy || needsDeal || paused || ended
   const nextLabel = selectedTiles.length ? `Củng cố ${selectedTiles.length} ô` : game.phase === 'actions' ? 'Hết hành động' : game.phase === 'draw' ? `Bốc Kế sách · ${game.drawsRemaining}` : game.phase === 'flood' ? `Bốc Biến động · ${game.floodRemaining}` : 'Chọn ô thoát'
 
-  return <div ref={root} className="wg-game" data-ready={unlocked} data-busy={busy || needsDeal} data-phase={game.phase} data-tool={tool}>
+  return <div ref={root} className="wg-game" data-ready={unlocked} data-busy={busy || (!menu && needsDeal)} data-menu={menu} data-phase={game.phase} data-tool={tool}>
     <Curtain ready={loading.ready} progress={loading.progress} failed={loading.failed} onRetry={() => setLoadAttempt(n => n + 1)} onOpen={opened} onComplete={unlock} />
-    <main className="wg-surface" inert={!unlocked || paused || ended}>
-      {unlocked && <Board game={game} targets={targets} selected={selectedTiles} onTile={clickTile} />}
-      <section className="wg-turn" aria-label="Lượt chơi"><span>Lượt {game.turn}</span><strong>{roleName(actor.id)}</strong>
+    <main className="wg-surface" inert={!unlocked || menu || paused || ended}>
+      {unlocked && session.started && <Board key={game.seed} game={game} targets={targets} selected={selectedTiles} onTile={clickTile} waterCue={waterCue} />}
+      <section className="wg-turn" aria-label="Lượt chơi"><span>Lượt {game.turn} · Vòng {Math.floor((game.turn - 1) / game.players.length) + 1}</span><strong>{roleName(actor.id)}</strong>
         <div aria-label={`Còn ${game.actionsLeft} hành động`}>{[1, 2, 3].map(i => <i key={i} data-used={i > game.actionsLeft}>◆</i>)}</div></section>
-      <div className="wg-players" aria-label="Bốn nhân vật trong ván">{game.players.map(p => <button type="button" key={p.id} className="wg-player" data-player={p.id} data-active={p.id === actor.id} aria-pressed={owner.id === p.id} disabled={busy || needsDeal} title={`${roleName(p.id)} · ${role(p.id).text}`} onClick={() => { setInspected(p.id); clearChoice() }}>
+      <div className="wg-players" aria-label={`${game.players.length} nhân vật trong ván`}>{game.players.map(p => <button type="button" key={p.id} className="wg-player" data-player={p.id} data-active={p.id === actor.id} aria-pressed={owner.id === p.id} disabled={busy || needsDeal} title={`${roleName(p.id)} · ${role(p.id).text}`} onClick={() => { setInspected(p.id); clearChoice() }}>
         <img src={role(p.id).image} alt={roleName(p.id)} /><span>{dealt ? dealt[p.id] || 0 : p.hand.length}</span></button>)}</div>
       <div className="wg-goals" aria-label="Bốn kế sách cần hoàn thành">{regularStrategyIds.map(id => <button type="button" key={id} data-goal={id} data-complete={game.completed.includes(id)} disabled={!canAct || !canComplete(game, id)} onClick={() => perform({ type: 'complete', strategy: id })} title={`${strategy(id).name}: cần 4 lá cùng loại tại ô tương ứng`}>
         <img src={strategy(id).image} alt={strategy(id).name} /><span>{game.completed.includes(id) ? '◆' : `${actor.hand.filter(c => c === id).length}/4`}</span></button>)}</div>
-      <section className="wg-water" aria-label="Thủy triều"><strong>Triều {Math.min(8, game.tide)}<small> / 8</small></strong><div className="wg-water-level" aria-label={`Thủy triều nấc ${game.tide}`}>{[1, 2, 3, 4, 5, 6, 7, 8].map(i => <i key={i} data-full={i <= game.tide} />)}</div>
+      <section className="wg-water" aria-label="Thủy triều"><strong>{game.tide > tideLimit ? 'Thất bại' : `Triều ${game.tide}`}<small> / {tideLimit}</small></strong><span className="wg-water-rate">{floodRate(game.difficulty, game.tide)} lá / lượt</span>
+        <figure className="wg-water-track"><img src={waterTrack} alt="Thang Thủy triều" /><span className="wg-water-marker" role="img" aria-label={`Dấu Thủy triều nấc ${game.tide}`} style={{ top: `${tideStops[Math.min(game.tide, tideLimit + 1) - 1] * 100}%` }}><i />{game.tide}</span></figure>
         {game.forecast && <p className="wg-forecast">Dự báo: {place(game.forecast).name}</p>}</section>
       <button type="button" className="wg-pause" disabled={busy || needsDeal} onClick={() => setPaused(true)} aria-label="Tạm dừng">Ⅱ</button>
       <section className="wg-piles" aria-label="Các bộ bài">{(['strategy', 'flood'] as const).map(kind => {
         const pile = kind === 'strategy' ? game.strategyDeck : game.floodDeck, discarded = kind === 'strategy' ? game.strategyDiscard : game.floodDiscard
         const last = discarded[discarded.length - 1]
-        const front = last && (kind === 'strategy' ? strategy(last).image : place(last).image)
+        const front = last && (kind === 'strategy' ? strategy(last).image : place(last).spiralImage)
         return <div className="wg-pile-group" key={kind}><button type="button" className="wg-deck" data-deck={kind} disabled={isLocked || !!overLimit || game.phase !== (kind === 'strategy' ? 'draw' : 'flood')} onClick={() => perform({ type: kind === 'strategy' ? 'drawStrategy' : 'drawFlood' })} aria-label={kind === 'strategy' ? 'Bốc Kế sách' : 'Bốc Biến động'}>
           <img src={kind === 'strategy' ? strategyBack : floodBack} alt={kind === 'strategy' ? 'Mặt sau Kế sách' : 'Mặt sau Biến động'} /><span>{pile.length}</span></button>
           <div className="wg-discard" data-deck={kind} aria-label={`Chồng bỏ ${kind === 'strategy' ? 'Kế sách' : 'Biến động'}`}>{front && <img src={front} alt="" />}<span>{discarded.length}</span></div>
@@ -295,11 +317,13 @@ export default function PlayTable() {
       {selected && <figure className="wg-card-readout"><img src={strategy(selected).image} alt={strategy(selected).name} /><figcaption>{strategy(selected).name}</figcaption></figure>}
       {notice && !ended && <p className="wg-notice" role="status">{notice}</p>}
     </main>
-    <CardFlight motion={flight} onComplete={finishFlight} />
-    {paused && !ended && <section className="wg-pause-screen" role="dialog" aria-modal="true" aria-label="Tạm dừng"><h2>TẠM DỪNG</h2><button type="button" autoFocus onClick={() => setPaused(false)}>Tiếp tục</button><button type="button" className="wg-restart" onClick={restart}>Chơi ván mới</button></section>}
-    {ended && <section className="wg-result" data-result={game.phase} role="dialog" aria-modal="true" aria-label={game.phase === 'won' ? 'Cả đội thắng' : 'Cả đội thua'}>
+    {waterCue && <div className="wg-water-cue" role="status" aria-live="polite"><svg aria-hidden="true" width="100%" height="100%"><path d={`M ${waterCue.from.x} ${waterCue.from.y} Q ${waterCue.to.x} ${waterCue.from.y} ${waterCue.to.x} ${waterCue.to.y}`} /><circle cx={waterCue.to.x} cy={waterCue.to.y} r="7" /></svg>{reduced && <img className="wg-water-static" src={place(waterCue.tile).spiralImage} alt={`Con nước: ${place(waterCue.tile).name}`} />}<div className="wg-water-caption"><strong>{place(waterCue.tile).name}</strong><span>{waterCue.status === 'danger' ? 'Ổn định → Nguy cấp' : 'Nguy cấp → Mất ô'}</span></div></div>}
+    <CardFlight motion={flight} onComplete={finishFlight} onArrive={() => queue.current[0]?.onArrive?.()} />
+    {unlocked && menu && <GameMenu initialPlayers={game.players.length as 4 | 5 | 6} initialDifficulty={game.difficulty} canResume={session.started && !ended} onResume={resume} onStart={startGame} />}
+    {!menu && paused && !ended && <section className="wg-pause-screen" role="dialog" aria-modal="true" aria-label="Tạm dừng"><h2>TẠM DỪNG</h2><button type="button" autoFocus onClick={() => setPaused(false)}>Tiếp tục</button><button type="button" className="wg-restart" onClick={openMenu}>Chơi ván mới</button></section>}
+    {!menu && ended && <section className="wg-result" data-result={game.phase} role="dialog" aria-modal="true" aria-label={game.phase === 'won' ? 'Cả đội thắng' : 'Cả đội thua'}>
       <div className="wg-result-cast">{game.players.map((p, i) => <img key={p.id} src={role(p.id).image} alt={roleName(p.id)} style={{ rotate: `${(i - 1.5) * 7}deg` }} />)}</div>
-      <h1>{game.phase === 'won' ? 'ĐẠI THẮNG' : 'THẾ TRẬN ĐÃ MẤT'}</h1><p>{game.lastEvent.text}</p><button type="button" autoFocus className="wg-restart" onClick={restart}>Chơi ván mới</button>
+      <h1>{game.phase === 'won' ? 'ĐẠI THẮNG' : 'THẾ TRẬN ĐÃ MẤT'}</h1><p>{game.lastEvent.text}</p><button type="button" autoFocus className="wg-restart" onClick={openMenu}>Chơi ván mới</button>
     </section>}
   </div>
 }

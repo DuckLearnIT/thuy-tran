@@ -1,0 +1,147 @@
+.wg-menu {
+  position: fixed;
+  z-index: 80;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: clamp(20px, 5vw, 72px);
+  overflow: auto;
+  color: var(--color-indigo, #15345f);
+  background: var(--color-river, #c9e1d5);
+  isolation: isolate;
+}
+
+.wg-menu::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(135deg, rgb(255 255 255 / 18%), transparent 46%);
+  content: '';
+  pointer-events: none;
+}
+
+.wg-menu *, .wg-menu *::before, .wg-menu *::after { box-sizing: border-box; }
+.wg-menu button, .wg-menu input { font: inherit; }
+.wg-menu button { cursor: pointer; }
+.wg-menu button:focus-visible, .wg-menu input:focus-visible {
+  outline: 3px solid var(--color-vermilion, #b5362b);
+  outline-offset: 4px;
+}
+
+.wg-menu-panel {
+  width: min(100%, 620px);
+  padding: clamp(28px, 5vw, 64px);
+  border: 1px solid rgb(35 21 17 / 16%);
+  background: var(--color-paper, #ecdcc0);
+  box-shadow: 0 12px 0 rgb(35 21 17 / 10%), 0 22px 50px rgb(21 52 95 / 16%);
+}
+
+.wg-menu-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: clamp(30px, 6vw, 54px);
+}
+
+.wg-menu-header h1 {
+  margin: 0;
+  color: var(--color-vermilion, #b5362b);
+  font-family: var(--font-display, Georgia, serif);
+  font-size: clamp(2.7rem, 8vw, 5.5rem);
+  font-weight: 400;
+  letter-spacing: .045em;
+  line-height: .9;
+}
+
+.wg-menu-mark {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  background: var(--color-vermilion, #b5362b);
+  transform: rotate(45deg);
+}
+
+.wg-menu-form { display: grid; gap: 32px; }
+.wg-menu-fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+.wg-menu-fieldset legend {
+  margin-bottom: 11px;
+  color: var(--color-indigo, #15345f);
+  font-family: 'Futura', sans-serif;
+  font-size: .78rem;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.wg-menu-options { display: grid; gap: 8px; }
+.wg-menu-options--players { grid-template-columns: repeat(3, 1fr); }
+.wg-menu-options--difficulty { grid-template-columns: repeat(4, 1fr); }
+.wg-menu-option { position: relative; min-width: 0; }
+.wg-menu-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+.wg-menu-option span {
+  display: grid;
+  min-height: 48px;
+  place-items: center;
+  padding: 8px 10px;
+  border: 1px solid rgb(21 52 95 / 28%);
+  color: var(--color-indigo, #15345f);
+  background: rgb(246 233 215 / 56%);
+  font-family: 'Futura', sans-serif;
+  font-size: .84rem;
+  text-align: center;
+  transition: background-color .18s ease, border-color .18s ease, color .18s ease, transform .18s ease;
+}
+.wg-menu-option:hover span { border-color: var(--color-indigo, #15345f); transform: translateY(-2px); }
+.wg-menu-option input:checked + span {
+  border-color: var(--color-vermilion, #b5362b);
+  color: var(--color-card, #f6e9d7);
+  background: var(--color-vermilion, #b5362b);
+  box-shadow: 0 3px 0 rgb(120 47 38 / 68%);
+}
+.wg-menu-option input:focus-visible + span { outline: 3px solid var(--color-indigo); outline-offset: 4px; }
+.wg-menu-note {
+  margin: -12px 0 0;
+  color: rgb(35 21 17 / 68%);
+  font-size: .8rem;
+  line-height: 1.5;
+}
+.wg-menu-actions { display: grid; gap: 11px; margin-top: 3px; }
+.wg-menu-actions button {
+  min-height: 50px;
+  border-radius: 2px;
+  padding: 10px 18px;
+  font-family: var(--font-display, Georgia, serif);
+  font-size: 1.25rem;
+  letter-spacing: .025em;
+}
+.wg-menu-primary {
+  border: 1px solid var(--color-vermilion, #b5362b);
+  color: var(--color-card, #f6e9d7);
+  background: var(--color-vermilion, #b5362b);
+  box-shadow: 0 3px 0 #782f26;
+}
+.wg-menu-primary:hover { transform: translateY(-2px); }
+.wg-menu-primary:active { transform: translateY(2px); box-shadow: 0 1px 0 #782f26; }
+.wg-menu-secondary {
+  border: 1px solid rgb(21 52 95 / 38%);
+  color: var(--color-indigo, #15345f);
+  background: transparent;
+}
+.wg-menu-secondary:hover { background: rgb(201 225 213 / 65%); }
+
+@media (max-width: 560px) {
+  .wg-menu { align-items: start; padding: 16px; }
+  .wg-menu-panel { padding: 28px 22px 24px; }
+  .wg-menu-header { margin-bottom: 34px; }
+  .wg-menu-options--difficulty { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wg-menu-option span, .wg-menu-primary { transition: none; }
+  .wg-menu-option:hover span, .wg-menu-primary:hover { transform: none; }
+}

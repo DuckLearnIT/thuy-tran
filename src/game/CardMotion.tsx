@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 import gsap from 'gsap'
 
 export type FlightRect = Pick<DOMRect, 'left' | 'top' | 'width' | 'height'>
@@ -11,24 +11,29 @@ export type CardMotion = {
   from: FlightRect
   to: FlightRect
   delay?: number
+  hold?: number
 }
 
 type CardMotionProps = {
   motion: CardMotion | null
   onComplete?: () => void
+  onArrive?: () => void
 }
 
 const finishRotation = (kind: CardMotion['kind']) => (kind === 'stack' ? 180 : kind === 'discard' || kind === 'share' ? 0 : 360)
 
-export default function CardMotion({ motion, onComplete }: CardMotionProps) {
+export default function CardMotion({ motion, onComplete, onArrive }: CardMotionProps) {
   const outerRef = useRef<HTMLDivElement>(null)
   const innerRef = useRef<HTMLDivElement>(null)
   const callbackRef = useRef(onComplete)
   const completedId = useRef<number | null>(null)
+  const arrivedId = useRef<number | null>(null)
+  const arrivalRef = useRef(onArrive)
 
   callbackRef.current = onComplete
+  arrivalRef.current = onArrive
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const outer = outerRef.current
     const inner = innerRef.current
     const current = motion
@@ -43,6 +48,11 @@ export default function CardMotion({ motion, onComplete }: CardMotionProps) {
     }
 
     const { from, to } = current
+    const arrive = () => {
+      if (arrivedId.current === current.id) return
+      arrivedId.current = current.id
+      arrivalRef.current?.()
+    }
     const endRotation = finishRotation(current.kind)
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const initialRotation = current.kind === 'discard' || current.kind === 'share' ? 0 : 180
@@ -68,7 +78,7 @@ export default function CardMotion({ motion, onComplete }: CardMotionProps) {
         rotation: 0,
       })
       gsap.set(inner, { rotationY: endRotation })
-      complete()
+      arrive(); complete()
       return
     }
 
@@ -87,6 +97,8 @@ export default function CardMotion({ motion, onComplete }: CardMotionProps) {
       duration: current.kind === 'stack' ? 0.2 : 0.6,
       ease: 'power1.inOut',
     }, 0.04)
+    timeline.call(arrive)
+    if (current.hold) timeline.to({}, { duration: current.hold })
 
     return () => {
       timeline.kill()

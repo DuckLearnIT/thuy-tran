@@ -3,12 +3,13 @@ import gsap from 'gsap'
 import { cards } from '../data/cards'
 import { locations } from '../data/locations'
 import useReducedMotion from '../hooks/useReducedMotion'
-import type { GameState } from './engine'
+import type { GameState, LocationStatus } from './engine'
+export type WaterCue = { tile: string; status: LocationStatus; applied: boolean; from: { x: number; y: number }; to: { x: number; y: number } }
 const role = (id: string) => cards.find(c => c.id === id)!
 const place = (id: string) => locations.find(c => c.id === id)!
 const roleName = (id: string) => [role(id).prefix, role(id).role].filter(Boolean).join(' ')
 
-function Pawn({ id, x, y, active }: { id: string; x: number; y: number; active: boolean }) {
+function Pawn({ id, x, y, active, size }: { id: string; x: number; y: number; active: boolean; size: number }) {
   const ref = useRef<HTMLDivElement>(null)
   const initial = useRef({ x, y })
   const reduced = useReducedMotion()
@@ -17,13 +18,14 @@ function Pawn({ id, x, y, active }: { id: string; x: number; y: number; active: 
     return () => { tween.kill() }
   }, [x, y, reduced])
   return <div ref={ref} className="wg-pawn" data-active={active} data-player={id} title={roleName(id)}
-    style={{ '--pawn-color': role(id).bg, '--pawn-accent': role(id).accent, left: `${initial.current.x}%`, top: `${initial.current.y}%` } as CSSProperties}>
+    style={{ '--pawn-color': role(id).bg, '--pawn-accent': role(id).accent, '--pawn-size': size, left: `${initial.current.x}%`, top: `${initial.current.y}%` } as CSSProperties}>
     <img src={role(id).image} alt={roleName(id)} draggable={false} />
   </div>
 }
 
-export default function Board({ game, targets, selected, onTile }: {
+export default function Board({ game, targets, selected, onTile, waterCue }: {
   game: GameState; targets: string[]; selected: string[]; onTile: (id: string) => void
+  waterCue?: WaterCue | null
 }) {
   const camera = useRef<HTMLDivElement>(null)
   const entryMotion = useRef<gsap.core.Tween | null>(null)
@@ -46,7 +48,8 @@ export default function Board({ game, targets, selected, onTile }: {
     <div className="wg-camera" ref={camera}>
       <div className="wg-board">
         {game.board.map(tile => <button type="button" key={tile.locationId} className="wg-tile" data-id={tile.locationId}
-          data-status={tile.status} data-target={targets.includes(tile.locationId)} data-selected={selected.includes(tile.locationId)}
+          data-status={waterCue?.tile === tile.locationId && waterCue.applied ? waterCue.status : tile.status}
+          data-hit={waterCue?.tile === tile.locationId} data-target={targets.includes(tile.locationId)} data-selected={selected.includes(tile.locationId)}
           style={{ gridRow: tile.row + 1, gridColumn: tile.col + 1 }} disabled={!targets.includes(tile.locationId)} onClick={() => onTile(tile.locationId)}
           aria-label={`${place(tile.locationId).name} · ${tile.status === 'stable' ? 'Ổn định' : tile.status === 'danger' ? 'Nguy cấp' : 'Đã mất'}${targets.includes(tile.locationId) ? ' · Có thể chọn' : ''}`}
           aria-pressed={selected.includes(tile.locationId)}>
@@ -59,9 +62,13 @@ export default function Board({ game, targets, selected, onTile }: {
         const tile = game.board.find(t => t.locationId === p.tile)!
         const together = game.players.filter(other => other.tile === p.tile)
         const i = together.findIndex(other => other.id === p.id)
-        const dx = together.length === 1 ? 0 : together.length <= 3 ? (i - (together.length - 1) / 2) * .3 : (i % 3 - 1) * .28
-        const dy = together.length > 3 ? (Math.floor(i / 3) - .5) * .32 : 0
-        return <Pawn key={p.id} id={p.id} x={(tile.col + .5 + dx) / 6 * 100} y={(tile.row + .5 + dy) / 6 * 100} active={(game.phase === 'escape' ? game.pendingEscape[0] : game.players[game.active].id) === p.id} />
+        const columns = together.length > 4 ? 3 : Math.min(2, together.length)
+        const row = Math.floor(i / columns), rows = Math.ceil(together.length / columns)
+        const rowCount = Math.min(columns, together.length - row * columns)
+        const dx = (i % columns - (rowCount - 1) / 2) * (columns === 3 ? .31 : .35)
+        const dy = (row - (rows - 1) / 2) * .35
+        const size = together.length > 4 ? .24 : together.length > 1 ? .28 : .33
+        return <Pawn key={p.id} id={p.id} size={size} x={(tile.col + .5 + dx) / 6 * 100} y={(tile.row + .5 + dy) / 6 * 100} active={(game.phase === 'escape' ? game.pendingEscape[0] : game.players[game.active].id) === p.id} />
       })}
     </div>
   </div>
