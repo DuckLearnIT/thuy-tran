@@ -5,7 +5,7 @@ export type FlightRect = Pick<DOMRect, 'left' | 'top' | 'width' | 'height'>
 
 export type CardMotion = {
   id: number
-  kind: 'strategy' | 'flood' | 'deal' | 'share' | 'discard'
+  kind: 'strategy' | 'flood' | 'deal' | 'share' | 'discard' | 'stack'
   front: string
   back: string
   from: FlightRect
@@ -18,7 +18,7 @@ type CardMotionProps = {
   onComplete?: () => void
 }
 
-const finishRotation = (kind: CardMotion['kind']) => (kind === 'discard' ? 180 : 360)
+const finishRotation = (kind: CardMotion['kind']) => (kind === 'stack' ? 180 : kind === 'discard' || kind === 'share' ? 0 : 360)
 
 export default function CardMotion({ motion, onComplete }: CardMotionProps) {
   const outerRef = useRef<HTMLDivElement>(null)
@@ -45,7 +45,7 @@ export default function CardMotion({ motion, onComplete }: CardMotionProps) {
     const { from, to } = current
     const endRotation = finishRotation(current.kind)
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const initialRotation = current.kind === 'discard' ? 0 : 180
+    const initialRotation = current.kind === 'discard' || current.kind === 'share' ? 0 : 180
     const rotation = current.kind === 'discard' ? -2 : 2
 
     gsap.set(outer, {
@@ -79,12 +79,12 @@ export default function CardMotion({ motion, onComplete }: CardMotionProps) {
       width: to.width,
       height: to.height,
       rotation,
-      duration: 0.62,
+      duration: current.kind === 'stack' ? 0.25 : 0.62,
       ease: 'power2.inOut',
     }, 0)
     timeline.to(inner, {
       rotationY: endRotation,
-      duration: 0.6,
+      duration: current.kind === 'stack' ? 0.2 : 0.6,
       ease: 'power1.inOut',
     }, 0.04)
 
@@ -99,6 +99,8 @@ export default function CardMotion({ motion, onComplete }: CardMotionProps) {
     <div
       ref={outerRef}
       className="wg-flight"
+      data-kind={motion.kind}
+      data-flight={motion.id}
       aria-hidden="true"
       style={{
         left: motion.from.left,

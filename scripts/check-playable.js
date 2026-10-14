@@ -1,65 +1,40 @@
-// Run in the local play.html developer console. Uses only this page's own UI.
+// Smoke/layout checks for the current desktop web game. Run in local play.html.
+// This script observes the current save without changing the game.
 ;(async () => {
-  const engine = await import('/src/game/engine.ts')
-  const { locations } = await import('/src/data/locations.ts')
-  const { cards } = await import('/src/data/cards.ts')
-  const catalog = { locations, roles: cards.map(c => c.id) }
-  const key = 'thuy-tran-playable-v1'
   let passed = 0
   const check = (ok, text) => { if (!ok) throw Error(text); passed++ }
-  const pause = () => new Promise(resolve => setTimeout(resolve, 70))
-  const saved = () => JSON.parse(localStorage.getItem(key))
-  const click = async selector => { const b = document.querySelector(selector); check(b && !b.disabled, `Available: ${selector}`); b.click(); await pause() }
-  const valid = () => check(engine.validateGame(saved(), catalog), 'Actual played state can reload')
-  check(document.querySelector('.pt-page[data-ready=true]'), 'Artwork curtain opened')
-  check(!document.querySelector('a[href], .site-header, .site-footer'), 'Standalone page has no links or old navigation')
-  if (document.querySelector('.pt-setup')) await click('.pt-setup-sheet button[type=submit]')
-  await new Promise(resolve => setTimeout(resolve, 1500))
-  check(document.querySelectorAll('.pt-tile').length === 24 && new Set([...document.querySelectorAll('.pt-tile')].map(t => t.dataset.id)).size === 24, 'All locations are distinct')
-  check([...document.querySelectorAll('.pt-paper img')].every(i => i.complete && i.naturalWidth === i.naturalHeight && i.naturalWidth > 0), 'Loaded square F1/F2 artwork')
-  const s = saved()
-  check(s.players.length >= 4 && s.players.length <= 6 && s.players.every(p => p.hand.length === 2), 'Correct players and starting hands')
-  check(JSON.stringify(s.board.reduce((a, t) => { a[t.row]++; return a }, [0, 0, 0, 0, 0, 0])) === '[2,4,6,6,4,2]', 'Centered board shape')
-  const fit = () => [...document.querySelectorAll('.pt-tile')].every(t => { const r = t.getBoundingClientRect(), f = document.querySelector('.pt-board-viewport').getBoundingClientRect(); return r.left >= f.left - 1 && r.right <= f.right + 1 && r.top >= f.top - 1 && r.bottom <= f.bottom + 1 })
-  const unfoldDeadline = performance.now() + 5000
-  while (!fit() && performance.now() < unfoldDeadline) await new Promise(r => setTimeout(r, 100))
-  check(fit(), 'Whole-board view does not crop edge locations after unfolding')
-  await click('.pt-tile[data-target=true]')
-  check(saved().actionsLeft === 2, 'Tile click spends exactly one movement action'); valid()
-  await click('.pt-hand-tools button:first-child')
-  check(JSON.stringify(saved()) === JSON.stringify(s), 'Undo restores exact state and seeded RNG')
-  await click('.pt-actions > button:nth-child(4)')
-  check(saved().forecast && saved().actionsLeft === 2, 'Forecast is a real top card'); valid()
-  await click('.pt-next'); check(saved().phase === 'draw' && saved().drawsRemaining === 2, 'Actions can end early')
-  await click('.pt-next'); check(saved().drawsRemaining === 1 || saved().phase === 'lost', 'First strategy is drawn separately'); valid()
-  if (saved().phase !== 'lost') {
-    await click('.pt-next'); check(saved().phase === 'flood', 'Second strategy leads to flooding'); valid()
-    const oldTurn = saved().turn
-    await click('.pt-next'); valid()
-    while (saved().phase === 'escape') await click('.pt-tile[data-target=true]')
-    while (saved().phase === 'flood') { await click('.pt-next'); while (saved().phase === 'escape') await click('.pt-tile[data-target=true]') }
-    check(saved().turn === oldTurn + 1 || saved().phase === 'lost', 'Flooding finishes before the next turn'); valid()
+  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+  const deadline = Date.now() + 20000
+  while (document.querySelector('.wg-game')?.dataset.ready !== 'true' || document.querySelector('.wg-game')?.dataset.busy !== 'false') {
+    if (Date.now() > deadline) throw Error('Game did not finish loading/dealing')
+    await sleep(100)
   }
-  await click('.pt-header .pt-toolbar > button:first-child')
-  check(document.querySelector('.pt-help').open, 'Rules dialog opens accessibly')
-  await click('.pt-help header button')
-  check(!document.querySelector('.pt-help').open, 'Rules dialog closes')
-  await click('.pt-toolbar > button:nth-child(2)')
-  check(document.querySelector('.pt-page').dataset.clean === 'true' && getComputedStyle(document.querySelector('.pt-hand-area')).display === 'none', 'Content view hides controls and hands')
-  window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })); await pause()
-  check(document.querySelector('.pt-page').dataset.clean === 'false', 'Escape restores controls')
-  if (!['lost', 'won'].includes(saved().phase)) {
-    const p = saved().players[saved().active]
-    if (p.hand.length) {
-      await click('.pt-hand > button:last-child')
-      const imported = saved(), actor = imported.players[imported.active]
-      imported.strategyDeck.push(...actor.hand.splice(0))
-      check(engine.validateGame(imported, catalog), 'Valid import fixture with same turn/actor and shorter hand')
-      const transfer = new DataTransfer(); transfer.items.add(new File([JSON.stringify(imported)], 'check.json', { type: 'application/json' }))
-      const input = document.querySelector('input[type=file]'); input.files = transfer.files; input.dispatchEvent(new Event('change', { bubbles: true })); await pause()
-      check(document.querySelector('.pt-page') && !document.querySelector('.pt-card-choices'), 'Import clears stale card selection without crashing'); valid()
-    }
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) await sleep(1500)
+  const { validateGame } = await import('/src/game/engine.ts')
+  const { locations } = await import('/src/data/locations.ts')
+  const { cards } = await import('/src/data/cards.ts')
+  const game = JSON.parse(localStorage.getItem('thuy-tran-webgame-v2'))
+  check(validateGame(game, { locations, roles: cards.map(c => c.id) }), 'Current game can be restored')
+  check(game.players.length === 4 && new Set(game.players.map(p => p.id)).size === 4, 'Exactly four distinct roles')
+  check(document.querySelectorAll('.wg-player').length === 4, 'Four hand selectors')
+  check(!document.querySelector('a[href], .site-header, .site-footer, input[type=file], .pt-setup'), 'Only gameplay, no site links or admin panels')
+  const tiles = [...document.querySelectorAll('.wg-tile')]
+  check(tiles.length === 24 && new Set(tiles.map(t => t.dataset.id)).size === 24, '24 distinct locations')
+  check(JSON.stringify(game.board.reduce((counts, tile) => { counts[tile.row]++; return counts }, [0,0,0,0,0,0])) === '[2,4,6,6,4,2]', 'Board shape')
+  const inside = r => r.left >= -1 && r.top >= -1 && r.right <= innerWidth + 1 && r.bottom <= innerHeight + 1
+  const intersects = (a,b) => Math.min(a.right,b.right)-Math.max(a.left,b.left) > 1 && Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top) > 1
+  const hud = [...document.querySelectorAll('.wg-turn,.wg-players,.wg-goals,.wg-water,.wg-piles,.wg-controls,.wg-hand-card,.wg-card-readout')]
+  for (const tile of tiles) {
+    const r = tile.getBoundingClientRect()
+    check(inside(r) && Math.abs(r.width-r.height) < 1.1, `Square card fits: ${tile.dataset.id}`)
+    check(hud.every(node => !intersects(r,node.getBoundingClientRect())), `HUD does not cover ${tile.dataset.id}`)
+    check(getComputedStyle(tile).borderRadius !== '0px', 'Rounded corners')
   }
-  check(document.documentElement.scrollWidth <= Math.ceil(document.documentElement.getBoundingClientRect().width) + 2, 'No horizontal page overflow')
-  return { passed, width: innerWidth, turn: saved().turn }
+  check([...document.querySelectorAll('.wg-paper img')].every(img => img.complete && img.naturalWidth > 0 && img.naturalWidth === img.naturalHeight), 'Both square artwork faces loaded')
+  check(document.querySelector('.wg-deck[data-deck=strategy] img').src.includes('back-ke-sach'), 'Actual red strategy back')
+  check(document.querySelector('.wg-deck[data-deck=flood] img').src.includes('back-the-nuoc'), 'Actual blue flood back')
+  check(hud.every(node => inside(node.getBoundingClientRect())), 'Necessary controls fit viewport')
+  check([...document.querySelectorAll('.wg-hand-card')].every(b => b.querySelector('img').naturalWidth > 0), 'Hand artwork loaded')
+  check(document.documentElement.scrollWidth <= innerWidth + 1 && document.documentElement.scrollHeight <= innerHeight + 1, 'One viewport without page overflow')
+  return { passed, viewport: `${innerWidth}×${innerHeight}`, board: Math.round(document.querySelector('.wg-board').getBoundingClientRect().width) }
 })()

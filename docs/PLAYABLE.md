@@ -1,87 +1,103 @@
-# Thủy Trận — bản playable trên desktop
+# Thủy Trận — web game trên desktop
 
 Mở `http://127.0.0.1:8443/play.html` khi server local chạy. Đây là entry riêng,
-không có liên kết từ hoặc về landing, trang luật, checkout hay footer.
-Không xuất bản trang này trong task tạo bản local.
+không liên kết với landing, trang luật, checkout hay footer. Chỉ commit/push
+code; không deploy khi chưa được yêu cầu.
 
-Ưu tiên desktop: bàn trận lớn ở giữa, hành động và tay bài bên trái, đội hình
-và dòng nước bên phải. Một màn hình chứa đủ bàn, tay bài và nút chuyển bước.
-Thanh trên cùng đánh dấu ba giai đoạn của lượt. Chọn lá trên tay để đọc ảnh lớn
-ở bên phải; các lựa chọn không liên quan được tạm ẩn, **Hủy chọn** đưa chúng
-trở lại. Mở **Tùy chọn** để tạo/mở/lưu ván hoặc đọc nhật ký.
+## Giao diện hiện tại — 14/10/2026
 
-## Dùng bàn chơi
+Theo yêu cầu mới nhất, trang chỉ còn gameplay. Bỏ thiết lập đội, mã seed, chọn
+độ khó, quản lý file, nhật ký, hoàn tác, camera thủ công và chế độ quay riêng.
+Không khôi phục những phần đó từ các ảnh/handoff cũ.
 
-1. Chọn 4–6 nhân vật, độ khó và mã bàn trận. Cùng mã, đội và độ khó tạo cùng
-   bàn, bài và thứ tự lượt. Các địa danh được xáo thật, xếp 2–4–6–6–4–2.
-2. Điều khiển cả đội trên một máy. Chỉ nhân vật đang có lượt làm hành động;
-   tay bài của mọi người vẫn xem được qua hàng thẻ nhân vật dưới bàn.
-3. Chọn hành động rồi chọn ô viền son. Nha Binh chọn tối đa hai ô rồi xác nhận;
-   Nha Tướng chọn đồng đội trước khi chọn đích. Hướng Đạo có nút năng lực riêng.
-4. Chọn Kế sách thường trong tay người có lượt để trao; chỉ người cùng ô nhận
-   được, trừ Quân Truyền Lệnh. Hoàn thành kế sách bằng nút tương ứng bên phải.
-5. Kết thúc sớm hoặc sau tối đa ba hành động, rút hai Kế sách lần lượt. Vượt năm
-   lá phải xử lý ngay. Chọn một lá rồi bỏ, hoặc dùng Gia Cố/Cờ Lệnh đúng lúc.
-6. Công bố từng Biến động riêng. Có thể dùng Hiệp lực hoặc bài đặc biệt trước
-   lá tiếp theo. Ô mất có quân thì phải chọn đường thoát trước khi tiếp tục.
+- Ván mới tự chọn ngẫu nhiên **4 vai khác nhau trong 6 nhân vật**, xáo 24 địa
+  danh và chia hai Kế sách mỗi người. Mặc định độ khó Làm quen: triều 1, bốn
+  ô Nguy cấp, 27 Kế sách gồm hai Triều Biến. Engine vẫn hỗ trợ độ khó khác,
+  nhưng giao diện không có bộ chọn.
+- Bàn lớn ở giữa, giữ hình 2–4–6–6–4–2 và tất cả lá trong khung. HUD nằm ngoài
+  vùng tranh: lượt/ba hành động, bốn vai và tiến độ kế sách ở trái; dòng nước,
+  bộ bài và Hiệp lực ở phải; tay bài xòe ở góc dưới.
+- Cạnh bàn 808px tại 1280×900, 988px tại 1840×1080, 820px tại 1280×1080,
+  628px tại 1280×720 và 530px tại 920×900. Màn hẹp ưu tiên giữ điều khiển
+  không che tranh; mobile không phải mục tiêu của phiên bản này.
+- Chỉ ô viền son nhận thao tác. Chọn lá trên tay để xem ảnh lớn và dùng/trao;
+  Hủy chọn hoặc Escape trở lại thao tác thường. Hover nâng nhẹ lá trên tay.
+- Nút tạm dừng hoặc Escape mở Tiếp tục/Chơi ván mới. Màn kết quả hiển thị
+  thắng hoặc thua do engine xác định, lý do và nút bắt đầu ván khác.
 
-## Quay và lưu
+## Chơi chung trên một máy
 
-- **Toàn bàn / Theo quân / Zoom / Góc nghiêng:** điều khiển camera bằng layout
-  và GSAP, không phóng raster bằng scale. Không có pin hay bắt cuộn trong game.
-- **Quay content:** ẩn điều khiển, tay bài và viền gợi ý; bàn lớn hơn. Thanh
-  thao tác ở mép dưới hiện khi hover/focus. **Escape** đưa về giao diện đầy đủ.
-  Đây là chế độ trình bày, không ghi video hoặc thay luật/rút bài.
-- **Toàn màn hình:** dùng khả năng fullscreen của trình duyệt nếu được hỗ trợ.
-- Tự lưu riêng vào `localStorage` với khóa `thuy-tran-playable-v1`. Tải lại mở
-  đúng ván. Storage bị chặn thì ván vẫn chạy trong bộ nhớ.
-- **Tùy chọn → Lưu file ván / Mở ván:** xuất/nhập JSON dưới 1 MB, kiểm tra dữ liệu
-  trước khi nhận. File không chứa ảnh; cần cùng bộ tài nguyên và phiên bản code.
-- **Hoàn tác:** tối đa 40 bước trong phiên đang mở, giữ cả trạng thái RNG nên
-  rút lại cùng lá. Lịch sử hoàn tác không lưu khi tải lại hoặc mở file.
-- **Ván mới:** mở thiết lập; có thể quay về ván đang chơi trước khi bắt đầu ván
-  mới. Ván mới thay bản tự lưu, nên xuất file trước nếu muốn giữ nhiều ván.
+1. Hàng bốn nhân vật cho xem tay bài từng người; chỉ người đang có lượt làm
+   hành động. Chọn hành động rồi chọn ô viền son.
+2. Nha Binh chọn một hoặc hai ô rồi xác nhận. Nha Tướng chọn đồng đội rồi ô
+   đến. Hướng Đạo dùng Đi bất kỳ một lần trong lượt. Thám Quân có đích chéo;
+   Thuyền Nhẹ có thể vượt các ô Nguy cấp/khoảng trống liên tiếp.
+3. Chọn Kế sách thường của người có lượt để trao. Người nhận phải cùng ô,
+   trừ Quân Truyền Lệnh được trao từ xa. Các người nhận không hợp lệ bị khóa.
+4. Nút tiến độ kế sách sáng khi đủ bốn lá và đứng tại một địa danh tương ứng.
+   Bấm để hoàn thành, bỏ bốn lá và nhận một Hiệp lực.
+5. Sau 0–3 hành động, bốc hai Kế sách riêng. Vượt năm lá thì phải bỏ bớt hoặc
+   dùng bài đặc biệt; game giữ đúng giai đoạn đang chờ.
+6. Bốc Biến động từng lá theo triều. Có thể dùng Gia Cố/Cờ Lệnh/Hiệp lực trước
+   lần bốc tiếp theo. Khi ô bị loại có quân, chọn đường thoát trước khi tiếp tục.
+7. Hoàn thành bốn kế sách, đưa cả đội về Lương Xâm và dùng Cờ Lệnh để thắng.
+   Mất bản doanh, mất cả hai ô của một kế sách chưa hoàn thành, không thể thoát
+   hoặc nước vượt nấc cuối thì thua ngay.
 
-## Luật và phạm vi
+## Artwork và chuyển động
 
-Nội dung đối chiếu ngày 12/10/2026 với Google Doc người dùng cung cấp:
+- F1/F2 vuông bo góc 4% dùng cho địa danh. Không dùng F3, không thêm số lên tranh.
+- Mặt sau thật do người dùng cung cấp được sao chép nguyên ảnh vào
+  `src/assets/game/back-ke-sach.jpg` (sóng đỏ) và `back-the-nuoc.jpg` (sóng xanh).
+- GSAP trải 24 địa danh từ chồng, rồi chia tám lá Kế sách theo hai vòng. Bài
+  rút lật mặt, bay tới tay/vùng công bố; trao và bỏ giữ mặt trước. Xếp lại bộ
+  giữ mặt sau hướng lên. Ô bị loại và lá Biến động tương ứng rời khỏi bàn,
+  không bay vào chồng có thể xáo lại.
+- Xếp chồng được minh họa khi bộ hết và khi Triều Biến đưa chồng bỏ lên đầu.
+  Điều này vẫn chạy nếu phải xử lý tay sáu lá trước khi chuyển sang Biến động.
+- Một hàng đợi khóa thao tác trong lúc chuyển bài; state chỉ ghi nhận sau
+  chuyển động cuối. Reload giữa chuyển động trở về trạng thái trước thao tác,
+  không nhân đôi bài hoặc ghi kết quả một phần.
+- Giảm chuyển động hiện bố cục cuối và áp dụng thao tác ngay. Bàn phím có focus
+  rõ; vùng thông báo đọc kết quả. Tạm dừng/kết quả khóa nền và giữ focus trong hộp.
 
-- Hướng dẫn ngắn: tab `t.h3zldwgq6rwy`.
-- Hướng dẫn đầy đủ: tab `t.0`.
-- Document ID: `1WqryE88CVgMAJLq1xULrtpy2IznMl32enYt3hA5XkKE`.
+## Lưu và luật
 
-Tên và năng lực dùng quyết định mới nhất trong `src/data/cards.ts`, không suy
-từ chữ artwork cũ của Hướng Đạo/Thuyền Nhẹ. Ô xuất phát và kế sách lấy từ
-`locations.ts`. Gia Cố/Cờ Lệnh/Hiệp lực không tốn hành động. Cờ Lệnh không yêu
-cầu người giữ ở ô của nhóm được chuyển. Nha Binh được củng cố ô đang đứng.
-Hướng Đạo thoát đến ô bất kỳ còn tồn tại, độc lập với lần nhảy trong lượt;
-Thuyền Nhẹ thoát tới ô gần nhất còn tồn tại theo mỗi hướng thẳng.
+Tự lưu ván riêng với khóa `thuy-tran-webgame-v2` trong localStorage. Reload
+khôi phục ván bốn người hợp lệ, không chia lại tay đã lưu. JSON hỏng, ván không
+đủ bốn người hoặc storage bị chặn thì bắt đầu ván mới/chơi bằng bộ nhớ. Khóa
+`thuy-tran-playable-v1` của giao diện cũ được giữ nguyên, không tự chuyển đổi.
+Chơi ván mới thay bản v2 đang lưu.
 
-Hai lá Triều Biến cùng lượt tăng triều ngay từng lần, nhưng chỉ đưa chồng bỏ
-Biến động đã xáo lên trên một lần sau hai lượt rút Kế sách; phần dưới giữ
-nguyên. Không có công bố Biến động giữa hai lượt rút này. Bài/ô bị loại không
-quay lại. Bốn điều kiện thua được xử lý ngay, không chờ thoát hiểm nếu bản
-doanh hoặc kế sách bắt buộc đã mất.
+Engine thuần JSON và RNG theo seed không đổi trong task này. Nội dung đã đối
+chiếu với Google Doc `1WqryE88CVgMAJLq1xULrtpy2IznMl32enYt3hA5XkKE`, bản ngắn
+`t.h3zldwgq6rwy` và bản dài `t.0`. Năng lực ưu tiên quyết định mới nhất trong
+`src/data/cards.ts`, không suy từ chữ cũ trên artwork Hướng Đạo/Thuyền Nhẹ.
 
-Chỉ chơi chung trên một máy; không có mạng, tài khoản, đối thủ AI, tự chơi
-hoặc công cụ dựng thắng giả. Hình học thẻ và quân là DOM với GSAP/CSS 3D để
-giữ chữ/tranh rõ và thao tác bàn phím; không yêu cầu WebGL. Không sửa artwork,
-không thêm dependency. F1/F2 dùng trên bàn; F3 không được dùng ở trang này.
+Gia Cố/Cờ Lệnh/Hiệp lực không tốn hành động. Người giữ Cờ Lệnh không phải đứng
+cùng nhóm được chuyển. Hai Triều Biến tăng nước ngay từng lần nhưng chỉ xếp
+chồng bỏ Biến động lên trên một lần sau hai lượt rút Kế sách, giữ nguyên phần
+dưới. Không có Biến động giữa hai lượt rút. Ô bị loại không phục hồi.
+
+Chỉ chơi chung trên một máy. Không có tài khoản, API, đối thủ AI hoặc mạng.
+DOM, CSS 3D và GSAP giữ tranh rõ, không yêu cầu WebGL, không bắt cuộn hay pin.
 
 ## Code và kiểm tra
 
-- Entry: `play.html`, `src/play.tsx`; Vite build đồng thời `index.html` và
-  `play.html`, asset URL tương đối để hoạt động dưới thư mục con.
-- Luật: `src/game/engine.ts`; state JSON, chuyển trạng thái thuần, seeded RNG.
-- Giao diện: `src/game/PlayTable.tsx`, `src/game/play.css`, tái sử dụng Curtain,
-  font, dữ liệu và hook giảm chuyển động; không dùng Header/Footer của site.
-- Kiểm tra engine: `node scripts/check-playable-engine.ts` (Node hỗ trợ strip
-  TypeScript, local đang dùng Node 24).
-- Kiểm tra qua console của trang local đã mở curtain:
-  `scripts/check-playable.js`, `scripts/check-playable-ui-cases.js` và
-  `scripts/check-playable-layout.js` (đo layout desktop, tay sáu lá và menu).
-  Hai script có thay đổi ván local và nhập các fixture kiểm thử; chạy trên ván
-  thử riêng, không chạy trên ván content chưa lưu.
-- `npx tsc --noEmit`, `npm run build`; không chạy `npm run deploy`.
+- Entry `play.html` / `src/play.tsx`, build đồng thời với site cũ.
+- Luật `src/game/engine.ts`; UI `PlayTable.tsx`, bàn `Board.tsx`, chuyển bài
+  `CardMotion.tsx`, CSS riêng `.wg-*` trong `play.css`.
+- Engine: `node --experimental-strip-types scripts/check-playable-engine.ts`
+  và `scripts/check-webgame-engine.ts` (Node 24).
+- `scripts/check-playable.js` chạy trong console local: quan sát save, artwork,
+  tỉ lệ/bo góc, đủ 24 ô, các HUD không đè tranh và không tràn viewport.
+- `scripts/check-webgame.js` cung cấp `window.__webgameQA.setup(name)` và
+  `.test(name)`. Setup **thay save v2 bằng fixture**; phải sao lưu ván trước.
+  Chạy setup, reload, nạp lại script rồi test. Không có cửa nhập fixture trong UI.
+- Hai script QA `.pt-*` cũ cho import/menu/camera đã xóa vì UI đó bị bỏ.
+- `npx tsc --noEmit`, `npm run build`. Không chạy deploy.
 
-Các kiểm tra tự động không thay thế cân bằng độ khó của bản game in thực tế.
+Đã kiểm tra 13 tình huống qua Chromium/Codex In-app Browser (79 assertions),
+84 kiểm tra bố cục mỗi cỡ desktop nêu trên, chia đủ tám lá và khóa đầu vào,
+bàn phím/tạm dừng và giảm chuyển động. Kiểm tra engine cũ và random bốn vai
+qua 50 seed đạt. Chưa xác nhận trên engine trình duyệt khác hoặc thiết bị thật.
