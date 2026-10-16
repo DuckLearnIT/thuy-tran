@@ -4,6 +4,10 @@ Website giới thiệu board game chiến thuật Bạch Đằng, xây dựng b�
 
 Website: https://ducklearnit.github.io/thuy-tran/
 
+Đã cập nhật website chính ngày **16/10/2026**, gồm landing, Cách chơi và phiếu
+đặt trước. Bản playable `play.html` vẫn chỉ có trong code/local, không xuất bản
+trong đợt này. Pages tiếp tục lấy nhánh `gh-pages`, không deploy tự động khi push.
+
 Bản xem thử riêng: https://ducklearnit.github.io/thuy-tran-preview/
 
 Repo bản xem thử: https://github.com/DuckLearnIT/thuy-tran-preview. Ngày

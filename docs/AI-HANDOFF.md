@@ -10,6 +10,12 @@
 
 ## 1. Đọc phần này trước
 
+**Cập nhật phát hành 16/10/2026:** người dùng đã cho phép deploy website chính,
+trừ bản playable. Đã xuất bản code website từ `2d574ff` lên `origin/gh-pages`
+tại `ff4559e799f714460a002be7d0c67125f4e0bf09`, Pages báo `built`. Chỉ `index.html`
+và asset website được xuất bản; `play.html` trả 404. Các mốc phát hành cũ trong
+bảng/lịch sử bên dưới là snapshot trước đợt này. Task sau vẫn cần quyền deploy mới.
+
 | Mục | Trạng thái chính xác lúc bàn giao |
 | --- | --- |
 | Workspace | `C:\Users\Duck\Downloads\web` trên Windows, PowerShell |
@@ -590,3 +596,12 @@ Không có task phát triển nào còn mặc nhiên được phê duyệt. Back
 - Save vẫn `thuy-tran-webgame-v2`, schema version1; khôi phục mọi ván hợp lệ 4–6 người, chờ người dùng chọn Tiếp tục. Không ghi đè save khi chưa vào trận; khóa v1 giữ nguyên. QA có backup save trước fixture và khôi phục sau; không đưa backup/CSV Anki vào Git.
 - QA Chromium/IAB: 7 ca liên quan/57 assertions (F3 giữa, vòng4, cứu ngay, overflow, Triều+xếp bộ, escape và HQ loss); 5 lựa chọn menu đủ ba số người/bốn mức; 87 checks với sáu người tại 920/1280/1840px, chiều cao900/1080. Đã xem render và đường chỉ không bị che, thử reduced motion F3 tĩnh, Shift+Tab trong menu trả về nút Tiếp tục. Engine vòng4/5/6, chờ escape, Cờ Lệnh cuối vòng, cộng cả hai lần tăng, loss+metadata và bộ kiểm tra cũ đạt. Typecheck/build đạt; chưa xác nhận engine khác/thiết bị thật.
 - Ảnh `docs/qa/webgame-menu.png`, `webgame-flood-center.png`; vận hành `docs/PLAYABLE.md`. Chỉ commit/push origin/main, không deploy chính/preview.
+
+### Xuất bản website chính, loại playable — 16/10
+
+- Người dùng yêu cầu deploy GitHub Pages chính, **trừ phần game playable**. Giữ ván minh họa trên landing/trang luật và checkout phiếu mẫu; không bỏ nội dung giới thiệu luật chơi. Không deploy repo preview trong đợt này.
+- Vite mode `site` chỉ build entry `index.html`; `npm run build:site` dùng mode này. `predeploy` và workflow thủ công dùng build:site, nên không lọt `play.html`, JS/CSS game, water-track hoặc hai JPG back chỉ dành cho game. Build thường/dev vẫn giữ playable và toàn bộ code game trên main.
+- Không bật workflow, thêm trigger push hoặc đổi cấu hình Pages. Đọc GitHub API xác nhận nguồn vẫn `gh-pages` thư mục `/`, legacy. Dùng script gh-pages hiện có, chỉ định rõ repo `https://github.com/DuckLearnIT/thuy-tran.git` và branch `gh-pages`.
+- Typecheck/build:site đạt; artifact/remote release tree không có playable hoặc asset riêng của nó. Hero 46 checks đạt; Cách chơi/Đặt trước render đúng, không có ảnh lỗi hoặc lỗi console trong QA local. Reviewer kiểm tra ranh giới entry/bundle và build thường vẫn có game, build:site không có game.
+- Source config phát hành `2d574ff`; release commit `ff4559e799f714460a002be7d0c67125f4e0bf09`, Pages built. Đã mở trực tiếp `https://ducklearnit.github.io/thuy-tran/`, xác nhận JS `assets/index-BFVafKB7.js`, sáu nhân vật và không có ảnh lỗi; GET `play.html` trả 404. Ảnh online `docs/qa/main-release-2026-10-16.png`.
+- Bản playable/saves/assets nguồn không bị xóa. Preview riêng giữ nguyên. CSV Anki ngoài task không chạm; mọi task sau vẫn chỉ commit/push nếu chưa có yêu cầu deploy mới.
