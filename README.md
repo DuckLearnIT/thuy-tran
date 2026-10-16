@@ -18,7 +18,7 @@ Khi được yêu cầu cập nhật bản xem thử, chạy typecheck/build tr�
 
 ```sh
 npx tsc --noEmit
-npm run build
+npm run build:site
 npx gh-pages -d dist --dotfiles -r https://github.com/DuckLearnIT/thuy-tran-preview.git
 ```
 
@@ -53,3 +53,9 @@ npm run deploy
 ```
 
 Lệnh deploy build website và đẩy thư mục `dist` lên nhánh `gh-pages` của remote `origin`. GitHub Pages phục vụ nhánh `gh-pages`, thư mục gốc. Các tài nguyên dùng đường dẫn tương đối để hoạt động dưới `/thuy-tran/`.
+
+Từ 16/10/2026, `predeploy` dùng `build:site` (`vite build --mode site`) chỉ có
+entry `index.html`: landing, Cách chơi và phiếu đặt trước. **Không xuất bản
+web game `play.html`, bundle game hoặc ảnh chỉ dùng cho game.** Build thường
+`npm run build` và server local vẫn giữ cả website và playable. Workflow thủ
+công cũng dùng `build:site`, không bật deploy theo push hoặc đổi nguồn Pages.

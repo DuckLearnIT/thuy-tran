@@ -34,7 +34,7 @@ jobs:
       - name: Build project
         run: |
           npx tsc --noEmit
-          npm run build
+          npm run build:site
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

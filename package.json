@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:site": "vite build --mode site",
     "preview": "vite preview",
-    "predeploy": "npm run build",
+    "predeploy": "npm run build:site",
     "deploy": "gh-pages -d dist --dotfiles",
     "format": "oxfmt"
   },
