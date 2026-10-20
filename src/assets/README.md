@@ -28,8 +28,10 @@ cảnh mở hộp, trang luật, checkout và playable cùng dùng một bộ �
 72 ảnh địa danh: xem [quy ước F1/F2/F3](locations/README.md).
 Giữ ID, thứ tự và liên kết nhân vật/kế sách hiện tại.
 
-**Chữ trong hai PNG còn lệch luật đã chốt:** `linhthuyencard.png` ghi đi/củng cố/
-thoát hiểm đường chéo; `quantrinhsat.png` ghi chuyển bài từ xa. Bản cập nhật này
-thay artwork đúng nguồn, không đổi luật hoặc engine theo hai dòng đó. Luật hiện tại
-vẫn là Thuyền Nhẹ vượt nhiều ô Nguy cấp/khoảng trống; Hướng Đạo một lần trong lượt
-đến bất kỳ ô còn tồn tại. Cần sửa PNG nguồn nếu muốn chữ trên thẻ khớp luật.
+**Thuyền Nhẹ đã sửa:** bản `linhthuyencard.png` bổ sung ngày 20/10/2026 đã ghi
+đúng “Có thể vượt qua nhiều ô Nguy cấp/khoảng trống liên tiếp”, khớp luật/engine.
+
+**Hướng Đạo vẫn còn lệch luật đã chốt:** `quantrinhsat.png` ghi chuyển bài từ xa.
+Giữ artwork đúng nguồn, không đổi luật hoặc engine theo dòng đó. Luật hiện tại
+vẫn là Hướng Đạo một lần trong lượt đến bất kỳ ô còn tồn tại. Cần sửa PNG nguồn
+nếu muốn chữ trên thẻ khớp luật.

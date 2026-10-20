@@ -304,7 +304,7 @@ export default function CharacterAbilities() {
             <p className="rules-character-skill">{card.skill}</p>
             <details className="ability-explanation">
               <summary>
-                {boat || scout ? "Năng lực cập nhật" : "Năng lực"}
+                {scout ? "Năng lực cập nhật" : "Năng lực"}
               </summary>
               <p>{card.text}</p>
               {remote && (
@@ -332,7 +332,7 @@ export default function CharacterAbilities() {
                 </p>
               )}
             </details>
-            {(boat || scout) && (
+            {scout && (
               <p className="rules-note">
                 Áp dụng năng lực cập nhật; phần chữ trên tranh thẻ vẫn là bản
                 trước.

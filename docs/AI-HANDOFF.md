@@ -17,9 +17,12 @@ F1/F2/F3 địa danh từ ba thư mục `Nhân vật`, `Kế sáhc`, `tái màu`
 giải nguồn 1500×2078 cho phần chữ; địa danh giữ kích thước runtime hiện tại.
 Hai tên hiển thị đổi theo tranh: Bến Vận Chuyển Gỗ và Bãi Tập Kết; ID không đổi.
 Chỉ thay bộ thẻ, không thay tranh hero/stock, back, bìa hộp hay thang nước.
-Hai PNG Thuyền Nhẹ/Hướng Đạo vẫn ghi kỹ năng cũ khác quyết định trong luật;
-giữ artwork đúng nguồn, không thay engine hoặc luật đã chốt theo chữ trong PNG.
-Chi tiết mâu thuẫn và nguồn cần sửa được ghi ở README asset.
+PNG Thuyền Nhẹ đã được người dùng sửa và đồng bộ lại trong ngày 20/10:
+“Có thể vượt qua nhiều ô Nguy cấp/khoảng trống liên tiếp”, đúng luật/engine.
+Đã bỏ ghi chú “tranh thẻ vẫn là bản trước” riêng ở minh họa Thuyền Nhẹ;
+Hướng Đạo vẫn giữ ghi chú đó. Typecheck/build và kiểm tra render đều đạt.
+PNG Hướng Đạo vẫn ghi chuyển bài từ xa; giữ artwork đúng nguồn, không thay engine
+hoặc luật đã chốt theo chữ trong PNG. Chi tiết nguồn cần sửa ở README asset.
 Chưa deploy; các ghi nhận nguồn artwork/tên trước đây bên dưới là lịch sử.
 
 QA lần thay artwork: 85 WebP decode được, hash riêng biệt, đúng kích thước/alpha;
