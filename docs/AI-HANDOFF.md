@@ -23,7 +23,8 @@ PNG Thuyền Nhẹ đã được người dùng sửa và đồng bộ lại tro
 Hướng Đạo vẫn giữ ghi chú đó. Typecheck/build và kiểm tra render đều đạt.
 PNG Hướng Đạo vẫn ghi chuyển bài từ xa; giữ artwork đúng nguồn, không thay engine
 hoặc luật đã chốt theo chữ trong PNG. Chi tiết nguồn cần sửa ở README asset.
-Chưa deploy; các ghi nhận nguồn artwork/tên trước đây bên dưới là lịch sử.
+Đã deploy website chính ngày 20/10, xem mốc phát hành ngay dưới; các ghi nhận
+nguồn artwork/tên trước đây bên dưới là lịch sử.
 
 QA lần thay artwork: 85 WebP decode được, hash riêng biệt, đúng kích thước/alpha;
 typecheck, build thường và build:site đạt. Chromium đã nạp đủ 93 ảnh chung
@@ -36,6 +37,17 @@ scrollWidth báo rộng dư 2px, chưa sửa CSS ngoài phạm vi asset và chư
 đây là regression. Đã xem thẻ nhân vật ở desktop và 390px. Ảnh đối chiếu:
 `docs/qa/cards-refresh-2026-10-20.png`, `cards-refresh-mobile-2026-10-20.png`,
 `locations-refresh-2026-10-20.png`.
+
+**Cập nhật phát hành 20/10/2026:** người dùng cho phép deploy bộ artwork mới.
+Nguồn `cc27668`; phát hành `771701a3bef6d1ec68ac66aaf166a7f941da3447` lên
+`origin/gh-pages`, vẫn legacy/source `/`, workflow custom vẫn disabled.
+Typecheck/build:site đạt; bản xuất chỉ có website, không có `play.html` hoặc
+bundle/asset riêng của game. Không cập nhật repo preview. Bundle website mới:
+`assets/index-stIpRcFI.js`; Thuyền Nhẹ mới: `assets/thuyen-nhe-C1sIOmvn.webp`.
+Pages đã báo `built` cho đúng commit phát hành. Kiểm tra trực tiếp trang Cách chơi
+online: bundle/ảnh đúng hash mới, Thuyền Nhẹ 1500×2078, không còn ghi chú tranh cũ,
+không có ảnh DOM lỗi. `https://ducklearnit.github.io/thuy-tran/play.html` trả 404.
+Ảnh xác nhận: `docs/qa/main-release-2026-10-20.png`. Task sau vẫn cần quyền deploy mới.
 
 **Cập nhật phát hành 16/10/2026:** người dùng đã cho phép deploy website chính,
 trừ bản playable. Đã xuất bản code website từ `2d574ff` lên `origin/gh-pages`
