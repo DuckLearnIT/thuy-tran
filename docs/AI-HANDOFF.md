@@ -10,6 +10,30 @@
 
 ## 1. Đọc phần này trước
 
+**Cập nhật artwork 20/10/2026:** thay 6 thẻ nhân vật, 7 kế sách và đủ 72 ảnh
+F1/F2/F3 địa danh từ ba thư mục `Nhân vật`, `Kế sáhc`, `tái màu` trong
+`C:\Users\Duck\Downloads\FULL ASSEST GAME`. Xem mapping ở
+`src/assets/README.md`; giữ màu/alpha gốc, WebP q90. Nhân vật/kế sách giữ độ phân
+giải nguồn 1500×2078 cho phần chữ; địa danh giữ kích thước runtime hiện tại.
+Hai tên hiển thị đổi theo tranh: Bến Vận Chuyển Gỗ và Bãi Tập Kết; ID không đổi.
+Chỉ thay bộ thẻ, không thay tranh hero/stock, back, bìa hộp hay thang nước.
+Hai PNG Thuyền Nhẹ/Hướng Đạo vẫn ghi kỹ năng cũ khác quyết định trong luật;
+giữ artwork đúng nguồn, không thay engine hoặc luật đã chốt theo chữ trong PNG.
+Chi tiết mâu thuẫn và nguồn cần sửa được ghi ở README asset.
+Chưa deploy; các ghi nhận nguồn artwork/tên trước đây bên dưới là lịch sử.
+
+QA lần thay artwork: 85 WebP decode được, hash riêng biệt, đúng kích thước/alpha;
+typecheck, build thường và build:site đạt. Chromium đã nạp đủ 93 ảnh chung
+(gồm 85 thẻ), không có ảnh lỗi trên landing/luật/checkout/menu game. Kiểm tra hộp
+3D đạt 14 assertions; địa danh reduced-motion đạt 223 checks. Script địa danh
+được cập nhật tên và sửa assertion Escape đã lỗi thời (component dùng
+`data-expanded` trên section, không có `aria-expanded` trên từng face).
+Ở nhánh animation, thao tác/lật/đảo chiều đều chạy qua; assertion cuối về
+scrollWidth báo rộng dư 2px, chưa sửa CSS ngoài phạm vi asset và chưa kết luận
+đây là regression. Đã xem thẻ nhân vật ở desktop và 390px. Ảnh đối chiếu:
+`docs/qa/cards-refresh-2026-10-20.png`, `cards-refresh-mobile-2026-10-20.png`,
+`locations-refresh-2026-10-20.png`.
+
 **Cập nhật phát hành 16/10/2026:** người dùng đã cho phép deploy website chính,
 trừ bản playable. Đã xuất bản code website từ `2d574ff` lên `origin/gh-pages`
 tại `ff4559e799f714460a002be7d0c67125f4e0bf09`, Pages báo `built`. Chỉ `index.html`

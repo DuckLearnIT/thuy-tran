@@ -161,7 +161,7 @@ export const matchScenes = [
   {
     title: "Đi để cùng phối hợp.",
     label: "Hành động 1 / 3",
-    text: "Sau vài lượt, Nha Binh đã giữ ba Cọc Ngầm. Đến lượt Quân Truyền Lệnh: đi từ Bãi tiếp lương sang Bến Tập Kết, một ô liền kề theo cạnh.",
+    text: "Sau vài lượt, Nha Binh đã giữ ba Cọc Ngầm. Đến lượt Quân Truyền Lệnh: đi từ Bãi tiếp lương sang Bãi Tập Kết, một ô liền kề theo cạnh.",
     note: "Di chuyển tốn một hành động. Ô Nguy cấp vẫn đi vào được.",
     focus: ["bai-tiep-luong", "ben-tap-ket"],
   },
@@ -169,7 +169,7 @@ export const matchScenes = [
   {
     title: "Giữ lại một bến.",
     label: "Hành động 2 / 3",
-    text: "Từ Bến Tập Kết, Quân Truyền Lệnh củng cố Bãi tiếp lương liền kề: lật mặt Nguy cấp về Ổn định.",
+    text: "Từ Bãi Tập Kết, Quân Truyền Lệnh củng cố Bãi tiếp lương liền kề: lật mặt Nguy cấp về Ổn định.",
     note: "Củng cố tốn một hành động; không thể khôi phục ô đã mất.",
     focus: ["bai-tiep-luong"],
   },
@@ -201,7 +201,7 @@ export const matchScenes = [
   {
     title: "Kế sách đầu tiên.",
     label: "Lượt tiếp theo",
-    text: "Đến lượt Nha Binh: đi từ Bến Chuyển Gỗ sang Bãi cọc ngầm, rồi bỏ bốn Cọc Ngầm để hoàn thành. Hai việc tốn hai hành động; cả đội nhận một dấu Hiệp lực.",
+    text: "Đến lượt Nha Binh: đi từ Bến Vận Chuyển Gỗ sang Bãi cọc ngầm, rồi bỏ bốn Cọc Ngầm để hoàn thành. Hai việc tốn hai hành động; cả đội nhận một dấu Hiệp lực.",
     note: "Mỗi kế sách có hai ô phù hợp. Chỉ cần một ô còn tồn tại để thực hiện.",
     focus: ["ben-chuyen-go", "bai-coc-ngam", "bai-chuan-bi-coc"],
   },

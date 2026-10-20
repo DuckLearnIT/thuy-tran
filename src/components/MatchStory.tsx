@@ -85,7 +85,7 @@ const scenePrompts = [
   {
     brief: "24 địa danh. Bốn người. Cùng một mục tiêu.",
 
-    action: "Đi tới Bến Tập Kết",
+    action: "Đi tới Bãi Tập Kết",
 
     target: "ben-tap-ket",
   },
@@ -237,9 +237,9 @@ const shots = [
 const basicPhases = [0, 1, 2, 3, 4, 5, 9]
 const basicCopy: Record<number, { title: string; caption: string; note: string }> = {
   0: { title: "Cùng một đội.", caption: "Hoàn thành bốn kế sách. Cùng trở về doanh.", note: "24 địa danh được xáo khi chơi. Đây là một bố trí minh họa." },
-  1: { title: "Đi tới đồng đội.", caption: "Đi sang một ô liền kề, theo chiều ngang hoặc dọc.", note: "Một lần đi tốn một hành động. Quân Truyền Lệnh đến Bến Tập Kết, nơi Nha Binh đang đứng." },
+  1: { title: "Đi tới đồng đội.", caption: "Đi sang một ô liền kề, theo chiều ngang hoặc dọc.", note: "Một lần đi tốn một hành động. Quân Truyền Lệnh đến Bãi Tập Kết, nơi Nha Binh đang đứng." },
   2: { title: "Cứu một bến.", caption: "Củng cố ô Nguy cấp ở chỗ mình hoặc liền kề.", note: "Tốn một hành động. Bãi Tiếp Lương được lật về mặt Ổn định." },
-  3: { title: "Cùng ô. Trao bài.", caption: "Đứng cùng ô mới trao được một lá kế sách thường.", note: "Quân Truyền Lệnh và Nha Binh cùng đứng ở Bến Tập Kết. Trao một lá tốn một hành động. Ngoại lệ kỹ năng được giải thích trong luật đầy đủ." },
+  3: { title: "Cùng ô. Trao bài.", caption: "Đứng cùng ô mới trao được một lá kế sách thường.", note: "Quân Truyền Lệnh và Nha Binh cùng đứng ở Bãi Tập Kết. Trao một lá tốn một hành động. Ngoại lệ kỹ năng được giải thích trong luật đầy đủ." },
   4: { title: "Rút hai lá.", caption: "Làm 0–3 hành động, rồi rút hai lá Kế sách.", note: "Đây là bước tiếp theo trong lượt. Quy tắc giới hạn bài và bài đặc biệt nằm trong luật đầy đủ." },
   5: { title: "Nước lên.", caption: "Rút Biến động: ô Ổn định bị gọi tên lật sang Nguy cấp.", note: "Lượt chơi theo thứ tự: hành động → rút Kế sách → rút Biến động. Bãi Tiếp Lương vừa được củng cố lại bị nước tác động." },
   9: { title: "Cùng thắng.", caption: "Hoàn thành bốn kế sách. Cả đội về doanh. Dùng Cờ Lệnh.", note: "Đích đến sau nhiều lượt, không phải kết quả của riêng lượt vừa xem. Xem luật đầy đủ để biết cách hoàn thành kế sách và các điều kiện thắng, thua." },
@@ -258,7 +258,7 @@ function BasicContext({ phase }: { phase: number }) {
     </div> : <div className="match-basic-art" data-count={art.length}>
       {art.map(card => <img key={card.id} src={card.image} alt={"name" in card ? card.name : roleName(card.id)} />)}
     </div>}
-    <p className="match-basic-detail">{phase === 0 ? "Cọc Ngầm · Dò Luồng · Mai Phục · Nghi Binh" : phase === 3 ? "Quân Truyền Lệnh và Nha Binh cùng ở Bến Tập Kết." : phase === 4 ? "Hai lá mới cho lượt tiếp theo." : phase === 9 ? "Cả đội cùng trở về Đại bản doanh." : phase === 5 ? "Lật sang mặt Nguy cấp." : "Mỗi lần đi hoặc củng cố tốn 1 hành động."}</p>
+    <p className="match-basic-detail">{phase === 0 ? "Cọc Ngầm · Dò Luồng · Mai Phục · Nghi Binh" : phase === 3 ? "Quân Truyền Lệnh và Nha Binh cùng ở Bãi Tập Kết." : phase === 4 ? "Hai lá mới cho lượt tiếp theo." : phase === 9 ? "Cả đội cùng trở về Đại bản doanh." : phase === 5 ? "Lật sang mặt Nguy cấp." : "Mỗi lần đi hoặc củng cố tốn 1 hành động."}</p>
   </aside>
 }
 

@@ -68,7 +68,7 @@
   check(!root.querySelector('.spiral-folio'), 'Number badges are removed from the artwork')
   check(locations.every(card => card.meaning && card.story && (!card.characterId || cards.some(c => c.id === card.characterId))
     && (!card.strategyId || strategies.some(s => s.id === card.strategyId))), 'Meaning, stories and current game references are complete')
-  check(['Cửa Nam Triệu', 'Bến Chuyển Gỗ', 'Bến Tập Kết'].every(name => locations.some(card => card.name === name)),
+  check(['Cửa Nam Triệu', 'Bến Vận Chuyển Gỗ', 'Bãi Tập Kết'].every(name => locations.some(card => card.name === name)),
     'Renamed places match the redesigned artwork')
   check(triggers.length === (staticScene ? 0 : 1), 'Only one chapter trigger, none for static scene')
   check(faces.every((face, index) => {
@@ -139,7 +139,7 @@
   detail.querySelector('.location-face-actions button').click()
   await settle(() => detail.querySelector('.location-flip').dataset.back === 'false')
   faces[13].dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
-  await settle(() => faces[13].getAttribute('aria-expanded') === 'false')
+  await settle(() => !detail.open && root.dataset.expanded === 'false')
   check(!detail.open && document.documentElement.style.overflow !== 'hidden', 'Escape closes detail and restores scrolling')
   faces[13].focus({ preventScroll: true })
   await settle(() => document.activeElement === faces[13])
