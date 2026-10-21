@@ -103,6 +103,17 @@
     const matrix = (i) => new DOMMatrix(getComputedStyle(faces[i].parentElement).transform)
     check(matrix(11).m43 < 0 && matrix(10).m43 < matrix(11).m43, 'Cards curve progressively into 3D depth')
     check(matrix(11).m41 < matrix(12).m41 && matrix(13).m41 > matrix(12).m41, 'Spiral wraps around the selected card')
+    if (scene.clientWidth >= 640) {
+      const planes = faces.map(face => face.parentElement)
+      const visible = planes.filter(plane => getComputedStyle(plane).visibility === 'visible')
+      const front = visible.filter(plane => +getComputedStyle(plane).opacity > 0.7)
+      const bounds = front.map(plane => plane.getBoundingClientRect())
+      const span = Math.max(...bounds.map(r => r.right)) - Math.min(...bounds.map(r => r.left))
+      check(visible.length === 17, 'Wide helix reveals both the front arc and the returning rear arc')
+      check(span >= scene.clientWidth * 0.7, 'Front arc fills the desktop scene instead of clustering in the center')
+      check(matrix(6).m43 < matrix(10).m43 && getComputedStyle(planes[6]).pointerEvents === 'none',
+        'Returning arc stays deeper and does not intercept front-card clicks')
+    }
   }
   else check(faces.filter((face) => getComputedStyle(face.parentElement).visibility === 'visible').length === 1, 'Static view presents one clear card')
   faces[12].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }))

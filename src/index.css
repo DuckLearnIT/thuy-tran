@@ -448,11 +448,11 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
 .spiral-heading p { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.2em; opacity: 0.75; }
 .spiral-heading h2 { font-size: clamp(2.4rem, 5vw, 4rem); margin-top: 0.65rem; }
 .spiral-scene {
-  --tile: min(30vw, 27svh, 250px);
+  --tile: min(22vw, 30svh, 270px);
   position: relative;
   flex: 1;
   min-height: 0;
-  perspective: 1000px;
+  perspective: clamp(1400px, 120vw, 2400px);
   touch-action: pan-y;
   cursor: grab;
 }

@@ -10,6 +10,21 @@
 
 ## 1. Đọc phần này trước
 
+**Vòng địa danh rộng hơn — 21/10/2026:** theo ảnh tham khảo của người dùng,
+spiral desktop (scene rộng từ 640px) mở đường kính theo chiều ngang khả dụng,
+giảm bước góc và độ dốc để thấy cả cung trước lẫn cung quay về phía sau. Ở giữa
+bộ có 17 thẻ hiện thay vì 9; cung trước chiếm khoảng 96–101% chiều ngang scene
+tại 920/1280/1840px, lá chọn vẫn nằm trọn giữa heading và caption. Chỉ thay
+hình học/CSS perspective, giữ artwork, nền xanh sông, bảy slice trên mặt thẻ,
+pin 4.2 viewport, scrub/snap, drag, bàn phím và dialog F1/F2. Không thêm blur,
+dependency hoặc cơ chế cuộn. Mobile và reduced motion giữ cách trình bày cũ.
+QA: xem render desktop, đo lá chọn vừa khung ở 920×900, 1280×720, 1840×900,
+390×844; thử kéo thật từ thẻ 13 sang 14, không mở nhầm dialog hoặc rời chương.
+Các kiểm tra vòng rộng/chọn/lật/bàn phím trong `check-locations.js` chạy qua;
+assertion cuối về tràn ngang toàn trang vẫn báo dư 2px như lần QA trước.
+Reduced motion 390px đạt đủ 223 checks; typecheck/build đạt. Ảnh:
+`docs/qa/locations-wide-helix-desktop.jpg`. Chỉ commit/push, **chưa deploy**.
+
 **Cập nhật artwork 20/10/2026:** thay 6 thẻ nhân vật, 7 kế sách và đủ 72 ảnh
 F1/F2/F3 địa danh từ ba thư mục `Nhân vật`, `Kế sáhc`, `tái màu` trong
 `C:\Users\Duck\Downloads\FULL ASSEST GAME`. Xem mapping ở

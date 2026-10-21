@@ -71,21 +71,27 @@ export default function Locations() {
       position.current = index
       const selected = Math.round(clamp(index))
       const tile = planes[0].offsetWidth
-      const radius = Math.min(scene.current!.clientWidth * 0.32, tile * 1.32)
+      const wide = scene.current!.clientWidth >= 640
+      const radius = wide
+        ? (scene.current!.clientWidth - tile * 0.7) * 0.64
+        : Math.min(scene.current!.clientWidth * 0.32, tile * 1.32)
+      const reach = wide ? 8.5 : 4.5
       planes.forEach((plane, i) => {
         const d = i - index
-        const angle = d * 0.88
+        const angle = d * (wide ? 0.5 : 0.88)
         const depth = Math.cos(angle)
-        const visible = animated ? Math.abs(d) < 4.5 : i === selected
-        const x = Math.sin(angle) * radius - d * tile * 0.045
-        const y = d * tile * 0.27 + Math.sin(angle) * tile * 0.09
-        const z = (depth - 1) * radius
+        const visible = animated ? Math.abs(d) < reach : i === selected
+        const x = Math.sin(angle) * radius - d * tile * (wide ? 0.025 : 0.045)
+        const y = d * tile * (wide ? 0.14 : 0.27) + Math.sin(angle) * tile * 0.09
+        const z = (depth - 1) * radius * (wide ? 0.8 : 1)
         plane.style.transform = animated
-          ? `translate(-50%, -50%) translate3d(${x}px, ${y}px, ${z}px) rotateY(${-Math.sin(angle) * 32}deg) rotateZ(${Math.sin(angle) * 8}deg)`
+          ? `translate(-50%, -50%) translate3d(${x}px, ${y}px, ${z}px) rotateY(${-Math.sin(angle) * (wide ? 44 : 32)}deg) rotateZ(${Math.sin(angle) * (wide ? 5 : 8)}deg)`
           : 'translate(-50%, -50%)'
-        plane.style.opacity = visible ? String(animated ? Math.min(1, (4.5 - Math.abs(d)) / 1.5) : 1) : '0'
+        plane.style.opacity = visible ? String(animated
+          ? Math.min(1, (reach - Math.abs(d)) / 1.5) * (wide ? 0.46 + Math.max(0, depth) * 0.54 : 1)
+          : 1) : '0'
         plane.style.visibility = visible ? 'visible' : 'hidden'
-        plane.style.setProperty('--card-order', String(Math.round(100 - Math.abs(d) * 10)))
+        plane.style.setProperty('--card-order', String(Math.round(wide ? 100 + depth * 50 - Math.abs(d) : 100 - Math.abs(d) * 10)))
         plane.style.pointerEvents = visible && Math.abs(d) < 3 ? 'auto' : 'none'
         plane.style.setProperty('--card-light', String(0.65 + (depth + 1) * 0.175))
       })
