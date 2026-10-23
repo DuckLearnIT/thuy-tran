@@ -10,6 +10,19 @@
 
 ## 1. Đọc phần này trước
 
+**Giá bán và dải tên — 23/10/2026:** người dùng đã chốt giá **599.000₫/bộ**.
+`sales.unitPrice` trong `src/data/checkout.ts` là `599000`; checkout tính tạm
+tính theo số lượng, Finale đọc cùng nguồn giá. Phí vận chuyển, lịch giao và
+ngân hàng vẫn `null`, tổng cộng chưa hiển thị số khi thiếu phí ship. Vẫn là
+phiếu mẫu, chưa gửi đơn/thu tiền hoặc mở đặt trước thật. Đã sửa lời nhắc cũ
+“mở khi có giá” cho đúng trạng thái này; `AGENTS.md` đã cập nhật giá.
+Riêng marquee trang trí trong `Manifesto.tsx` dùng tên không dấu để tránh dấu
+bị cắt ở cỡ chữ lớn, theo lựa chọn người dùng cho phép. Không đổi tên có dấu
+trong data, thẻ, heading và các phần đọc; vẫn giữ `aria-hidden` cho marquee lặp.
+QA checkout đạt 75 checks ở 1280×720 qua đủ ba lượt reload: giá một bộ,
+2/3 bộ, giới hạn số lượng, chỉnh sửa, nháp/hỏng storage và không có QR giả.
+Đã xem render marquee/giá; typecheck/build đạt. Chỉ commit/push, **chưa deploy**.
+
 **Vòng địa danh rộng hơn — 21/10/2026:** theo ảnh tham khảo của người dùng,
 spiral desktop (scene rộng từ 640px) mở đường kính theo chiều ngang khả dụng,
 giảm bước góc và độ dốc để thấy cả cung trước lẫn cung quay về phía sau. Ở giữa

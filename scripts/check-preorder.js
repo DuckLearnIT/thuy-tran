@@ -4,6 +4,7 @@
 (async () => {
   const DRAFT = 'thuy-tran.checkout.v1'
   const QA = 'thuy-tran.checkout.qa'
+  const { priceLabel } = await import('/src/data/checkout.ts')
   const phase = JSON.parse(sessionStorage.getItem(QA) || 'null')
   let passed = phase?.passed || 0
   const check = (ok, message) => { if (!ok) throw Error(message); passed++ }
@@ -88,7 +89,9 @@
   check(root.querySelector('[aria-label="Tăng số bộ game"]').disabled && root.querySelector('output').value === '99', 'Quantity cannot exceed 99')
   for (let i = 0; i < 98; i++) await click('[aria-label="Giảm số bộ game"]')
   check(root.querySelector('output').value === '01', 'Quantity returns to one')
+  check(root.querySelector('.po-totals dd').textContent === priceLabel(599000), 'Published unit price is 599000 VND')
   await click('[aria-label="Tăng số bộ game"]')
+  check(root.querySelectorAll('.po-totals dd')[1].textContent === priceLabel(1198000), 'Two copies cost 1198000 VND before shipping')
   fits()
   await click('.po-submit')
   check(current() === '2' && new URLSearchParams(location.search).get('step') === '2', 'Continue opens delivery and updates URL')
@@ -124,7 +127,8 @@
   await click('.po-submit')
   check(current() === '3', 'Valid delivery with no email reaches review')
   check(root.querySelector('address').textContent.includes('12 Đường thử'), 'Review includes the complete address')
-  check([...root.querySelectorAll('.po-totals dd')].every((value) => value.textContent === 'Chưa công bố'), 'Missing amounts do not become zero or a fake total')
+  const reviewAmounts = [...root.querySelectorAll('.po-totals dd')].map((value) => value.textContent)
+  check(reviewAmounts[0] === priceLabel(1198000) && reviewAmounts.slice(1).every((value) => value === 'Chưa công bố'), 'Subtotal uses the published price; unknown shipping, grand total and date remain unpublished')
   check(root.querySelector('.po-payment').textContent.includes('Chưa mở thanh toán') && !root.querySelector('.po-payment img, .po-payment canvas, .po-payment svg'), 'No usable payment QR is rendered')
   check(!/[?&](name|phone|email|address|province|ward)=/.test(location.search), 'Personal information never enters the URL')
   await click('.po-summary:first-of-type .po-edit')

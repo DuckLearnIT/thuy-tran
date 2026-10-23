@@ -23,7 +23,7 @@ export const sales: {
   deliveryDate: string | null
   bank: { name: string; account: string; holder: string } | null
 } = {
-  product: 'Thủy Trận', unitPrice: null, shippingFee: null, deliveryDate: null, bank: null,
+  product: 'Thủy Trận', unitPrice: 599000, shippingFee: null, deliveryDate: null, bank: null,
 }
 
 export const deliveryFields: { name: DeliveryField; label: string; autoComplete: string; placeholder: string; maxLength: number; optional?: boolean; type?: string }[] = [

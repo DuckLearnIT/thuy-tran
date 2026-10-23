@@ -219,7 +219,7 @@ export default function Preorder() {
                     </div>
                   </fieldset>
                   <dl className="po-totals"><div><dt>Giá một bộ</dt><dd>{priceLabel(sales.unitPrice)}</dd></div><div><dt>Tạm tính · {draft.quantity} bộ</dt><dd>{priceLabel(amount.subtotal)}</dd></div><div><dt>Lịch giao dự kiến</dt><dd>{sales.deliveryDate ?? 'Chưa công bố'}</dd></div></dl>
-                  <p className="po-note">Bạn có thể điền thử phiếu. Đặt trước sẽ mở khi có giá và lịch giao.</p>
+                  <p className="po-note">Bạn có thể điền thử phiếu. Lịch giao và thời điểm mở đặt trước sẽ được thông báo sau.</p>
                 </>}
                 {step === '2' && <>
                   <p className="po-intro">Giao trong Việt Nam. Các ô có dấu * là bắt buộc.</p>

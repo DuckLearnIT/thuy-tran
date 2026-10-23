@@ -4,7 +4,7 @@ import Wave from './Wave'
 import { cards } from '../data/cards'
 import useReducedMotion from '../hooks/useReducedMotion'
 
-const roles = [...new Set(cards.map((c) => c.role))]
+const roles = [...new Set(cards.map((c) => c.role.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/Đ/g, 'D').replace(/đ/g, 'd')))]
 const opening = 'Hoằng Thao là đứa trẻ khờ dại, đem quân từ xa đến, quân lính còn mỏi mệt, lại nghe Công Tiễn đã chết, không có người làm nội ứng, đã mất vía trước rồi.'
 const closing = 'Quân ta lấy sức còn khỏe địch với quân mỏi mệt, tất phá được.'
 const source = 'https://baotanglichsuquocgia.vn/vi/Articles/2002/68092/ky-niem-1075-nam-11-938-11-2013-chien-thang-bach-djang-lan-thu-nhat.html'

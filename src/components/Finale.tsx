@@ -10,6 +10,8 @@ import Wave from "./Wave"
 
 import { cards } from "../data/cards"
 
+import { priceLabel, sales } from "../data/checkout"
+
 import useReducedMotion from "../hooks/useReducedMotion"
 
 export default function Finale() {
@@ -206,7 +208,7 @@ export default function Finale() {
             <span aria-hidden="true" className="nav-diamond" />
           </a>
           <p className="f-fade finale-sales-note">
-            Giá và lịch giao sẽ được công bố khi mở đặt trước.
+            Giá một bộ: {priceLabel(sales.unitPrice)}. Lịch giao sẽ được công bố sau.
           </p>
         </div>
       </div>
