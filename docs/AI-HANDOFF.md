@@ -10,6 +10,17 @@
 
 ## 1. Đọc phần này trước
 
+**Phát hành website chính — 23/10/2026:** người dùng đã yêu cầu deploy. Nguồn
+`0f4ff71`, release `1c3d7814ec7bb6e28567a1c8996a17ef4b7d4117` trên `origin/gh-pages`,
+gồm giá 599.000₫, marquee không dấu và vòng địa danh rộng. Typecheck/build:site
+đạt; gói xuất không có `play.html`, bundle hoặc asset riêng của game. Giữ Pages
+legacy/`gh-pages`/`/`, workflow custom disabled; không cập nhật repo preview.
+Bundle mới `assets/index-CEIfR3k6.js`, CSS `assets/index-10HxLaYy.css`.
+Pages báo `built` cho đúng release. Đã xác nhận checkout online hiển thị giá
+599.000₫, landing dùng bundle mới, marquee không dấu và ghi chú giá cùng nguồn;
+`play.html` tiếp tục trả HTTP 404. Ảnh: `docs/qa/main-release-price-2026-10-23.jpg`.
+Các task tiếp theo vẫn cần yêu cầu deploy mới.
+
 **Giá bán và dải tên — 23/10/2026:** người dùng đã chốt giá **599.000₫/bộ**.
 `sales.unitPrice` trong `src/data/checkout.ts` là `599000`; checkout tính tạm
 tính theo số lượng, Finale đọc cùng nguồn giá. Phí vận chuyển, lịch giao và
@@ -21,7 +32,7 @@ bị cắt ở cỡ chữ lớn, theo lựa chọn người dùng cho phép. Kh�
 trong data, thẻ, heading và các phần đọc; vẫn giữ `aria-hidden` cho marquee lặp.
 QA checkout đạt 75 checks ở 1280×720 qua đủ ba lượt reload: giá một bộ,
 2/3 bộ, giới hạn số lượng, chỉnh sửa, nháp/hỏng storage và không có QR giả.
-Đã xem render marquee/giá; typecheck/build đạt. Chỉ commit/push, **chưa deploy**.
+Đã xem render marquee/giá; typecheck/build đạt. Đã deploy theo mốc 23/10 ở trên.
 
 **Vòng địa danh rộng hơn — 21/10/2026:** theo ảnh tham khảo của người dùng,
 spiral desktop (scene rộng từ 640px) mở đường kính theo chiều ngang khả dụng,
@@ -36,7 +47,7 @@ QA: xem render desktop, đo lá chọn vừa khung ở 920×900, 1280×720, 1840
 Các kiểm tra vòng rộng/chọn/lật/bàn phím trong `check-locations.js` chạy qua;
 assertion cuối về tràn ngang toàn trang vẫn báo dư 2px như lần QA trước.
 Reduced motion 390px đạt đủ 223 checks; typecheck/build đạt. Ảnh:
-`docs/qa/locations-wide-helix-desktop.jpg`. Chỉ commit/push, **chưa deploy**.
+`docs/qa/locations-wide-helix-desktop.jpg`. Đã deploy trong đợt 23/10.
 
 **Cập nhật artwork 20/10/2026:** thay 6 thẻ nhân vật, 7 kế sách và đủ 72 ảnh
 F1/F2/F3 địa danh từ ba thư mục `Nhân vật`, `Kế sáhc`, `tái màu` trong
