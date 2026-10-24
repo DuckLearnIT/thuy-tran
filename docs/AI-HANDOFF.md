@@ -10,6 +10,15 @@
 
 ## 1. Đọc phần này trước
 
+**Góc đen thẻ địa danh trong hộp — 24/10/2026:** hai material F1/F2 của 24 ô
+trong `boxScene.ts` trước đây không alpha-test, làm RGB đen ở vùng alpha thấp
+của artwork hiện thành góc tối. Thêm `alphaTest: 0.5` cho cả hai mặt, giống
+thẻ nhân vật/kế sách đã có; giữ hình học bo 4%, cạnh giấy, màu và artwork.
+`check-box-locations.js` bổ sung phép đo pixel vùng góc (loại bóng mờ): bắt
+được lỗi trước sửa, về 0 pixel lỗi sau sửa. Đủ 15 checks scene, typecheck/build
+đạt; đã xem render desktop. Ảnh `docs/qa/box-location-corners-fixed-2026-10-24.jpg`.
+Chỉ commit/push, **chưa deploy**.
+
 **Phát hành website chính — 23/10/2026:** người dùng đã yêu cầu deploy. Nguồn
 `0f4ff71`, release `1c3d7814ec7bb6e28567a1c8996a17ef4b7d4117` trên `origin/gh-pages`,
 gồm giá 599.000₫, marquee không dấu và vòng địa danh rộng. Typecheck/build:site

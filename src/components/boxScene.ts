@@ -299,9 +299,10 @@ export function createBoxScene({ canvas, cover, cards, extra, locations }: Opts)
     const group = new THREE.Group()
     group.rotation.order = 'YXZ'
     group.add(new THREE.Mesh(paperGeometry, paperMaterial))
-    const front = new THREE.Mesh(faceGeometry, new THREE.MeshBasicMaterial({ map: loadTex(card.image), toneMapped: false }))
+    // Discard transparent artwork corners so black RGB padding cannot cover the paper.
+    const front = new THREE.Mesh(faceGeometry, new THREE.MeshBasicMaterial({ map: loadTex(card.image), alphaTest: 0.5, toneMapped: false }))
     front.position.z = 0.008
-    const back = new THREE.Mesh(faceGeometry, new THREE.MeshBasicMaterial({ map: loadTex(card.back), toneMapped: false }))
+    const back = new THREE.Mesh(faceGeometry, new THREE.MeshBasicMaterial({ map: loadTex(card.back), alphaTest: 0.5, toneMapped: false }))
     back.rotation.y = Math.PI
     back.position.z = -0.008
     group.add(front, back)

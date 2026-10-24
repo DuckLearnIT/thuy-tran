@@ -86,8 +86,23 @@
     await seek(start + phase * 0.15)
     check('Location stack arrives before the board spreads', Math.abs(state.locationsReveal - 3 / 11) < 0.01 && state.locationsExit === 0)
     await seek(timeline.labels['locations-showcase'])
-    const boxes = cardsInPicture(await picture())
+    const showcase = await picture()
+    const boxes = cardsInPicture(showcase)
     check(`Rendered canvas shows 24 separated faces at once (found ${boxes.length})`, boxes.length === 24)
+    let blackCornerPixels = 0
+    for (const box of boxes) {
+      const corner = Math.max(2, Math.ceil(Math.min(box.maxX - box.minX, box.maxY - box.minY) * 0.05))
+      for (let y = box.minY; y <= box.maxY; y++) {
+        if (y > box.minY + corner && y < box.maxY - corner) continue
+        for (let x = box.minX; x <= box.maxX; x++) {
+          if (x > box.minX + corner && x < box.maxX - corner) continue
+          const pixel = (y * showcase.width + x) * 4
+          if (showcase.data[pixel + 3] > 48 && showcase.data[pixel] < 8
+            && showcase.data[pixel + 1] < 8 && showcase.data[pixel + 2] < 8) blackCornerPixels++
+        }
+      }
+    }
+    check(`Rounded tile corners contain no black texture pixels (found ${blackCornerPixels})`, blackCornerPixels === 0)
     check('All 24 faces fit inside the viewport', boxes.every(box => box.minX > 4 && box.minY > 4
       && box.maxX < canvas.clientWidth - 5 && box.maxY < canvas.clientHeight - 5))
     check('Card artwork stays approximately square in the slightly tilted board', boxes.every(box => {
