@@ -129,14 +129,29 @@
   await pick(12)
   faces[13].click()
   await settle(() => selected() === 13 && resting())
-  const width = faces[13].getBoundingClientRect().width
   faces[13].click()
-  await settle(() => faces[13].getBoundingClientRect().width > width * 1.15)
-  const zoom = faces[13].getBoundingClientRect()
-  check(faces[13].getAttribute('aria-label') === `Thu nhỏ tranh F3 của địa danh ${locations[13].name}`
-    && zoom.left >= 0 && zoom.right <= innerWidth + 1 && zoom.top >= 0 && zoom.bottom <= innerHeight, 'Zoom is announced and stays on screen')
   const detail = root.querySelector('.location-detail')
-  await settle(() => detail.open)
+  await frame()
+  const gsapUrl = performance.getEntriesByType('resource').find(entry => new URL(entry.name).pathname.endsWith('/gsap.js'))?.name
+  if (gsapUrl && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const { gsap } = await import(gsapUrl)
+    const flight = detail.querySelector('.location-flight')
+    const pickup = gsap.getTweensOf(flight)[0]?.parent
+    check(!!pickup, 'The selected card has a continuous pickup timeline')
+    for (const time of [0.3, 0.65]) {
+      pickup.pause(time)
+      check(getComputedStyle(flight).visibility !== 'hidden' && +getComputedStyle(flight).opacity === 1
+        && +getComputedStyle(detail.querySelector('.location-copy')).opacity === 1,
+      'Card and unfolding information never dissolve during the transition')
+    }
+    pickup.play()
+  }
+  await settle(() => detail.open && detail.dataset.phase === 'open')
+  check(getComputedStyle(faces[13]).visibility === 'hidden', 'Picked card leaves the helix while its detail is open')
+  check(detail.querySelector('.location-flight img:first-child').src.endsWith(locations[13].spiralImage)
+    && detail.querySelector('.location-flight img:last-child').src.endsWith(locations[13].image), 'The solid pickup card turns from the selected F3 into its matching F1')
+  check(getComputedStyle(detail.querySelector('.location-flight')).visibility === 'hidden'
+    && +getComputedStyle(detail.querySelector('.location-copy')).opacity === 1, 'Pickup hands off at the matching final pose without fading the information')
   check(detail.matches(':modal') && detail.contains(document.activeElement), 'Detail opens as a native modal with focus inside')
   const detailBounds = detail.getBoundingClientRect()
   check(detailBounds.left >= 0 && detailBounds.right <= innerWidth + 1 && detailBounds.top >= 0 && detailBounds.bottom <= innerHeight + 1
@@ -152,6 +167,8 @@
   faces[13].dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
   await settle(() => !detail.open && root.dataset.expanded === 'false')
   check(!detail.open && document.documentElement.style.overflow !== 'hidden', 'Escape closes detail and restores scrolling')
+  await settle(() => getComputedStyle(faces[13]).visibility === 'visible')
+  check(!detail.querySelector('.location-flight').getAttribute('style'), 'Closing clears transient pickup styles')
   faces[13].focus({ preventScroll: true })
   await settle(() => document.activeElement === faces[13])
   faces[13].dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }))
@@ -176,6 +193,15 @@
     await settle(() => !detail.open)
   }
   await pick(12)
-  check(document.documentElement.scrollWidth <= innerWidth, 'No horizontal page overflow')
+  const detailLink = root.querySelector('.spiral-detail-link')
+  detailLink.focus({ preventScroll: true })
+  detailLink.click()
+  await settle(() => detail.open)
+  detail.querySelector('.location-close').click()
+  await settle(() => !detail.open && document.activeElement === detailLink)
+  check(document.documentElement.style.overflow !== 'hidden', 'Closing during pickup restores scroll and focus to the launching button')
+  // Landing already permits a 2px background bleed; IAB can expose fractional CSS viewport widths.
+  check(document.documentElement.scrollWidth <= Math.ceil(document.documentElement.getBoundingClientRect().width) + 2,
+    'No page overflow beyond the existing background bleed')
   return { passed, viewport: `${innerWidth}×${innerHeight}`, staticScene }
 })()

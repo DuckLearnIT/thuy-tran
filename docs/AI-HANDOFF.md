@@ -10,6 +10,36 @@
 
 ## 1. Đọc phần này trước
 
+**Chuyển từ vòng địa danh sang chi tiết — 26/10/2026:** người dùng đưa mẫu
+manga trên X, muốn gợi cảm giác mở nhưng không biến giao diện thành sách.
+Sau phản hồi “animation → fade out → bảng”, đã bỏ dissolve và nền bảng lớn.
+`Locations.tsx` lấy đúng bounds lá F3 được chọn, ẩn lá gốc rồi dùng một thẻ hai
+mặt F3/F1 đi liên tục tới vị trí đọc, xoay 180°; thay bằng F1 thật ở đúng pose
+cuối, không crossfade. Phần thông tin xoay mở từ cạnh trái (desktop) hoặc mép
+trên (mobile), giữ nền giấy riêng. GSAP timeline 1,08s dùng lại khi đóng, nhanh
+hơn nhẹ; đang xem F2 thì mặt quay về lấy đúng F2. Không thêm dependency,
+ScrollTrigger hoặc thay pin/snap/drag của spiral.
+
+Dialog native giữ Escape, focus trap/return, backdrop click, khóa cuộn trang;
+thông tin đang gấp dùng inert tới lúc mở xong. Mỗi lần mở đưa vùng đọc về đầu.
+Reduced motion mở/đóng ngay. Resize hoàn tất và hủy tween theo bounds cũ;
+nếu ScrollTrigger refresh đổi lá chọn, dialog đóng theo hành vi chọn lá sẵn có.
+Đã cuộn nội dung khỏi pose ban đầu thì đóng trực tiếp để tránh bay theo tọa độ
+cũ. Xem F1/F2, nội dung và artwork giữ nguyên.
+
+QA Chromium/Codex In-app Browser: `check-locations.js` đạt **104 checks** ở
+1280×900 và viewport thường khoảng 934×728; **101** ở 390×844; **232** ở
+320×844 (spiral tĩnh nhưng chuyển mở còn hoạt động); **229** reduced motion
+390×844. Có kiểm tra giữa timeline không fade, native modal/focus, F1/F2,
+đóng giữa chừng, trả focus, chọn ngược và dọn inline style. Assertion tràn trang
+đã thống nhất với QA landing: lấy chiều rộng DOM làm tròn, cho đúng 2px bleed
+nền đã có; không sửa CSS tràn toàn trang ngoài phạm vi. Đã xem render giữa/cuối
+motion, thử Escape khi ở F2 và resize khi mở. Ảnh:
+`docs/qa/location-unfold-motion-2026-10-26.jpg`,
+`docs/qa/location-unfold-detail-2026-10-26.jpg`.
+Hồi quy hero đạt 46 checks. Typecheck/build đạt, vẫn có cảnh báo Vite config cũ. Chỉ commit/push
+**origin/main**, **chưa deploy** website chính hoặc preview.
+
 **Góc đen thẻ địa danh trong hộp — 24/10/2026:** hai material F1/F2 của 24 ô
 trong `boxScene.ts` trước đây không alpha-test, làm RGB đen ở vùng alpha thấp
 của artwork hiện thành góc tối. Thêm `alphaTest: 0.5` cho cả hai mặt, giống
