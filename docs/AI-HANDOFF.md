@@ -10,6 +10,15 @@
 
 ## 1. Đọc phần này trước
 
+**Phát hành website chính — 26/10/2026:** nguồn giao diện `167717a`, quy ước
+deploy lưu tại `d6feb5b`; release `6826eab914df3de83a35a2d2a3c6f744ee31685e`
+trên origin/gh-pages. Gồm chuyển mở địa danh liên tục và sửa góc đen thẻ trong
+hộp từ 24/10. Typecheck/build:site đạt; 117 file xuất không có playable hoặc
+asset riêng. Giữ Pages legacy/gh-pages/`/`, không bật workflow. Pages báo
+`built`; website đã nạp `assets/index-ZOD-LNEm.js`, CSS `index-DHivYC73.css`.
+Đã thử mở địa danh trên website thật; `play.html` trả 404. Repo preview không
+đổi. Ảnh online `docs/qa/main-release-location-unfold-2026-10-26.jpg`.
+
 **Quy ước deploy mới — 26/10/2026:** người dùng yêu cầu “deploy đi bây giờ cứ
 xong 1 lần là auto deploy”. Từ mốc này, mỗi task chỉnh sửa hoàn tất kiểm tra
 phải commit/push origin/main rồi xuất bản **website chính** bằng build:site
