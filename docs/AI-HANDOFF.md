@@ -10,6 +10,15 @@
 
 ## 1. Đọc phần này trước
 
+**Quy ước deploy mới — 26/10/2026:** người dùng yêu cầu “deploy đi bây giờ cứ
+xong 1 lần là auto deploy”. Từ mốc này, mỗi task chỉnh sửa hoàn tất kiểm tra
+phải commit/push origin/main rồi xuất bản **website chính** bằng build:site
+lên origin/gh-pages, không hỏi lại. Đây là quyền deploy tiếp diễn, thay thế
+các ghi chú “chưa deploy/đợi yêu cầu mới” trong lịch sử bên dưới. Người dùng
+vẫn có thể yêu cầu riêng task nào giữ local. Không cần bật workflow hoặc đổi
+nguồn Pages; repo preview không tự cập nhật. Playable vẫn bị loại khỏi gói
+công khai theo yêu cầu cũ. AGENTS.md đã đồng bộ quy ước này.
+
 **Chuyển từ vòng địa danh sang chi tiết — 26/10/2026:** người dùng đưa mẫu
 manga trên X, muốn gợi cảm giác mở nhưng không biến giao diện thành sách.
 Sau phản hồi “animation → fade out → bảng”, đã bỏ dissolve và nền bảng lớn.

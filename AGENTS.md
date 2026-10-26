@@ -9,10 +9,13 @@ hành vi cần giữ, dữ liệu, lịch sử quyết định và cách kiểm 
   lại các quyết định đã có trong phiên. Chỉ làm trong phạm vi yêu cầu hiện tại.
 - Mỗi task chỉnh sửa hoàn thành phải commit và push. Remote đúng là `origin`
   (`DuckLearnIT/thuy-tran`); không dùng remote `song-lenh` cũ.
-- **Không deploy nếu người dùng chưa yêu cầu.** Push `main` chỉ lưu code.
-  GitHub Pages phải tiếp tục phục vụ bản đã xuất bản trên `gh-pages`.
-- Không tự bật workflow deploy, thêm trigger `push`, đổi cấu hình Pages hoặc
-  chạy `npm run deploy` để xử lý việc web công khai chưa có thay đổi local.
+- **Từ 26/10/2026, người dùng yêu cầu tự deploy sau mỗi task chỉnh sửa hoàn tất**
+  khi kiểm tra đạt: commit/push `origin/main`, rồi build:site và xuất bản lên
+  `origin/gh-pages` của website chính. Không cần hỏi lại cho từng task, trừ khi
+  người dùng yêu cầu giữ local/chưa deploy. Vẫn loại `play.html` và asset riêng
+  của playable khỏi gói công khai; không tự deploy repo preview.
+- Dùng quy trình deploy hiện có; không cần bật workflow, thêm trigger `push`
+  hoặc đổi cấu hình Pages để thực hiện quy ước trên.
 - Sau task kiểm tra kiểu dữ liệu/build và hành vi liên quan; với UI cần xem
   bản render ở kích thước phù hợp. Không chỉ dựa vào build để kết luận UI đạt.
 - Giữ GSAP/ScrollTrigger, Three.js và cơ chế snap hiện có. Không thêm scroll
