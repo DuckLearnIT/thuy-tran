@@ -566,7 +566,7 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
 .po-open:hover { background: #efbb66; }
 .po-open:hover span { transform: translate(3px, -3px); }
 .po-contents { display: flex; justify-content: center; gap: 1.4rem; margin-top: 1.5rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; }
-.po-order { position: relative; padding: clamp(1.5rem, 3vw, 2.5rem); background: var(--color-card); box-shadow: 2px 4px 8px #1a3a2612; border-radius: 2px; scroll-margin-top: 24px; }
+.po-order { position: relative; padding: clamp(1.5rem, 3vw, 2.5rem); background: var(--color-card); box-shadow: 2px 4px 8px #1a3a2612; border-radius: 2px; scroll-margin-top: 6rem; }
 .po-order::after { content: ''; position: absolute; bottom: 0; right: 0; width: 28px; height: 28px; background: linear-gradient(135deg, #d9c4a2 50%, var(--color-river) 50%); }
 .po-order h2 { font-size: clamp(2.8rem, 3.8vw, 3.5rem); margin-top: 1rem; padding-right: 75px; color: var(--color-vermilion); }
 .po-stamp { position: absolute; top: 3.4rem; right: clamp(1.5rem, 3vw, 2.5rem); display: grid; place-content: center; width: 76px; height: 76px; border: 2px solid currentColor; border-radius: 50%; color: var(--color-vermilion); font-size: 1.5rem; text-align: center; transform: rotate(12deg); }
