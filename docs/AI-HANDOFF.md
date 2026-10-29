@@ -10,14 +10,17 @@
 
 ## 1. Đọc phần này trước
 
-**Phát hành nhận đặt trước — 29/10/2026:** nguồn `ce2ab15`, release Pages
-`8d7e5d71b9d9ba74ea781ebba6d85620b9866d26` trên origin/gh-pages, trạng thái
-`built`. Website chính đã nạp `index-BxsvUtS1.js` và `index-D4a4rVMv.css`.
+**Phát hành nhận đặt trước — 29/10/2026:** nguồn `ce2ab15`, sửa khoảng dừng
+cuộn ở `17fb3ea`; release Pages `ff7ba261af13e721be1ad1b2fc53a28223c15cdb`
+trên origin/gh-pages, trạng thái `built`. Website chính đã nạp
+`index-CtZU0wnw.js` và `index-DClLEIUG.css`.
 Typecheck, build thường và build:site đạt. Gói site 117 file, không có playable
 hoặc asset riêng; GET `play.html` tiếp tục trả 404. Đã gửi một đăng ký thử
 hai bộ trực tiếp trên website công khai, thấy mã xác nhận và 1.198.000₫,
 đối chiếu đúng một hàng trong Sheets rồi xóa đúng dữ liệu thử. Ảnh bằng chứng
-`docs/qa/preorder-live-receipt-2026-10-29.jpg`. Website có thể nhận đăng ký thật;
+`docs/qa/preorder-live-receipt-2026-10-29.jpg`; bố cục cuối ở
+`docs/qa/preorder-live-form-2026-10-29.jpg`. Phiếu chừa 96px khi cuộn đến để
+không chèn thanh điều hướng cố định. Website có thể nhận đăng ký thật;
 chưa có thanh toán hoặc thư xác nhận tự động. Repo preview không cập nhật.
 
 **Đăng ký đặt trước thật — 29/10/2026:** thay phiếu mẫu ba bước bằng một form
