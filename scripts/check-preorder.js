@@ -1,154 +1,71 @@
-// Run in DevTools on a fresh ?page=dat-truoc tab, after the curtain opens.
-// When the result says reload, reload this tab and run the script again (3 runs total).
-// Uses only sample contact data; the page never submits an order.
+// Run only in a fresh localhost preorder QA tab, after its curtain opens.
+// Exercises invalid submits and stores a draft for one reload check. NEVER sends a valid registration.
 (async () => {
-  const DRAFT = 'thuy-tran.checkout.v1'
-  const QA = 'thuy-tran.checkout.qa'
-  const { priceLabel } = await import('/src/data/checkout.ts')
-  const phase = JSON.parse(sessionStorage.getItem(QA) || 'null')
-  let passed = phase?.passed || 0
-  const check = (ok, message) => { if (!ok) throw Error(message); passed++ }
+  if (!['127.0.0.1', 'localhost'].includes(location.hostname)) throw Error('Use a fresh localhost QA tab only')
+  const root = document.querySelector('.po-page')
   const frame = () => new Promise(requestAnimationFrame)
   const settle = async () => { await frame(); await frame() }
-  const root = document.querySelector('.po-page')
-  const current = () => root.querySelector('.po-step-panel')?.dataset.step
-  const click = async (selector) => { root.querySelector(selector).click(); await settle() }
+  let passed = 0
+  const check = (condition, message) => { if (!condition) throw Error(message); passed++ }
   const fill = async (name, value) => {
-    const input = root.querySelector(`[name="${name}"]`)
-    const prototype = input instanceof HTMLSelectElement ? HTMLSelectElement.prototype : input instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype
-    Object.getOwnPropertyDescriptor(prototype, 'value').set.call(input, value)
-    input.dispatchEvent(new Event(input instanceof HTMLSelectElement ? 'change' : 'input', { bubbles: true }))
+    const field = root.querySelector(`[name="${name}"]`)
+    const prototype = field instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype
+    Object.getOwnPropertyDescriptor(prototype, 'value').set.call(field, value)
+    field.dispatchEvent(new Event('input', { bubbles: true }))
     await settle()
-    input.dispatchEvent(new FocusEvent('focusout', { bubbles: true }))
+    field.dispatchEvent(new FocusEvent('focusout', { bubbles: true }))
     await settle()
   }
-  const historyMove = async (direction, expected) => {
-    const moved = new Promise((resolve) => window.addEventListener('popstate', resolve, { once: true }))
-    history[direction]()
-    await moved
-    await settle()
-    for (let i = 0; i < 120 && current() !== expected; i++) await frame()
-    check(current() === expected, `History ${direction} restores step ${expected}`)
-  }
-  const fits = () => {
-    check(document.documentElement.scrollWidth <= innerWidth, 'No horizontal page overflow')
-    check([...root.querySelectorAll('input, textarea, select, .po-submit')].every((el) => {
-      const box = el.getBoundingClientRect()
-      return box.width > 0 && box.width <= innerWidth && box.right <= innerWidth + 1
-    }), 'Fields and CTA fit the viewport')
-  }
-  check(root?.querySelector('.po-content:not([inert])'), 'Page unlocks after preloading')
-  check(root.querySelectorAll('.chapter-nav').length === 1 && root.querySelectorAll('.page-progress').length === 1, 'Checkout reuses one shared navbar and reading progress')
-  check([...root.querySelectorAll('.nav-chapters a')].map(a => a.getAttribute('href')).join() === './#top,./#loi-lenh,./#roles,./#ke-sach,./#dia-diem,?page=cach-choi'
-    && root.querySelector('.site-cta[href="./#nhan-lenh"]'), 'Original menu and Nhan lenh return to the right pages')
-  check(document.fonts.check('700 16px "NVN Yellost"'), 'Display font is ready')
-  check([...root.querySelectorAll('img')].every((img) => img.complete && img.naturalWidth > 0), 'All visible and hidden assets are ready')
-
-  if (phase?.name === 'reload') {
-    check(current() === 'preview', 'Reload restores the preview route')
-    check(root.querySelector('address').textContent.includes('34 Đường thử'), 'Reload restores delivery information')
-    check(root.querySelector('.po-product-small').textContent.includes('3 bộ'), 'Reload restores quantity')
-    await click('.po-reset')
-    check(current() === '1' && !sessionStorage.getItem(DRAFT), 'Deleting draft resets the flow and storage')
-    await historyMove('back', '1')
-    check(new URLSearchParams(location.search).get('step') === '1', 'Stale history cannot bypass the selection step')
-    sessionStorage.setItem(DRAFT, '{broken json')
-    history.replaceState(null, '', '?page=dat-truoc&step=preview')
-    sessionStorage.setItem(QA, JSON.stringify({ name: 'corrupt', passed }))
-    return { passed, reload: true, next: 'Reload and rerun to check corrupt draft recovery' }
-  }
-  if (phase?.name === 'corrupt') {
-    check(current() === '1', 'Corrupt draft safely falls back to the first step')
-    check(root.querySelector('output').value === '01', 'Corrupt draft never supplies an invalid quantity')
-    const original = Storage.prototype.setItem
-    try {
-      Storage.prototype.setItem = function () { throw new DOMException('Blocked for QA', 'SecurityError') }
-      await click('[aria-label="Tăng số bộ game"]')
-      check(root.querySelector('output').value === '02', 'Flow works with storage unavailable')
-      check(root.querySelector('.po-draft-status').textContent.includes('tải lại sẽ mất'), 'Unavailable storage is explained')
-    } finally { Storage.prototype.setItem = original }
-    await click('[aria-label="Giảm số bộ game"]')
-    check(!sessionStorage.getItem(DRAFT), 'Empty draft is removed after storage recovers')
-    fits()
-    sessionStorage.removeItem(QA)
-    return { passed, complete: true, viewport: `${innerWidth}×${innerHeight}`, reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches }
-  }
-
-  check(current() === '1', 'Fresh tab begins at selection')
-  const toggle = root.querySelector('.po-preview-toggle')
-  if (getComputedStyle(toggle).display !== 'none') await click('.po-preview-toggle')
-  else await click('.po-lid')
-  check(root.querySelector('.po-stage').dataset.open === 'true', 'Product preview opens')
-  check(root.querySelector('#preorder-hand').getAttribute('aria-hidden') === 'false', 'Six characters become accessible')
-  check(root.querySelectorAll('.po-hand img').length === 6, 'Complete character hand is preserved')
-  if (getComputedStyle(toggle).display !== 'none') await click('.po-preview-toggle')
-  else await click('.po-lid')
-  check(root.querySelector('.po-stage').dataset.open === 'false', 'Product preview closes')
-  check(root.querySelector('[aria-label="Giảm số bộ game"]').disabled, 'Quantity cannot fall below one')
-  for (let i = 0; i < 98; i++) await click('[aria-label="Tăng số bộ game"]')
-  check(root.querySelector('[aria-label="Tăng số bộ game"]').disabled && root.querySelector('output').value === '99', 'Quantity cannot exceed 99')
-  for (let i = 0; i < 98; i++) await click('[aria-label="Giảm số bộ game"]')
-  check(root.querySelector('output').value === '01', 'Quantity returns to one')
-  check(root.querySelector('.po-totals dd').textContent === priceLabel(599000), 'Published unit price is 599000 VND')
-  await click('[aria-label="Tăng số bộ game"]')
-  check(root.querySelectorAll('.po-totals dd')[1].textContent === priceLabel(1198000), 'Two copies cost 1198000 VND before shipping')
-  fits()
-  await click('.po-submit')
-  check(current() === '2' && new URLSearchParams(location.search).get('step') === '2', 'Continue opens delivery and updates URL')
-  check(!root.querySelector('[role="progressbar"]:not(.page-progress)'), 'Curtain does not run between steps')
-  check(document.activeElement.id === 'po-step-title', 'Step change focuses the heading')
-  check(root.querySelector('[name="province"]').options.length === 35, 'All 34 provinces are bundled and available')
-  check(root.querySelector('[name="ward"]').disabled && root.querySelector('[name="ward"]').options.length === 1, 'Wards wait for a province selection')
-  check(root.querySelector('[name="name"]').required && root.querySelector('[name="phone"]').required && !root.querySelector('[name="email"]').required, 'Name/phone are required; email is optional')
-  await click('.po-submit')
-  check(current() === '2' && document.activeElement.name === 'name', 'Invalid submission focuses the first error')
-  check(root.querySelectorAll('[aria-invalid="true"]').length === 5, 'Required delivery fields show errors')
-  for (const name of ['name', 'address']) await fill(name, '   ')
-  check(['name', 'address'].every((name) => root.querySelector(`[name="${name}"]`).getAttribute('aria-invalid') === 'true'), 'Whitespace is rejected for names and addresses')
-  await fill('phone', '090')
-  check(root.querySelector('[name="phone"]').getAttribute('aria-invalid') === 'true', 'Invalid phone shows an inline error')
-  await fill('email', 'invalid-email')
-  check(root.querySelector('[name="email"]').getAttribute('aria-invalid') === 'true', 'Optional email validates when supplied')
-  history.pushState(null, '', '?page=dat-truoc&step=3')
-  window.dispatchEvent(new PopStateEvent('popstate'))
+  const click = async selector => { root.querySelector(selector).click(); await settle() }
+  check(root.querySelector('.po-content:not([inert])'), 'Curtain unlocks after assets prepare')
+  check(root.querySelectorAll('form').length === 1 && !root.querySelector('.po-steps'), 'One form replaces the three-step checkout')
+  check(!root.querySelector('select,[name="address"],[name="province"],[name="ward"],input[type="checkbox"]'), 'No shipping fields or consent checkbox')
+  check(!root.querySelector('.po-payment,.po-note'), 'No payment/QR or explanatory callout box')
+  check(root.querySelector('[name="email"]').type === 'email' && !root.querySelector('[name="email"]').required, 'Optional email is collected without promising an email delivery')
+  check(!new URLSearchParams(location.search).has('step'), 'Legacy step link resolves to the single form')
+  check(root.querySelectorAll('.chapter-nav').length === 1 && root.querySelectorAll('.page-progress').length === 1, 'Original shared navigation remains')
+  check([...root.querySelectorAll('img')].every(image => image.complete && image.naturalWidth), 'Artwork loads without replacement')
+  check(document.fonts.check('16px "NVN Yellost"'), 'Brand heading font is ready')
+  const reset = root.querySelector('.po-reset')
+  if (reset) { reset.click(); await settle() }
+  const less = root.querySelector('[aria-label="Giảm số bộ game"]')
+  const more = root.querySelector('[aria-label="Tăng số bộ game"]')
+  check(less.disabled, 'Quantity starts at one')
+  for (let i = 0; i < 98; i++) more.click()
   await settle()
-  check(current() === '2' && new URLSearchParams(location.search).get('step') === '2', 'Incomplete delivery cannot bypass validation through the URL')
-  const sample = { name: 'Người nhận thử', phone: '+84 912-345-678', province: 'Thành phố Hà Nội', ward: 'Phường Ba Đình', address: '12 Đường thử', email: '', note: 'Gọi trước khi giao.' }
-  for (const [name, value] of Object.entries(sample)) await fill(name, value)
-  check(root.querySelectorAll('[aria-invalid="true"]').length === 0, 'Correcting values clears inline errors')
-  check(root.querySelector('[name="ward"]').options.length === 127, 'Ha Noi exposes its 126 wards')
-  await fill('province', 'Thành phố Huế')
-  check(root.querySelector('[name="ward"]').value === '' && ![...root.querySelector('[name="ward"]').options].some((option) => option.value === sample.ward), 'Changing province clears the old ward and replaces its options')
+  check(root.querySelector('output').textContent === '99' && more.disabled, 'Quantity is bounded at 99')
+  for (let i = 0; i < 98; i++) less.click()
+  await settle()
+  check(root.querySelector('output').textContent === '01' && less.disabled, 'Quantity is bounded at one')
   await click('.po-submit')
-  check(current() === '2' && document.activeElement.name === 'ward', 'A cleared ward must be selected again')
-  await fill('province', sample.province)
-  await fill('ward', sample.ward)
-  fits()
+  check(document.activeElement.name === 'name' && root.querySelector('[name="name"]').getAttribute('aria-invalid') === 'true', 'Empty submit focuses the first invalid contact')
+  check(!document.querySelector('iframe[title="Kênh gửi đăng ký Thủy Trận"]'), 'Invalid form makes no outbound connection')
+  await fill('name', 'QA LOCAL KHÔNG GỬI')
+  await fill('phone', '123')
   await click('.po-submit')
-  check(current() === '3', 'Valid delivery with no email reaches review')
-  check(root.querySelector('address').textContent.includes('12 Đường thử'), 'Review includes the complete address')
-  const reviewAmounts = [...root.querySelectorAll('.po-totals dd')].map((value) => value.textContent)
-  check(reviewAmounts[0] === priceLabel(1198000) && reviewAmounts.slice(1).every((value) => value === 'Chưa công bố'), 'Subtotal uses the published price; unknown shipping, grand total and date remain unpublished')
-  check(root.querySelector('.po-payment').textContent.includes('Chưa mở thanh toán') && !root.querySelector('.po-payment img, .po-payment canvas, .po-payment svg'), 'No usable payment QR is rendered')
-  check(!/[?&](name|phone|email|address|province|ward)=/.test(location.search), 'Personal information never enters the URL')
-  await click('.po-summary:first-of-type .po-edit')
-  check(current() === '1' && root.querySelector('output').value === '02', 'Edit quantity preserves previous selection')
-  await click('[aria-label="Tăng số bộ game"]')
+  check(document.activeElement.name === 'phone' && root.querySelector('#po-phone-error').textContent, 'Invalid phone has an adjacent error and receives focus')
+  await fill('phone', '+84 912-345-678')
+  await fill('email', 'broken')
   await click('.po-submit')
-  check(root.querySelector('[name="name"]').value === sample.name, 'Returning to delivery preserves input')
-  await fill('address', '34 Đường thử')
-  await fill('phone', '0912 345-678')
-  await click('.po-submit')
-  check(current() === '3' && root.querySelector('address').textContent.includes('34 Đường thử'), 'Edited address and local-format phone are accepted')
-  await historyMove('back', '2')
-  check(root.querySelector('[name="address"]').value === '34 Đường thử', 'Browser Back preserves the draft')
-  await historyMove('forward', '3')
-  await click('.po-submit')
-  check(current() === 'preview', 'Sample receipt opens')
-  check(root.querySelector('[role="status"]').textContent === 'Phiếu mẫu — thông tin chưa được gửi.', 'Receipt clearly states it has not been submitted')
-  check(!/đã thanh toán|đã gửi email|mã đơn/i.test(root.querySelector('form').textContent), 'Receipt does not claim a real order or payment')
-  check(sessionStorage.getItem(DRAFT) && JSON.parse(sessionStorage.getItem(DRAFT)).draft.quantity === 3, 'Draft is saved in this tab')
-  fits()
-  sessionStorage.setItem(QA, JSON.stringify({ name: 'reload', passed }))
-  return { passed, reload: true, next: 'Reload and rerun to check draft restoration' }
+  check(document.activeElement.name === 'email' && root.querySelector('#po-email-error').textContent, 'Entered email is validated')
+  await fill('email', 'qa@example.com')
+  await click('.po-note-toggle summary')
+  await fill('note', 'Nháp kiểm tra trên local, không gửi đơn.')
+  more.click(); more.click(); await settle()
+  const saved = JSON.parse(sessionStorage.getItem('thuy-tran.preorder.v2'))
+  check(saved.draft.quantity === 3 && saved.draft.email === 'qa@example.com' && !saved.pending && !saved.receipt, 'Only the current draft is persisted before submit')
+  check(root.querySelector('.po-totals').textContent.includes('1.797.000') && root.textContent.includes('Chưa thu tiền'), 'Real price is visible without a payable total')
+  const viewportWidth = Math.ceil(document.documentElement.getBoundingClientRect().width)
+  check(document.documentElement.scrollWidth <= viewportWidth + 2, 'No new horizontal page overflow')
+  check([...root.querySelectorAll('input:not([name="company"]),textarea,.po-submit')].filter(el => el.getBoundingClientRect().width).every(el => {
+    const rect = el.getBoundingClientRect(); return rect.left >= 0 && rect.right <= viewportWidth + 1
+  }), 'Contact fields and CTA fit the viewport')
+  check(root.querySelector('.po-submit').getBoundingClientRect().height >= 44, 'Main action has a usable touch target')
+  if (innerWidth > 900) {
+    await click('.po-lid')
+    check(root.querySelector('.po-stage').dataset.open === 'true', 'Interactive box preview still opens')
+    await click('.po-lid')
+  }
+  check(!document.querySelector('iframe[title="Kênh gửi đăng ký Thủy Trận"]'), 'The QA script never sends a valid request')
+  return { passed, viewport: `${innerWidth}×${innerHeight}`, next: 'Reload once, verify name/phone/email/note/quantity, then clear this QA draft.' }
 })()

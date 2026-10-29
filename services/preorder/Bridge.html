@@ -1,0 +1,18 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Thủy Trận</title></head><body>
+<script>
+  const nonce = <?!= JSON.stringify(nonce) ?>;
+  const allowed = ['https://ducklearnit.github.io', 'http://127.0.0.1:8443', 'http://localhost:8443'];
+  let sent = false;
+  const ready = setInterval(() => window.top.postMessage({ type: 'TT_PREORDER_READY', nonce }, '*'), 500);
+  setTimeout(() => clearInterval(ready), 30000);
+  window.addEventListener('message', event => {
+    if (sent || event.source !== window.top || !allowed.includes(event.origin)
+      || event.data?.type !== 'TT_PREORDER_SUBMIT' || event.data.nonce !== nonce) return;
+    sent = true;
+    clearInterval(ready);
+    const reply = result => event.source.postMessage({ type: 'TT_PREORDER_RESULT', nonce, result }, event.origin);
+    google.script.run.withSuccessHandler(reply).withFailureHandler(() => reply({ ok: false, code: 'retry' }))
+      .submitPreorder(event.data.request);
+  });
+</script></body></html>

@@ -568,7 +568,7 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
 .po-contents { display: flex; justify-content: center; gap: 1.4rem; margin-top: 1.5rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; }
 .po-order { position: relative; padding: clamp(1.5rem, 3vw, 2.5rem); background: var(--color-card); box-shadow: 2px 4px 8px #1a3a2612; border-radius: 2px; scroll-margin-top: 24px; }
 .po-order::after { content: ''; position: absolute; bottom: 0; right: 0; width: 28px; height: 28px; background: linear-gradient(135deg, #d9c4a2 50%, var(--color-river) 50%); }
-.po-order h2 { font-size: clamp(3.4rem, 5vw, 4.6rem); margin-top: 1.4rem; color: var(--color-vermilion); }
+.po-order h2 { font-size: clamp(2.8rem, 3.8vw, 3.5rem); margin-top: 1rem; padding-right: 75px; color: var(--color-vermilion); }
 .po-stamp { position: absolute; top: 3.4rem; right: clamp(1.5rem, 3vw, 2.5rem); display: grid; place-content: center; width: 76px; height: 76px; border: 2px solid currentColor; border-radius: 50%; color: var(--color-vermilion); font-size: 1.5rem; text-align: center; transform: rotate(12deg); }
 .po-stamp::after { content: ''; position: absolute; inset: 5px; border: 1px dashed currentColor; border-radius: 50%; }
 .po-intro { margin-top: 0.8rem; font-size: 0.85rem; font-style: italic; }
@@ -607,51 +607,37 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
   .po-field:hover .po-field-number { transform: rotate(-8deg) scale(1.2); }
 }
 @media (hover: none), (pointer: coarse) { .po-field input, .po-field textarea { background-image: var(--write-icon); } }
-.po-steps { margin: 1.8rem 0 1.6rem; }
-.po-steps ol { display: flex; gap: 0.5rem; list-style: none; }
-.po-steps li { flex: 1; min-width: 0; }
-.po-steps button { display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem; width: 100%; min-height: 60px; padding: 0.65rem 0; font-size: 0.78rem; color: #69594d; cursor: pointer; }
-.po-steps button > span { font-size: 0.75rem; font-variant-numeric: tabular-nums; color: var(--color-vermilion); }
-.po-steps li[data-current='true'] button { color: var(--color-ink); box-shadow: inset 0 -2px var(--color-vermilion); }
-.po-steps li[data-done='true'] button { color: var(--color-bamboo); }
-.po-steps button:hover:not(:disabled) { color: var(--color-vermilion); }
-.po-steps button:disabled { cursor: default; color: #75665c; }
-.po-steps button:disabled > span { color: inherit; }
-.po-step-count { font-size: 0.65rem; letter-spacing: 0.13em; text-transform: uppercase; color: #69594d; }
-.po-step-panel h3 { margin-top: 0.5rem; font-size: clamp(2rem, 3vw, 2.6rem); color: var(--color-bamboo); }
-.po-step-panel h3:focus { outline: none; }
 .po-product { display: flex; gap: 1.1rem; align-items: center; margin: 1.4rem 0; }
 .po-product img { width: 66px; flex-shrink: 0; aspect-ratio: 3 / 4; object-fit: cover; transform: rotate(-5deg); box-shadow: 3px 4px 0 #b9926250; }
 .po-product h4 { font-size: 1.65rem; color: var(--color-vermilion); }
 .po-product p { margin-top: 0.25rem; font-size: 0.82rem; }
-.po-product .po-product-contents { margin-top: 0.6rem; font-size: 0.7rem; color: #69594d; }
 .po-totals { display: grid; gap: 0.7rem; margin: 1.5rem 0; font-size: 0.82rem; }
 .po-totals > div { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
 .po-totals dd { text-align: right; color: var(--color-vermilion); font-variant-numeric: tabular-nums; }
-.po-totals .po-total { padding: 0.6rem 0; font-size: 1rem; }
-.po-total dt { font-weight: 600; }
-.po-note { padding-left: 0.8rem; box-shadow: -2px 0 var(--color-ochre); font-size: 0.8rem; line-height: 1.7; color: #69594d; }
-.po-summary { margin-top: 1.4rem; }
-.po-summary-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-.po-summary-heading h4, .po-payment h4 { font-family: var(--font-body); font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; }
-.po-edit, .po-return, .po-reset { min-height: 44px; font-size: 0.78rem; cursor: pointer; color: var(--color-vermilion); text-decoration: underline; text-underline-offset: 4px; }
-.po-edit:hover, .po-return:hover, .po-reset:hover { color: var(--color-ink); }
-.po-product-small { margin-top: 0.7rem; margin-bottom: 0; }
-.po-product-small img { width: 44px; }
-.po-summary address { display: grid; gap: 0.4rem; margin-top: 0.5rem; font-size: 0.88rem; font-style: normal; line-height: 1.6; overflow-wrap: anywhere; }
-.po-delivery-note { white-space: pre-wrap; color: #69594d; }
-.po-payment { display: flex; gap: 0.9rem; align-items: flex-start; padding: 1rem; background: #c9e1d560; }
-.po-payment-mark { color: var(--color-bamboo); font-size: 0.8rem; }
-.po-payment p { margin-top: 0.5rem; font-size: 0.8rem; line-height: 1.7; }
-.po-payment div > span { display: block; margin-top: 0.5rem; font-size: 0.65rem; color: #69594d; }
-.po-sample-status { margin-top: 1rem; padding: 0.75rem 1rem; background: #c9e1d560; font-size: 0.85rem; color: var(--color-bamboo); }
+.po-reset { min-height: 44px; font-size: 0.78rem; cursor: pointer; color: var(--color-vermilion); text-decoration: underline; text-underline-offset: 4px; }
+.po-reset:hover { color: var(--color-ink); }
 .po-actions { display: grid; gap: 0.6rem; margin-top: 1.5rem; }
-.po-return { justify-self: start; }
 .hero-cta.po-submit { display: flex; justify-content: space-between; gap: 0.8rem; width: 100%; min-height: 56px; margin: 0; padding: 0.8rem 1.4rem; font-size: 1.4rem; cursor: pointer; background: none; }
 .po-submit span:first-child { white-space: normal; text-align: left; }
 .po-reset { justify-self: center; }
 .po-status { margin-top: 1rem; font-size: 0.75rem; line-height: 1.7; color: #69594d; }
 .po-draft-status { margin-top: 0.4rem; font-size: 0.7rem; line-height: 1.6; color: #69594d; }
+.po-send-error { margin-top: .75rem; font-size: .8rem; line-height: 1.6; color: #982b22; }
+.po-send-error { padding: .8rem 1rem; border-left: 2px solid currentColor; background: #b5362b0b; }
+.po-send-error a { display: inline-block; padding-top: .5rem; text-decoration: underline; text-underline-offset: 4px; }
+.po-trap { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.po-submit:disabled { cursor: wait; opacity: .7; }
+.po-field:has([readonly]) { cursor: default; }
+.po-receipt { margin-top: 1.75rem; }
+.po-receipt h3 { font-size: clamp(2.2rem, 3vw, 3rem); color: var(--color-bamboo); }
+.po-receipt h3:focus { outline: none; }
+.po-received-mark { color: var(--color-vermilion); margin-bottom: .75rem; }
+.po-reference { overflow-wrap: anywhere; font-size: .8rem; }
+.po-totals dt small { display: block; margin-top: .3rem; color: #69594d; font-size: .7rem; }
+.po-note-toggle { margin-top: .6rem; font-size: .8rem; }
+.po-note-toggle summary { display: flex; align-items: center; gap: .5rem; min-height: 44px; cursor: pointer; color: var(--color-bamboo); text-decoration: underline; text-underline-offset: 4px; }
+.po-note-toggle summary span { color: #69594d; text-decoration: none; }
+.po-note-toggle .po-field { margin-top: 0; }
 .po-wave { margin-bottom: -1px; pointer-events: none; }
 .po-footer-area { background: var(--color-ink); }
 @media (hover: hover) and (pointer: fine) { .po-stage[data-open='false'] .po-lid:hover { transform: translateY(-10px) rotate(3deg); } }

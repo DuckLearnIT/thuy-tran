@@ -10,6 +10,52 @@
 
 ## 1. Đọc phần này trước
 
+**Đăng ký đặt trước thật — 29/10/2026:** thay phiếu mẫu ba bước bằng một form
+gồm số bộ 1–99, họ tên và số điện thoại Việt Nam bắt buộc, email/lời nhắn tùy
+chọn. Không có checkbox, địa chỉ giao, QR hoặc thanh toán; chỉ hiện tạm tính
+599.000₫/bộ chưa gồm phí giao. Khách thấy mã đăng ký sau khi Sheets đã ghi.
+Nhóm liên hệ xác nhận; **chưa gửi email tự động**, người dùng nói để sau.
+URL `?page=dat-truoc` vẫn hoạt động; `step` cũ bị bỏ. `sessionStorage` giữ nháp
+trong tab, khôi phục tên/số/email/số lượng từ phiếu mẫu cũ khi hợp lệ.
+
+Bảng Google Sheets riêng tư tên **Thủy Trận — Đơn đặt trước** ở thư mục ChatGPT
+của Drive; đã chia sẻ cho các email nhóm hợp lệ và tài khoản Google chạy script
+theo xác nhận của người dùng. Một địa chỉ nhóm bị Google báo không có tài khoản
+liên kết; chưa được cấp quyền, người dùng nói xử lý sau.
+Các cột A–M gồm mã, thời gian, tên, điện thoại dạng text, email, số bộ, đơn giá,
+tạm tính, lời nhắn, trạng thái, thanh toán, ghi chú nhóm và request id chống trùng.
+Trạng thái mặc định Chờ liên hệ; thanh toán Chưa thanh toán. Bảng dùng timezone
+Việt Nam và dropdown trạng thái. **Không xóa, chia sẻ công khai hay ghi đè đơn.**
+
+Apps Script được triển khai riêng, chạy bằng tài khoản Google được người dùng
+duyệt; `SPREADSHEET_ID` nằm trong Script Properties, không trong Git. Mã nguồn
+đồng bộ tại `services/preorder/`; Google triển khai **version 5**, endpoint ở
+`src/data/preorder-service.ts`. Script có quyền Google Sheets, nhưng mã chỉ mở
+bảng cấu hình; Web App công khai chỉ cho gửi đơn hợp lệ và nhận mã của request
+đó, không trả danh sách/thông tin khách. Cầu nối iframe của Google dùng
+`google.script.run` và `postMessage` có kiểm tra nguồn + nonce; không dùng
+`no-cors` rồi giả báo thành công. Server tự tính giá, kiểm tra dữ liệu, chặn
+formula injection, lock khi ghi và tìm request id trước khi thêm hàng. Có giới
+hạn gửi cơ bản; cần theo dõi quota Google và thư rác, không coi là hệ thống
+chống bot hoàn chỉnh. Lỗi chưa rõ kết quả cho gửi lại cùng request id; sau bảy
+ngày form yêu cầu liên hệ nhóm thay vì gửi bản mới có thể trùng.
+
+**Vận hành:** không công bố URL bảng đơn hay dữ liệu khách trong repo công khai.
+Tìm bảng trong Drive hoặc link ở cuộc trò chuyện. Khi đổi cột, giá hay mã nhận
+đơn, đồng bộ frontend và `services/preorder/Code.gs`, lưu Apps Script rồi tạo
+phiên bản mới trong Manage deployments; deploy GitHub Pages không tự cập nhật
+Apps Script. Không lưu API key trong code. Để làm email tự động sau này cần
+chốt dịch vụ và cấu hình thật trước; hiện chưa có bất kỳ email/QR giả nào.
+
+Đã thử gửi một đăng ký giả từ local đến Sheets, đối chiếu nội dung, mã/giá,
+gửi lại cùng request id và xác nhận chỉ một hàng; sau đó đã xóa đúng hàng thử.
+Lỗi ban đầu do Google Sheets table không cho format hai cột cùng lúc, đã đổi
+thành từng cột. `check-preorder-backend.mjs` 24 checks,
+`check-preorder-data.mjs` 13 checks, `check-preorder-transport.mjs` 11 checks;
+browser `check-preorder.js` 23 checks desktop, 22 ở 320/390px và reduced motion,
+đã thử reload/nháp và xem bố cục. Kiểm tra bằng Chromium trong Codex In-app
+Browser; chưa xác nhận trên các engine hoặc thiết bị thật khác.
+
 **Phát hành website chính — 26/10/2026:** nguồn giao diện `167717a`, quy ước
 deploy lưu tại `d6feb5b`; release `6826eab914df3de83a35a2d2a3c6f744ee31685e`
 trên origin/gh-pages. Gồm chuyển mở địa danh liên tục và sửa góc đen thẻ trong

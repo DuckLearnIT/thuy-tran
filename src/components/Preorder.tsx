@@ -2,8 +2,9 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import gsap from 'gsap'
 import cover from '../assets/bia-thuy-tran.webp'
 import { cards } from '../data/cards'
-import { allowedStep, deliveryErrors, deliveryFields, DRAFT_KEY, emptyDraft, fieldError, priceLabel, provinces, readDraft, sales, totals, wardsFor,
-  type CheckoutStep, type DeliveryField } from '../data/checkout'
+import { contactFields, DRAFT_KEY, emptyDraft, fieldError, preorderErrors, priceLabel, readPreorderSession, sales, totals,
+  type PreorderField, type PreorderRequest } from '../data/checkout'
+import { PreorderSubmissionError, submitPreorder } from '../submitPreorder'
 import { preloadAssets } from '../preloadAssets'
 import useReducedMotion from '../hooks/useReducedMotion'
 import Curtain from './Curtain'
@@ -18,16 +19,16 @@ export default function Preorder() {
   const root = useRef<HTMLElement>(null)
   const reduced = useReducedMotion()
   const [open, setOpen] = useState(false)
-  const [initial] = useState(() => {
-    const draft = readDraft()
-    return { draft, step: allowedStep(new URLSearchParams(location.search).get('step'), draft) }
-  })
+  const [initial] = useState(readPreorderSession)
   const [draft, setDraft] = useState(initial.draft)
-  const [step, setStep] = useState<CheckoutStep>(initial.step)
-  const [errors, setErrors] = useState<Partial<Record<DeliveryField, string>>>({})
+  const [pending, setPending] = useState(initial.pending)
+  const [receipt, setReceipt] = useState(initial.receipt)
+  const [errors, setErrors] = useState<Partial<Record<PreorderField, string>>>({})
+  const [sending, setSending] = useState(false)
+  const [sendError, setSendError] = useState(initial.pending ? 'Đăng ký này chưa nhận được xác nhận. Gửi lại để kiểm tra, không tạo trùng.' : '')
   const [saved, setSaved] = useState(true)
-  const direction = useRef(1)
-  const previousStep = useRef(step)
+  const busy = useRef(false)
+  const startedAt = useRef(Date.now())
   const [attempt, setAttempt] = useState(0)
   const [ready, setReady] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -38,86 +39,84 @@ export default function Preorder() {
   const onOpen = useCallback(() => setOpening(true), [])
   const onComplete = useCallback(() => setUnlocked(true), [])
   const amount = totals(draft.quantity)
-  const stepIndex = step === 'preview' ? 3 : Number(step)
-  const updateUrl = (next: CheckoutStep, replace = false) => {
-    const url = new URL(location.href)
-    url.searchParams.set('page', 'dat-truoc')
-    url.searchParams.set('step', next)
-    url.hash = ''
-    history[replace ? 'replaceState' : 'pushState'](null, '', url)
+  const locked = sending || !!pending
+  const changeField = (name: PreorderField, value: string) => {
+    setDraft(draft => ({ ...draft, [name]: value }))
+    setErrors(errors => ({ ...errors, ...(name in errors ? { [name]: fieldError(name, value) } : {}) }))
   }
-  const goToStep = (next: CheckoutStep, nextDraft = draft) => {
-    const target = allowedStep(next, nextDraft)
-    if (target === step) return
-    direction.current = (target === 'preview' ? 4 : Number(target)) > (step === 'preview' ? 4 : Number(step)) ? 1 : -1
-    updateUrl(target)
-    setStep(target)
-  }
-  const changeField = (name: DeliveryField, value: string) => {
-    setDraft((draft) => ({ ...draft, [name]: value, ...(name === 'province' ? { ward: '' } : {}) }))
-    setErrors((errors) => ({ ...errors, ...(name in errors ? { [name]: fieldError(name, value, draft.province) } : {}), ...(name === 'province' ? { ward: '' } : {}) }))
-  }
-  const submit = (event: React.FormEvent<HTMLFormElement>) => {
+  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (step === '1') {
-      const next = { ...draft, selected: true }
-      setDraft(next)
-      goToStep('2', next)
-    } else if (step === '2') {
-      const nextErrors = deliveryErrors(draft)
+    if (busy.current || receipt) return
+    if (pending && Date.now() - pending.startedAt > 7 * 86400000) {
+      setSendError('Đăng ký này đã chờ xác nhận quá lâu. Vui lòng liên hệ nhóm để kiểm tra trước khi gửi mới.')
+      return
+    }
+    if (!pending) {
+      const nextErrors = preorderErrors(draft)
       setErrors(nextErrors)
-      const first = deliveryFields.find(({ name }) => nextErrors[name])
-      if (first) requestAnimationFrame(() => root.current?.querySelector<HTMLElement>(`[name="${first.name}"]`)?.focus())
-      else goToStep('3')
-    } else if (step === '3') goToStep('preview')
+      const first = contactFields.find(field => nextErrors[field.name])?.name
+      if (first) { requestAnimationFrame(() => root.current?.querySelector<HTMLElement>(`[name="${first}"]`)?.focus()); return }
+    }
+    const request: PreorderRequest = pending ?? {
+      ...draft, name: draft.name.trim(), phone: draft.phone.trim(), email: draft.email.trim(), note: draft.note.trim(),
+      requestId: crypto.randomUUID(), startedAt: startedAt.current,
+      company: String(new FormData(event.currentTarget).get('company') || ''),
+    }
+    busy.current = true
+    setPending(request)
+    setSending(true)
+    setSendError('')
+    // Persist the retry id before sending, including if the tab reloads before its acknowledgement.
+    try { sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ version: 2, draft, pending: request, receipt: null })) } catch { setSaved(false) }
+    try {
+      const accepted = await submitPreorder(request)
+      setReceipt(accepted)
+      setDraft({ ...emptyDraft })
+      setPending(null)
+      try { sessionStorage.removeItem('thuy-tran.checkout.v1') } catch { /* Current in-memory receipt remains usable. */ }
+    } catch (error) {
+      if (error instanceof PreorderSubmissionError && error.definitive) setPending(null)
+      setSendError(error instanceof Error ? error.message : 'Chưa xác nhận được đăng ký. Bạn thử gửi lại nhé.')
+    } finally { busy.current = false; setSending(false) }
   }
   const clearDraft = () => {
+    if (locked) return
     setDraft({ ...emptyDraft })
+    setReceipt(null)
     setErrors({})
-    direction.current = -1
-    updateUrl('1', true)
-    setStep('1')
+    setSendError('')
+    startedAt.current = Date.now()
+    try { sessionStorage.removeItem('thuy-tran.checkout.v1') } catch { /* Storage can be unavailable. */ }
   }
 
   useEffect(() => {
-    updateUrl(initial.step, true)
-  }, [initial])
+    const url = new URL(location.href)
+    url.searchParams.delete('step')
+    history.replaceState(null, '', url)
+  }, [])
 
   useEffect(() => {
     try {
-      if (draft.selected || draft.quantity !== 1 || deliveryFields.some(({ name }) => draft[name])) {
-        sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ version: 1, draft }))
+      if (pending || receipt || draft.quantity !== 1 || contactFields.some(({ name }) => draft[name])) {
+        sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ version: 2, draft, pending, receipt }))
       } else sessionStorage.removeItem(DRAFT_KEY)
       setSaved(true)
     } catch { setSaved(false) }
-  }, [draft])
+  }, [draft, pending, receipt])
 
   useEffect(() => {
-    const onPop = () => {
-      const requested = new URLSearchParams(location.search).get('step')
-      const next = allowedStep(requested, draft)
-      direction.current = (next === 'preview' ? 4 : Number(next)) > stepIndex ? 1 : -1
-      if (next !== requested) updateUrl(next, true)
-      setStep(next)
-    }
-    window.addEventListener('popstate', onPop)
-    return () => window.removeEventListener('popstate', onPop)
-  }, [draft, stepIndex])
-
-  useLayoutEffect(() => {
-    if (!unlocked || previousStep.current === step) return
-    previousStep.current = step
-    const heading = root.current?.querySelector<HTMLElement>('#po-step-title')
+    if (!unlocked || !receipt) return
+    const heading = root.current?.querySelector<HTMLElement>('#po-receipt-title')
     heading?.focus({ preventScroll: true })
     if (heading && (heading.getBoundingClientRect().top < 24 || window.innerWidth <= 900)) {
       root.current?.querySelector('.po-order')?.scrollIntoView({ block: 'start', behavior: 'instant' })
     }
     if (reduced) return
     const ctx = gsap.context(() => {
-      gsap.fromTo('.po-step-panel', { x: direction.current * 20 }, { x: 0, duration: 0.3, ease: 'power2.out' })
+      gsap.fromTo('.po-receipt', { y: 16, rotation: -1 }, { y: 0, rotation: 0, duration: 0.4, ease: 'power2.out' })
     }, root)
     return () => ctx.revert()
-  }, [step, unlocked, reduced])
+  }, [receipt, unlocked, reduced])
 
   useEffect(() => {
     document.title = 'Đặt trước — Thủy Trận'
@@ -194,79 +193,55 @@ export default function Preorder() {
           </section>
           <section className="po-order" aria-labelledby="order-title">
             <p className="po-eyebrow">Đặt trước Thủy Trận</p>
-            <h2 id="order-title" className="display">Phiếu<br />ra quân.</h2>
-            <p className="po-stamp display">Phiếu<br />mẫu</p>
-            <nav className="po-steps" aria-label="Các bước đặt trước">
-              <ol>{(['1', '2', '3'] as const).map((item, i) => <li key={item} data-current={stepIndex === i + 1} data-done={stepIndex > i + 1}>
-                <button type="button" aria-current={stepIndex === i + 1 ? 'step' : undefined} disabled={Number(item) > stepIndex}
-                  onClick={() => goToStep(item)}><span aria-hidden="true">{stepIndex > i + 1 ? '◆' : `0${item}`}</span>{['Bộ game', 'Giao hàng', 'Kiểm tra'][i]}</button>
-              </li>)}</ol>
-            </nav>
-            <form noValidate onSubmit={submit}>
-              <div key={step} className="po-step-panel" data-step={step}>
-                <p className="po-step-count">{step === 'preview' ? 'Bản tổng hợp' : `Bước 0${step} / 03`}</p>
-                <h3 id="po-step-title" className="display" tabIndex={-1}>{({ '1': 'Chọn bộ game.', '2': 'Hẹn nơi gặp.', '3': 'Kiểm tra phiếu.', preview: 'Phiếu mẫu.' })[step]}</h3>
-                {step === '1' && <>
-                  <div className="po-product"><img src={cover} alt="Hộp board game Thủy Trận" loading="eager" decoding="async" />
-                    <div><h4 className="display">{sales.product}</h4><p>Board game chiến thuật hợp tác</p><p className="po-product-contents">06 nhân vật · 07 kế sách · 24 địa điểm</p></div>
-                  </div>
-                  <fieldset className="po-quantity">
-                    <legend>Số bộ game <small>Từ 1 đến 99 bộ</small></legend>
-                    <div>
-                      <button type="button" aria-label="Giảm số bộ game" disabled={draft.quantity === 1} onClick={() => setDraft((draft) => ({ ...draft, quantity: draft.quantity - 1 }))}>−</button>
-                      <output aria-live="polite" aria-label="Số bộ đã chọn"><strong key={draft.quantity}>{String(draft.quantity).padStart(2, '0')}</strong></output>
-                      <button type="button" aria-label="Tăng số bộ game" disabled={draft.quantity === 99} onClick={() => setDraft((draft) => ({ ...draft, quantity: draft.quantity + 1 }))}>+</button>
-                    </div>
-                  </fieldset>
-                  <dl className="po-totals"><div><dt>Giá một bộ</dt><dd>{priceLabel(sales.unitPrice)}</dd></div><div><dt>Tạm tính · {draft.quantity} bộ</dt><dd>{priceLabel(amount.subtotal)}</dd></div><div><dt>Lịch giao dự kiến</dt><dd>{sales.deliveryDate ?? 'Chưa công bố'}</dd></div></dl>
-                  <p className="po-note">Bạn có thể điền thử phiếu. Lịch giao và thời điểm mở đặt trước sẽ được thông báo sau.</p>
-                </>}
-                {step === '2' && <>
-                  <p className="po-intro">Giao trong Việt Nam. Các ô có dấu * là bắt buộc.</p>
-                  {deliveryFields.map((field, i) => <label className="po-field" key={field.name}>
-                    <span className="po-field-label"><span className="po-field-number" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>{field.label}
-                      {!field.optional && <span className="po-required" aria-hidden="true">*</span>}</span>
-                    {field.optional && <span className="po-optional">Tùy chọn</span>}
-                    {field.name === 'province' || field.name === 'ward' ? <select name={field.name} autoComplete={field.autoComplete} required
-                      value={draft[field.name]} disabled={field.name === 'ward' && !draft.province}
-                      aria-invalid={!!errors[field.name]} aria-describedby={`po-${field.name}-error`}
-                      onChange={(event) => changeField(field.name, event.target.value)}
-                      onBlur={(event) => setErrors((errors) => ({ ...errors, [field.name]: fieldError(field.name, event.target.value, draft.province) }))}>
-                      <option value="">{field.name === 'ward' && !draft.province ? 'Chọn tỉnh / thành phố trước' : field.placeholder}</option>
-                      {(field.name === 'province' ? provinces.map((province) => province.name) : wardsFor(draft.province)).map((name) => <option value={name} key={name}>{name}</option>)}
-                    </select> : field.name === 'note' ? <textarea name={field.name} autoComplete={field.autoComplete} maxLength={field.maxLength} rows={2}
-                      value={draft[field.name]} placeholder={field.placeholder} onChange={(event) => changeField(field.name, event.target.value)} /> :
-                      <input name={field.name} type={field.type ?? 'text'} autoComplete={field.autoComplete} required={!field.optional} maxLength={field.maxLength}
-                        value={draft[field.name]} placeholder={field.placeholder} aria-invalid={!!errors[field.name]} aria-describedby={`po-${field.name}-error`}
-                        onChange={(event) => changeField(field.name, event.target.value)} onBlur={(event) => setErrors((errors) => ({ ...errors, [field.name]: fieldError(field.name, event.target.value, draft.province) }))} />}
-                    {field.name !== 'note' && <span id={`po-${field.name}-error`} className="po-error" aria-live="polite">{errors[field.name]}</span>}
-                  </label>)}
-                </>}
-                {(step === '3' || step === 'preview') && <>
-                  {step === 'preview' && <p className="po-sample-status" role="status">Phiếu mẫu — thông tin chưa được gửi.</p>}
-                  <section className="po-summary" aria-labelledby="po-game-summary">
-                    <div className="po-summary-heading"><h4 id="po-game-summary">Bộ game</h4><button type="button" className="po-edit" onClick={() => goToStep('1')}>Sửa số lượng ↗</button></div>
-                    <div className="po-product po-product-small"><img src={cover} alt="Hộp Thủy Trận" loading="eager" decoding="async" /><div><h4 className="display">{sales.product}</h4><p>{draft.quantity} bộ game</p></div></div>
-                  </section>
-                  <section className="po-summary" aria-labelledby="po-delivery-summary">
-                    <div className="po-summary-heading"><h4 id="po-delivery-summary">Giao hàng</h4><button type="button" className="po-edit" onClick={() => goToStep('2')}>Sửa địa chỉ ↗</button></div>
-                    <address><strong>{draft.name.trim()}</strong><span>{draft.phone.trim()}</span><span>{[draft.address, draft.ward, draft.province, 'Việt Nam'].map((value) => value.trim()).join(', ')}</span>
-                      {draft.email.trim() && <span>{draft.email.trim()}</span>}{draft.note.trim() && <span className="po-delivery-note">Ghi chú: {draft.note.trim()}</span>}</address>
-                  </section>
-                  <dl className="po-totals"><div><dt>Tạm tính · {draft.quantity} bộ</dt><dd>{priceLabel(amount.subtotal)}</dd></div><div><dt>Phí vận chuyển</dt><dd>{priceLabel(sales.shippingFee)}</dd></div><div className="po-total"><dt>Tổng cộng</dt><dd>{priceLabel(amount.total)}</dd></div><div><dt>Lịch giao dự kiến</dt><dd>{sales.deliveryDate ?? 'Chưa công bố'}</dd></div></dl>
-                  <section className="po-payment" aria-labelledby="po-payment-title"><span className="po-payment-mark" aria-hidden="true">◆</span><div><h4 id="po-payment-title">Chuyển khoản QR</h4>
-                    <p>{sales.bank ? `${sales.bank.name} · ${sales.bank.account} · ${sales.bank.holder}` : 'Thông tin ngân hàng và mã QR sẽ được bổ sung khi mở đặt trước.'}</p>
-                    <span>Chưa mở thanh toán</span></div></section>
-                </>}
-                <div className="po-actions">
-                  {step !== '1' && step !== 'preview' && <button type="button" className="po-return" onClick={() => goToStep(step === '2' ? '1' : '2')}>← Quay lại</button>}
-                  {step !== 'preview' ? <button className="hero-cta po-submit" type="submit"><span className="hero-cta-label">{step === '1' ? 'Tiếp tục — giao hàng' : step === '2' ? 'Tiếp tục — kiểm tra' : 'Xem phiếu mẫu'}</span><span className="nav-diamond" aria-hidden="true" /></button> :
-                    <><button className="hero-cta po-submit" type="button" onClick={() => goToStep('3')}><span className="hero-cta-label">Chỉnh sửa phiếu</span><span className="nav-diamond" aria-hidden="true" /></button><button className="po-reset" type="button" onClick={clearDraft}>Xóa nháp, bắt đầu lại</button></>}
+            <h2 id="order-title" className="display">Phiếu ra quân.</h2>
+            <p className="po-stamp display">Đặt<br />trước</p>
+            {receipt ? <div className="po-receipt">
+              <p className="po-received-mark" aria-hidden="true">◆</p>
+              <h3 id="po-receipt-title" className="display" tabIndex={-1}>Đã nhận đăng ký.</h3>
+              <p className="po-intro">Nhóm Thủy Trận sẽ liên hệ qua số điện thoại bạn đã gửi để xác nhận và hẹn ngày giao.</p>
+              <dl className="po-totals"><div><dt>Mã đăng ký</dt><dd className="po-reference">{receipt.reference}</dd></div>
+                <div><dt>Số bộ</dt><dd>{receipt.quantity}</dd></div>
+                <div><dt>Tạm tính</dt><dd>{priceLabel(receipt.subtotal)}</dd></div>
+                <div><dt>Thanh toán</dt><dd>Chưa thu tiền</dd></div></dl>
+              <div className="po-actions"><a className="hero-cta po-submit" href="https://www.facebook.com/daugiaothoi" target="_blank" rel="noopener noreferrer"><span>Liên hệ nhóm</span><span className="nav-diamond" aria-hidden="true" /></a>
+                <button className="po-reset" type="button" onClick={clearDraft}>Đăng ký thêm</button></div>
+            </div> : <form noValidate onSubmit={submit} aria-busy={sending}>
+              <p className="po-intro">Nhóm sẽ liên hệ xác nhận đăng ký. Bạn chưa cần thanh toán.</p>
+              <div className="po-product"><img src={cover} alt="Hộp board game Thủy Trận" loading="eager" decoding="async" />
+                <div><h4 className="display">{sales.product}</h4><p>{priceLabel(sales.unitPrice)} / bộ</p></div></div>
+              <fieldset className="po-quantity" disabled={locked}>
+                <legend>Số bộ game</legend><div>
+                  <button type="button" aria-label="Giảm số bộ game" disabled={locked || draft.quantity === 1} onClick={() => setDraft(draft => ({ ...draft, quantity: draft.quantity - 1 }))}>−</button>
+                  <output aria-live="polite" aria-label="Số bộ đã chọn"><strong key={draft.quantity}>{String(draft.quantity).padStart(2, '0')}</strong></output>
+                  <button type="button" aria-label="Tăng số bộ game" disabled={locked || draft.quantity === 99} onClick={() => setDraft(draft => ({ ...draft, quantity: draft.quantity + 1 }))}>+</button>
                 </div>
-              </div>
-              <p className="po-status">{step === 'preview' ? 'Chưa có đơn đặt trước hay thanh toán nào được tạo.' : 'Phiếu thử — chưa gửi đơn hay thanh toán.'}</p>
-              <p className="po-draft-status">{saved ? 'Nháp được giữ trong tab này.' : 'Nháp chỉ được giữ khi trang đang mở; tải lại sẽ mất thông tin.'}</p>
-            </form>
+              </fieldset>
+              {contactFields.filter(field => field.name !== 'note').map((field, i) => <label className="po-field" key={field.name}>
+                <span className="po-field-label"><span className="po-field-number" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>{field.label}
+                  {!field.optional && <span className="po-required" aria-hidden="true">*</span>}</span>
+                {field.optional && <span className="po-optional">Tùy chọn</span>}
+                <input name={field.name} type={field.type ?? 'text'} autoComplete={field.autoComplete} maxLength={field.maxLength}
+                    value={draft[field.name]} readOnly={locked} required={!field.optional} placeholder={field.placeholder} aria-invalid={!!errors[field.name]} aria-describedby={`po-${field.name}-error`}
+                    onChange={event => changeField(field.name, event.target.value)} onBlur={event => setErrors(errors => ({ ...errors, [field.name]: fieldError(field.name, event.target.value) }))} />
+                <span id={`po-${field.name}-error`} className="po-error" aria-live="polite">{errors[field.name]}</span>
+              </label>)}
+              <details className="po-note-toggle"><summary>Thêm lời nhắn <span>(tùy chọn)</span></summary>
+                <label className="po-field"><span className="po-field-label">Lời nhắn</span>
+                  <textarea name="note" autoComplete="off" maxLength={500} rows={2} value={draft.note} readOnly={locked}
+                    aria-invalid={!!errors.note} aria-describedby="po-note-error" placeholder="Bạn muốn nhắn gì cho nhóm?"
+                    onChange={event => changeField('note', event.target.value)} />
+                  <span id="po-note-error" className="po-error" aria-live="polite">{errors.note}</span>
+                </label>
+              </details>
+              <label className="po-trap" aria-hidden="true">Company<input name="company" tabIndex={-1} autoComplete="off" maxLength={100} /></label>
+              <dl className="po-totals"><div><dt>Tạm tính · {draft.quantity} bộ <small>Chưa gồm phí giao hàng</small></dt><dd>{priceLabel(amount.subtotal)}</dd></div></dl>
+              <div className="po-actions"><button className="hero-cta po-submit" type="submit" disabled={sending}>
+                <span className="hero-cta-label">{sending ? 'Đang gửi đăng ký…' : pending ? 'Gửi lại đăng ký' : 'Đăng ký đặt trước'}</span><span className="nav-diamond" aria-hidden="true" /></button></div>
+              {sendError && <div className="po-send-error" role="alert"><p>{sendError}</p><a href="https://www.facebook.com/daugiaothoi" target="_blank" rel="noopener noreferrer">Liên hệ nhóm qua Facebook</a></div>}
+              <p className="po-status" role="status">{sending ? 'Đang gửi, bạn giữ trang này mở nhé.' : 'Chưa thu tiền khi đăng ký.'}</p>
+              {!saved && <p className="po-draft-status">Trình duyệt không lưu được nháp. Giữ trang mở đến khi nhận xác nhận.</p>}
+              {!locked && (draft.name || draft.phone || draft.email || draft.note || draft.quantity !== 1) && <button className="po-reset" type="button" onClick={clearDraft}>Xóa nháp</button>}
+            </form>}
           </section>
         </div>
         <div className="po-wave" aria-hidden="true"><Wave fill="var(--color-ink)" /></div>

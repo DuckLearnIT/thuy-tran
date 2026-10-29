@@ -22,9 +22,14 @@ hành vi cần giữ, dữ liệu, lịch sử quyết định và cách kiểm 
   hijacking, router hay dependency mới nếu chưa có nhu cầu cụ thể.
 - Giữ màu và phong cách artwork; không tự tăng saturation/contrast, vẽ mắt
   chi tiết hoặc đổi ảnh. Hero giấu mép tranh khuyết bằng bố cục sát viền.
-- Checkout hiện chỉ là **phiếu mẫu**, không gửi đơn, không thu tiền. Giá một bộ
-  đã chốt **599.000₫**. Phí/lịch giao/ngân hàng chưa có: dùng `null`, không dựng
-  phí hay QR thanh toán giả; tổng cộng chờ đủ phí vận chuyển.
+- Đặt trước là đăng ký thật vào Google Sheets, chưa thu tiền. Giá một bộ đã
+  chốt **599.000₫**. Tên và điện thoại bắt buộc; email và lời nhắn tùy chọn.
+  Chưa có email tự động. Phí/lịch giao/ngân hàng chưa có: dùng `null`, không
+  dựng phí hay QR thanh toán giả; chỉ hiển thị tạm tính chưa gồm phí giao.
+- Endpoint nhận đơn là Apps Script riêng; thay `services/preorder/Code.gs` phải
+  cập nhật deployment Apps Script, không chỉ deploy GitHub Pages. Giữ Sheets
+  riêng tư, xác thực dữ liệu phía server và cơ chế gửi lại không tạo trùng;
+  xem handoff trước khi sửa schema hoặc giá.
 - 24 địa danh dùng F1/F2 cho hộp, hộp thoại và ô trên bàn chơi. F3 dùng cho
   spiral và bộ Con nước bốc trong `play.html` (yêu cầu mới ngày 14/10/2026).
   Giữ đúng tỉ lệ WebP, không thêm số lên tranh; tên vai từ `src/data/cards.ts`.
