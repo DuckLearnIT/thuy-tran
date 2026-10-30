@@ -29,10 +29,6 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
     if (pick || selection.held) controller.current?.pieces.pick(index)
     else controller.current?.pieces.setActive(index)
   }
-  const stepPiece = (delta: number) => {
-    const position = group.findIndex(piece => piece.index === selection.index)
-    selectPiece(group[(position + delta + group.length) % group.length].index, selection.held)
-  }
 
   useLayoutEffect(() => {
     if (reduced || fallback) { onReady(); return }
@@ -276,11 +272,6 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
                 <button type="button" aria-label="Xoay phải" title="Xoay phải" onClick={() => controller.current?.pieces.rotate(Math.PI / 4)}>↷</button>
               </div>
               <button className="piece-pick" type="button" onClick={() => controller.current?.pieces.putDown()}>Đặt xuống</button>
-            </div>
-            <div className="piece-pagination">
-              <button className="piece-step" type="button" aria-label="Vật trước" onClick={() => stepPiece(-1)}>‹</button>
-              <span>{String(group.findIndex(piece => piece.index === selection.index) + 1).padStart(2, '0')} <i>/ {String(group.length).padStart(2, '0')}</i></span>
-              <button className="piece-step" type="button" aria-label="Vật tiếp" onClick={() => stepPiece(1)}>›</button>
             </div>
           </>}
           <p className="piece-scene-note">Bố trí trưng bày minh họa.</p>

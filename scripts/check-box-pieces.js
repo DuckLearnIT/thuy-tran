@@ -97,7 +97,7 @@
     check('Pickup changes state without opening a modal', Boolean(canvas.dataset.heldPiece) && stage.querySelector('.piece-pick')?.textContent === 'Đặt xuống'
       && !document.querySelector('dialog[open]'))
     const first = canvas.dataset.heldPiece
-    stage.querySelector('[aria-label="Vật tiếp"]').click(); await until(() => canvas.dataset.heldPiece && canvas.dataset.heldPiece !== first)
+    stage.querySelector('.piece-picker button[aria-pressed="false"]').click(); await until(() => canvas.dataset.heldPiece && canvas.dataset.heldPiece !== first)
     check('Changing objects returns the old object before holding the next', canvas.dataset.heldPiece && canvas.dataset.heldPiece !== first)
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })); await until(() => !canvas.dataset.heldPiece); await frames()
     check('Escape puts the object back', !canvas.dataset.heldPiece && !stage.querySelector('.piece-pick'))

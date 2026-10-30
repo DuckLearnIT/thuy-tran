@@ -20,7 +20,8 @@ sau khi camera cập nhật projection; không set React state mỗi frame. Nhã
 
 Chọn trực tiếp mesh/tên dấu hoặc tên quân ở inventory cuối cảnh để cầm;
 tên vật thành heading son lớn, vật tiến gần lệch phải, điều khiển mở ở trái.
-Có xoay trái/phải, Chính diện, Đặt xuống, trước/tiếp trong cùng nhóm, Escape.
+Có xoay trái/phải, Chính diện, Đặt xuống, Escape; đổi vật trực tiếp bằng tên
+ở inventory, không thêm cặp trước/tiếp trùng chức năng.
 Kéo cả trên nền khi đang cầm cũng xoay được; bấm nền trống đặt xuống. Touch
 kéo dọc vẫn cuộn. Khi đặt xuống hủy capture/inertia; cuộn khỏi lượt trả vật
 theo timeline cũ. Hover chỉ làm nổi đế, không tự đổi nhóm/tên lựa chọn.
@@ -41,6 +42,10 @@ hoặc dev hook. Chưa xác nhận engine/thiết bị thật khác Chromium. QA
 Windows 125% cần đọc innerWidth/innerHeight thực, không lấy kích thước API
 yêu cầu làm bằng chứng. Sau đổi hàm scene nên reload trước QA để dùng đúng
 camera mới, tránh closure của cảnh đang sống trong HMR.
+Đợt tinh gọn cuối bỏ cặp trước/tiếp; đổi vật qua inventory. Camera tính
+verticalRoom theo chiều cao để chừa header/inventory trên laptop. Đã chạy
+lại đủ 26 checks ở CSS 1024×576 sau chỉnh này, gồm bounds vật không che chữ
+và nút, chọn bằng bàn phím, đổi vật, Escape, cuộn ngược và đóng hộp.
 
 **Đổi nút Về đầu sang cuộn mượt — 30/10/2026:** yêu cầu mới nhất thay thế
 hành vi instant bên dưới. Nút dùng native `scrollTo({ top: 0, behavior:

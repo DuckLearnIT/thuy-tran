@@ -526,7 +526,9 @@ export function createBoxScene({ canvas, cover, cards, extra, locations, onPiece
     const dimensions = pieceScene.dimensions
     if (dimensions) {
       const narrow = canvas.clientWidth <= 600
-      const heldDistance = Math.max((narrow ? 2 / 0.68 : 1.8 / 0.8) / (2 * tangent),
+      // Leave room for the header and inventory on short laptop screens.
+      const verticalRoom = narrow ? 0.68 : Math.min(0.8, Math.max(0.3, 1 - 240 / canvas.clientHeight))
+      const heldDistance = Math.max((narrow ? 2 : 1.8) / (2 * tangent * verticalRoom),
         (dimensions.width + dimensions.depth) * 1.32 / dimensions.height / (2 * tangent * aspect * (narrow ? 0.82 : 0.6)))
       dist = THREE.MathUtils.lerp(dist, heldDistance, focus)
       look.lerp(heldLook, focus)

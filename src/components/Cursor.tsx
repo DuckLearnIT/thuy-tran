@@ -18,7 +18,7 @@ export default function Cursor() {
       const x = gsap.quickTo(node, 'x', { duration: 0.35, ease: 'power3' })
       const y = gsap.quickTo(node, 'y', { duration: 0.35, ease: 'power3' })
       const move = (e: PointerEvent) => {
-        const inspecting = (e.target as HTMLElement).closest('.bx-piece-controls, .piece-inspector, .piece-pagination, .piece-marker-label, canvas[data-pieces-interactive="true"]')
+        const inspecting = (e.target as HTMLElement).closest('.bx-piece-controls, .piece-inspector, .piece-marker-label, canvas[data-pieces-interactive="true"]')
         gsap.to(node, { opacity: inspecting ? 0 : 1, duration: 0.3, overwrite: 'auto' })
         x(e.clientX)
         y(e.clientY)

@@ -440,11 +440,6 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
 .piece-rotation button:not(.piece-front) { border: 1px solid #23151160; border-radius: 50%; }
 .piece-rotation .piece-front { min-width: 90px; font-size: 12px; }
 .piece-rotation button:hover { color: var(--color-vermilion); border-color: var(--color-vermilion); }
-.piece-pagination { position: absolute; left: 5%; top: calc(51% + 140px); display: flex; align-items: center; gap: 14px; pointer-events: auto; }
-.piece-pagination span { font-size: 13px; font-variant-numeric: tabular-nums; }
-.piece-pagination i { font-style: normal; opacity: .45; }
-.piece-step { width: 44px; height: 44px; border: 1px solid #23151160; border-radius: 50%; font-size: 28px; line-height: 1; }
-.piece-step:hover { color: var(--color-vermilion); border-color: currentColor; }
 .piece-scene-note { position: absolute; right: 5%; bottom: 24px; font-size: 10px; opacity: .65; }
 .piece-note { font-size: 10px; margin-top: 8px; opacity: .7; }
 .piece-gallery { padding: 36px 5% 64px; text-align: center; }
@@ -483,7 +478,6 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
   .piece-rotation { flex: 1; gap: 4px; }
   .piece-rotation .piece-front { min-width: 66px; font-size: 10px; }
   .piece-pick { margin: 0; width: 110px; padding: 6px 12px; font-size: 22px; min-height: 44px; }
-  .piece-pagination { display: none; }
   .piece-marker-label { font-size: 16px; min-width: 62px; padding-inline: 2px; }
   .piece-scene-note { bottom: 15px; right: 5%; max-width: 140px; text-align: right; font-size: 9px; }
   .piece-gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 10px; }
