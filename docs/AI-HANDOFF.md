@@ -10,6 +10,17 @@
 
 ## 1. Đọc phần này trước
 
+**Phát hành showcase 3D — 30/10/2026:** nguồn `aad5ee2`, release
+`a28586de5c1e045b757e458bb17d15c595d0ec44` trên origin/gh-pages, Pages
+`built`. Website chính tải JS `index-Qifjcabx.js`, CSS `index-D5GRbewC.css`
+và cả mười GLB (HTTP 200); `play.html` vẫn HTTP 404. Đã kiểm tra trực tiếp
+production: cầm/đặt quân hoạt động, nắp khép trước khi hộp rời khung,
+cuộn sang Lời lệnh không còn hộp; canvas ẩn sau khi timeline hoàn tất,
+không có dev hook. Ảnh online `docs/qa/pieces-main-exit-2026-10-30.jpg`.
+Một cảnh báo độ chính xác số từ shader của driver Chromium; không có lỗi
+shader hoặc lỗi tải model. Temp poster và Python cache của task đã dọn;
+asset nguồn, dependency cache và CSV Anki ngoài task giữ nguyên.
+
 **Showcase quân/dấu mica — 30/10/2026:** thêm lượt sau 24 địa danh trong cùng
 `Cover.tsx` / `boxScene.ts`, cùng renderer và ScrollTrigger; pin 16 màn thay
 12, giữ mật độ cuộn các phần trước. `pieces-in/showcase/out` nằm trước
