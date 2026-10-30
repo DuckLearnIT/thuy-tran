@@ -14,6 +14,10 @@
   // Vite versions module URLs after edits; read the actual running loader instance.
   const loaderUrl = performance.getEntriesByType('resource').find(entry => new URL(entry.name).pathname === '/src/preloadAssets.ts')?.name
   const { preloadedImages } = await import(loaderUrl ?? '/src/preloadAssets.ts')
+  // Artwork now streams in after the curtain; read the running queue instance and wait for it.
+  const queueUrl = performance.getEntriesByType('resource').find(entry => new URL(entry.name).pathname === '/src/assetQueue.ts')?.name
+  const { whenBackgroundIdle } = await import(queueUrl ?? '/src/assetQueue.ts')
+  await Promise.race([whenBackgroundIdle(), new Promise((_, reject) => setTimeout(() => reject(new Error('Artwork did not finish streaming')), 60000))])
   const scene = root.querySelector('.spiral-scene')
   const faces = [...root.querySelectorAll('.spiral-face')]
   const triggers = window.ScrollTrigger.getAll().filter((st) => st.trigger === root)

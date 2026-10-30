@@ -10,6 +10,44 @@
 
 ## 1. Đọc phần này trước
 
+**Curtain luôn vào được trang + nút menu mobile mới — 30/10/2026 (chưa commit/deploy):**
+mọi curtain (landing, Cách chơi, Đặt trước, game) dùng `hooks/useCurtainClock.ts`:
+tổng hạn **10 giây** tính từ lúc bắt đầu điều hướng, trong đó dành 4 giây cho dựng
+trang và animation mở, nên hết ~6 giây là tự mở với những gì đã tải (tối thiểu
+1,5 giây sau khi script chạy). Không còn trạng thái “Chưa tải được tài nguyên”,
+“Thử lại” hay nút “Đọc luật không chờ tranh”; lỗi tải ảnh/font chỉ bị bỏ qua.
+Thanh tiến độ chạy theo cả đồng hồ (tối đa 99% cho tới khi mở) nên không đứng ở
+90%. Ở landing, lúc hết hạn trang được dựng trước, hai frame sau mới mở curtain.
+Hero/box dùng texture tạm cho ảnh chưa về. Trang Đặt trước giờ chỉ tải bìa và 6
+thẻ nhân vật (`preloadAssets(cb, 'preorder')`). Mạng giả lập 600 KB/s: vào được
+trang sau ~12 giây (đo trước khi tăng phần dự trữ lên 4 giây); mạng 150 KB/s thì
+bản thân việc tải script đã mất >8 giây nên không thể dưới 10 giây. Nút menu cảm
+ứng/mobile (`.nav-toggle`): chip đỏ son cắt góc như CTA, chữ display in hoa,
+biểu tượng thoi đổi thành dấu × khi mở và chip chuyển sang màu mực.
+
+**CTA đặt trước thay nút Về đầu — 30/10/2026 (chưa commit/deploy):** người dùng
+bỏ nút “Về đầu”. `Header.tsx` giờ có `.preorder-dock` (link `?page=dat-truoc`,
+góc dưới trái, không render ở trang đặt trước). Trên landing, CTA hero **chính
+là** dock: `Cover.tsx` đặt dock đè khít `.hero-cta` (giữ lại làm chỗ trống,
+`visibility:hidden`, inert) rồi, sau khi chữ hero mờ đi (t=1,35–2,2 của
+timeline), dock bay xuống góc, thu nhỏ và chữ “boardgame” co lại thành
+“Đặt trước”. Cuộn ngược trả dock về đúng chỗ hero. Chữ hero chỉ mờ phần `p`,
+không còn mờ cả `.hero-copy`. Reduced motion/không pin: hero giữ CTA riêng,
+dock hiện khi cuộn qua ~85% chiều cao màn. Trang Cách chơi hiện dock ngay.
+`check-hero.js` 52 checks đạt ở 1304×895; mobile 393×850: dock khớp slot 243×52
+rồi về 130×44 ở góc. Không đổi artwork hay màu son.
+
+**Tải ảnh theo tầng — 30/10/2026 (chưa commit/deploy):** màn chờ landing chỉ
+chờ bìa, nền hero, 6 ảnh hero và font (~5,5 MB thay vì ~16,7 MB). Phần còn lại
+tải nền sau khi curtain sẵn sàng (`streamRemainingArt` trong `preloadAssets.ts`),
+theo thứ tự cuộn: thẻ nhân vật, kế sách, F1, F2, F3. `assetQueue.ts` giữ hàng
+đợi (4 luồng nền, `prioritize` khi ảnh tới gần viewport); `ArtImg.tsx` giữ chỗ
+đúng tỉ lệ (`--art-ratio`), fade 0,28s khi về muộn. `boxScene.ts` dùng texture
+giấy tạm rồi hoán đổi, nạp GPU mỗi frame một texture. Trang Cách chơi và Đặt
+trước vẫn tải đủ trước (`preloadAssets(cb)` mặc định `full`). Script check chờ
+`whenBackgroundIdle()`. Mạng giả lập 600 KB/s: bản cũ quá 30 giây báo lỗi, bản
+mới sẵn sàng ~33 giây. Còn chặn curtain: 6 ảnh hero (5,1 MB) và 10 GLB (3,2 MB).
+
 **UX showcase 3D — 30/10/2026:** người dùng yêu cầu nâng chất lượng trưng
 bày; bản hiện tại không dùng bảng công cụ nền giấy hoặc dãy thumbnail.
 Bốn dấu có nút tên Yellost đặt theo vị trí đế thật trong camera. `PieceLabel`

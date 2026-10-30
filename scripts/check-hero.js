@@ -127,8 +127,13 @@
       && rect.left < viewportWidth && rect.top > 0 && rect.top < innerHeight))
     check('Heading and subheading have their own space below the sun', brand.getBoundingClientRect().top > focalSun.bottom + 8
       && hero.querySelector('.hero-copy').getBoundingClientRect().top > brand.getBoundingClientRect().bottom + 8)
-    const openingCta = heroCta.getBoundingClientRect()
-    check('Opening CTA is visible, legible and fits the viewport', !hidden(heroCta)
+    // While the cover is pinned the pre-order dock stands in for the hero CTA, laid exactly over its (hidden) slot.
+    const dock = document.querySelector('.preorder-dock')
+    const slot = heroCta.getBoundingClientRect()
+    const openingCta = dock.getBoundingClientRect()
+    check('Hero CTA keeps only its layout slot while the dock stands in', hidden(heroCta) && heroCta.inert && heroCta.getAttribute('aria-hidden') === 'true')
+    check('Dock starts exactly over the hero CTA slot', ['left', 'top', 'width', 'height'].every(key => Math.abs(openingCta[key] - slot[key]) < 1.5))
+    check('Opening CTA is visible, legible and fits the viewport', !hidden(dock)
       && openingCta.height >= 44 && openingCta.left >= 0 && openingCta.right <= viewportWidth
       && openingCta.top > hero.querySelector('.hero-copy p').getBoundingClientRect().bottom + 8
       && openingCta.bottom < innerHeight - 20)
@@ -168,6 +173,8 @@
         && (side === 'top' ? window.gsap.getProperty(person, 'y') < -30
           : window.gsap.getProperty(person, 'x') * (side === 'left' ? -1 : 1) > 30)
     }))
+    const midway = dock.getBoundingClientRect()
+    check('Dock is still travelling toward the corner while the hero leaves', midway.left < slot.left - 10 && midway.width < slot.width - 10 && !hidden(dock))
     await seek(1.65)
     const distance = document.documentElement.scrollHeight - innerHeight
     check('Reading progress follows the real document including pinned chapters', Math.abs(new DOMMatrix(getComputedStyle(pageProgress).transform).a - scrollY / distance) < 0.001
@@ -188,6 +195,11 @@
     const cta = document.querySelector('.site-cta').getBoundingClientRect()
     check('Docked CTA fits without clipping or colliding with the logo', cta.left > brand.getBoundingClientRect().right + 8
       && cta.right <= viewportWidth && cta.top >= 0 && cta.bottom < innerHeight)
+    await seek(2.2)
+    const docked = dock.getBoundingClientRect()
+    check('Docked pre-order CTA sits bottom-left, at least 44px tall and fully in the viewport', docked.left >= 12 && docked.left <= 24
+      && docked.height >= 44 && docked.bottom <= innerHeight - 8 && innerHeight - docked.bottom < 28 && docked.width < slot.width * 0.7)
+    check('Docked pre-order CTA keeps a link to the pre-order page', new URL(dock.href).searchParams.get('page') === 'dat-truoc' && !dock.closest('[inert]'))
     await seek(entrance.startTime() - 0.015)
     const sun = hero.querySelector('.sun').getBoundingClientRect()
     const stage = trigger.trigger.getBoundingClientRect()
@@ -207,6 +219,8 @@
     await seek(0)
     check('Scrolling back restores the hero', getComputedStyle(hero.parentElement).visibility === 'inherit'
       || getComputedStyle(hero.parentElement).visibility === 'visible')
+    const restored = dock.getBoundingClientRect()
+    check('Scrolling back returns the dock to the hero CTA slot', ['left', 'top', 'width', 'height'].every(key => Math.abs(restored[key] - slot[key]) < 1.5))
     const restoredSun = hero.querySelector('.sun').getBoundingClientRect()
     check('Refresh mid-transition does not leave an enlarged sun', Math.abs(restoredSun.width - hero.querySelector('.sun').offsetWidth) < 2)
     check('Reverse restores all character positions', [...hero.querySelectorAll('.hero-person')]

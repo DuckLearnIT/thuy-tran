@@ -7,8 +7,6 @@ import useReducedMotion from '../hooks/useReducedMotion'
 type Props = {
   ready: boolean
   progress: number
-  failed: boolean
-  onRetry: () => void
   onOpen: () => void
   onComplete: () => void
 }
@@ -16,8 +14,8 @@ type Props = {
 // Two identical periods make the horizontal loop seamless.
 const waterline = 'M0 18C40 -2 80 -2 120 18S200 38 240 18S320 -2 360 18S440 38 480 18V48H0Z'
 
-/** The curtain opens only after artwork, fonts and the box scene are prepared. */
-export default function Curtain({ ready, progress, failed, onRetry, onOpen, onComplete }: Props) {
+/** The curtain opens once the first screen is prepared, or at the time limit with whatever has loaded; it never offers a retry. */
+export default function Curtain({ ready, progress, onOpen, onComplete }: Props) {
   const root = useRef<HTMLDivElement>(null)
   const reduced = useReducedMotion()
   const [done, setDone] = useState(false)
@@ -52,7 +50,7 @@ export default function Curtain({ ready, progress, failed, onRetry, onOpen, onCo
             <SplitChars text="Thủy Trận" />
           </p>
           <p className="cu-sub mt-4 text-[0.68rem] tracking-[0.4em] uppercase text-card/80" role="status">
-            {failed ? 'Chưa tải được tài nguyên' : ready ? 'Ra quân' : 'Đang chuẩn bị thế trận'}
+            {ready ? 'Ra quân' : 'Đang chuẩn bị thế trận'}
           </p>
           <div className="cu-water relative mx-auto mt-7 h-10 w-64 max-w-[calc(100vw-3rem)] overflow-hidden" role="progressbar"
             aria-label="Nạp tài nguyên" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.floor(progress * 100)}>
@@ -69,8 +67,6 @@ export default function Curtain({ ready, progress, failed, onRetry, onOpen, onCo
             </div>
           </div>
           <p className="mt-3 text-xs tabular-nums text-card/70">{Math.floor(progress * 100)}%</p>
-          {failed && <button type="button" onClick={onRetry}
-            className="mt-5 min-h-11 cursor-pointer border border-card/60 px-6 text-sm hover:bg-card/10">Thử lại</button>}
         </div>
       </div>
       <div className="absolute inset-x-0 top-full -mt-px">

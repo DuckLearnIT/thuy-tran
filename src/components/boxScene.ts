@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { preloadedImages } from '../preloadAssets'
+import { preloadedImages, whenLoaded } from '../assetQueue'
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 import { createPieceScene, piecePacking, type PieceSelection, type PieceLabel } from './pieceScene'
@@ -37,6 +37,8 @@ type Opts = {
   onPieceLayout?: (positions: PieceLabel[]) => void
 }
 
+// All 13 character and strategy cards share this pixel size, so late files do not resize the meshes.
+const cardArt = { width: 1500, height: 2078 }
 const W = 3
 const D = 4
 const HB = 0.62
@@ -111,19 +113,52 @@ export function createBoxScene({ canvas, cover, cards, extra, locations, onPiece
   const anis = renderer.capabilities.getMaxAnisotropy()
   const textureTasks: Promise<void>[] = []
   let disposed = false
-  const loadTex = (src: string, cb?: (t: THREE.Texture) => void) => {
+  // Artwork outside the first screen streams in; a paper-coloured stand-in holds each slot until it lands.
+  const stand = document.createElement('canvas')
+  stand.width = stand.height = 2
+  const standContext = stand.getContext('2d')!
+  standContext.fillStyle = '#f3e6cd'
+  standContext.fillRect(0, 0, 2, 2)
+  // GPU uploads of late textures run one per frame so scrolling does not hitch.
+  const uploads: THREE.Texture[] = []
+  let uploadFrame = 0
+  const pumpUploads = () => {
+    if (uploadFrame || disposed || !uploads.length) return
+    uploadFrame = requestAnimationFrame(() => {
+      uploadFrame = 0
+      const next = uploads.shift()
+      if (next && !disposed) renderer.initTexture(next)
+      pumpUploads()
+    })
+  }
+  const loadTex = (src: string, cb?: (width: number, height: number) => void, planned?: { width: number; height: number }) => {
     const image = preloadedImages.get(src)
-    if (!image) throw new Error(`Artwork was not preloaded: ${src}`)
-    const t = new THREE.Texture(image)
+    const t = new THREE.Texture(image ?? stand)
     t.colorSpace = THREE.SRGBColorSpace
     t.anisotropy = anis
     t.needsUpdate = true
     // Run sizing callbacks once their card meshes have been constructed.
     textureTasks.push(Promise.resolve().then(() => {
       if (disposed) return
-      cb?.(t)
-      renderer.initTexture(t)
+      if (image) {
+        cb?.(image.width, image.height)
+        renderer.initTexture(t)
+      } else if (planned) {
+        cb?.(planned.width, planned.height)
+      }
     }))
+    if (!image) {
+      whenLoaded(src).then((loaded) => {
+        if (disposed) return
+        // Immutable GPU storage cannot change size, so release the stand-in before swapping in the file.
+        t.dispose()
+        t.image = loaded
+        t.needsUpdate = true
+        cb?.(loaded.width, loaded.height)
+        uploads.push(t)
+        pumpUploads()
+      }).catch(() => {})
+    }
     return t
   }
 
@@ -225,13 +260,12 @@ export function createBoxScene({ canvas, cover, cards, extra, locations, onPiece
     const g = new THREE.Group()
     const geo = new THREE.BoxGeometry(CW, GH, 0.014)
     const side = new THREE.MeshStandardMaterial({ color: 0xf3e6cd, roughness: 0.8 })
-    const tex = loadTex(src, (t) => {
-      const img = t.image as { width: number; height: number }
-      const h = CW * (img.height / img.width)
+    const tex = loadTex(src, (width, height) => {
+      const h = CW * (height / width)
       mesh.scale.y = h / GH
       CH = h
       cardMeshes.forEach((m) => (m.position.y = h / 2))
-    })
+    }, cardArt)
     const front = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.5, alphaTest: 0.5 })
     const mesh = shadowed(new THREE.Mesh(geo, [side, side, side, side, front, new THREE.MeshStandardMaterial({ color: 0x0c2a52 })]))
     mesh.position.y = GH / 2
@@ -275,12 +309,11 @@ export function createBoxScene({ canvas, cover, cards, extra, locations, onPiece
   extra.forEach((src) => {
     const g = new THREE.Group()
     const side = new THREE.MeshStandardMaterial({ color: 0xf3e6cd, roughness: 0.8 })
-    const tex = loadTex(src, (t) => {
-      const img = t.image as { width: number; height: number }
-      const h = CW * (img.height / img.width)
+    const tex = loadTex(src, (width, height) => {
+      const h = CW * (height / width)
       mesh.scale.y = h / GH
       mesh.position.y = h / 2
-    })
+    }, cardArt)
     const front = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.5, alphaTest: 0.5 })
     const mesh = shadowed(new THREE.Mesh(new THREE.BoxGeometry(CW, GH, 0.014), [side, side, side, side, front, new THREE.MeshStandardMaterial({ map: backTex, roughness: 0.6 })]))
     mesh.position.y = GH / 2
@@ -594,6 +627,7 @@ export function createBoxScene({ canvas, cover, cards, extra, locations, onPiece
       disposed = true
       if (import.meta.env.DEV) delete inspectionCanvas.__boxScene
       cancelAnimationFrame(raf)
+      cancelAnimationFrame(uploadFrame)
       ro.disconnect()
       io.disconnect()
       canvas.removeEventListener('pointermove', pointerMove)

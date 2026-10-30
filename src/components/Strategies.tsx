@@ -3,6 +3,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { strategies as list } from '../data/strategies'
 import useReducedMotion from '../hooks/useReducedMotion'
+import ArtImg, { cardSize } from './ArtImg'
 
 const n = list.length
 const carouselDuration = n - 1
@@ -175,8 +176,9 @@ export default function Strategies() {
         <div className="mt-10 grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
           {list.map((s) => (
             <article key={s.id} className="rounded-2xl p-6" style={{ background: s.bg, color: s.fg }}>
-              <img
+              <ArtImg
                 src={s.image}
+                {...cardSize}
                 alt={`Lá bài ${s.name}`}
                 loading="eager"
                 decoding="async"
@@ -279,8 +281,9 @@ export default function Strategies() {
           >
             {list.map((s, i) => (
               <div key={s.id} className="ks-wave absolute inset-0 [transform-style:preserve-3d]">
-              <img
+              <ArtImg
                 src={s.image}
+                {...cardSize}
                 alt={`Lá kế sách ${s.name}`}
                 draggable={false}
                 loading="eager"

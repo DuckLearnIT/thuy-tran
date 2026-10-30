@@ -9,6 +9,7 @@ import { createBoxScene } from './boxScene'
 import useReducedMotion from '../hooks/useReducedMotion'
 import { pieces } from '../data/pieces'
 import PieceGallery from './PieceGallery'
+import ArtImg, { squareSize } from './ArtImg'
 import type { PieceSelection } from './pieceScene'
 
 const alt = 'Bìa board game Thủy trận Bạch Đằng: thuyền nhẹ cầm cờ len giữa bãi cọc nhọn, chiến thuyền buồm đỏ phía xa'
@@ -100,6 +101,26 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
       const titleScale = () => Math.min(stage.clientWidth * (stage.clientWidth > stage.clientHeight ? 0.78 : 0.9), stage.clientHeight * 0.77, 900) / brand.offsetWidth
       const titleX = () => (stage.clientWidth - brand.offsetWidth * titleScale()) / 2 - brand.offsetLeft
       const titleY = () => stage.querySelector<HTMLElement>('.hero-copy')!.offsetTop - brand.offsetHeight * titleScale() - 16 - brand.offsetTop
+      // The pre-order dock starts exactly over the hero CTA (kept as an invisible layout slot) and flies to the corner once the hero is gone.
+      const dock = document.querySelector<HTMLElement>('.preorder-dock')
+      const dockHome = dock?.parentElement
+      const dockMore = dock?.querySelector<HTMLElement>('.dock-more')
+      const slot = stage.querySelector<HTMLElement>('.hero-cta')
+      const morph = !!(dock && dockHome && dockMore && slot)
+      const dockFull = () => dock!.offsetWidth - dockMore!.offsetWidth + dockMore!.scrollWidth
+      const dockPose = () => {
+        const box = slot!.getBoundingClientRect()
+        const frame = stage.getBoundingClientRect()
+        const home = dockHome!.getBoundingClientRect()
+        const scale = box.width / dockFull()
+        return { scale, x: box.left - frame.left - home.left, y: box.top - frame.top + (box.height - dock!.offsetHeight * scale) / 2 - home.top }
+      }
+      if (morph) {
+        stage.dataset.dock = 'true'
+        slot!.inert = true
+        slot!.setAttribute('aria-hidden', 'true')
+        slot!.tabIndex = -1
+      }
       // Explicit starts also restore the scene after resizing mid-transition.
       tl.set('.hero-layer', { autoAlpha: 1 }, 0)
         .set(canvas.current, { autoAlpha: 1 }, 0)
@@ -110,7 +131,8 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
         .to(navigation, { autoAlpha: 1, duration: 0.25 }, 1.4)
         .set(header, { mixBlendMode: 'difference' }, 1.4)
         .set(brand, { color: '#f6e9d7', '--brand-outline': '0px' }, 1.4)
-        .fromTo('.hero-fade', { y: 0, opacity: 1 }, { y: -60, opacity: 0, duration: 0.65 }, 0.65)
+        // The hero CTA lives inside .hero-copy, so only the text fades with it.
+        .fromTo(stage.querySelectorAll('.hero-fade:not(.hero-copy), .hero-copy > p'), { y: 0, opacity: 1 }, { y: -60, opacity: 0, duration: 0.65 }, 0.65)
         .fromTo('.hero-person', { x: 0, y: 0, rotation: 0, scale: 1 }, {
           x: (_index, element) => -Number(getComputedStyle(element).getPropertyValue('--hand-x')) * sun.offsetWidth * 0.08,
           y: (_index, element) => -Number(getComputedStyle(element).getPropertyValue('--hand-y')) * sun.offsetWidth * 0.08,
@@ -138,6 +160,14 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
         .fromTo(st, { elev: 1.3, yaw: -0.5, zoom: 0.9 }, {
           elev: 1.0, yaw: -0.25, zoom: 1, ease: 'power2.out', duration: 1.4,
         }, 2.25)
+      if (morph) {
+        tl.set(dock!, { autoAlpha: 1, force3D: false, x: () => dockPose().x, y: () => dockPose().y, scale: () => dockPose().scale }, 0)
+          .set(dockMore!, { maxWidth: () => dockMore!.scrollWidth, opacity: 1 }, 0)
+          .fromTo(dock!, { x: () => dockPose().x, y: () => dockPose().y, scale: () => dockPose().scale },
+            { x: 0, y: 0, scale: 1, duration: 0.85, ease: 'power2.inOut', immediateRender: false }, 1.35)
+          .fromTo(dockMore!, { maxWidth: () => dockMore!.scrollWidth, opacity: 1 },
+            { maxWidth: 0, opacity: 0, duration: 0.85, ease: 'power2.inOut', immediateRender: false }, 1.35)
+      }
       const reveal = 3.85
       tl.to(st, { lift: 7, lidTilt: -0.1, ease: 'power2.inOut', duration: 1.4 }, reveal)
       tl.to(st, { rise: 1, elev: 0.3, yaw: 0, zoom: 1.25, shift: 0.9, ease: 'power2.inOut', duration: 1.4 }, reveal + 1.2)
@@ -181,9 +211,15 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
     const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') box.pieces.putDown() }
     window.addEventListener('keydown', escape)
 
+    const stageElement = root.current
     return () => {
       cancelled = true
       ctx.revert()
+      if (stageElement) {
+        delete stageElement.dataset.dock
+        const heroCta = stageElement.querySelector<HTMLElement>('.hero-cta')
+        if (heroCta) { heroCta.inert = false; heroCta.removeAttribute('aria-hidden'); heroCta.removeAttribute('tabindex') }
+      }
       box.dispose()
       controller.current = null
       window.removeEventListener('keydown', escape)
@@ -201,7 +237,7 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
           <p className="box-inventory">6 nhân vật · 7 kế sách · 24 địa danh</p>
           <h2 className="display">24 địa danh. Một chiến trường.</h2>
           <div className="box-locations-grid">
-            {locations.map((card, i) => <img key={card.id} src={card.image} alt={card.name} draggable={false}
+            {locations.map((card, i) => <ArtImg key={card.id} src={card.image} {...squareSize} alt={card.name} draggable={false}
               style={{ gridColumn: locationColumns[i] }} />)}
           </div>
         </section>

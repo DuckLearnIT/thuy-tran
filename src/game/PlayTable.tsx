@@ -4,6 +4,7 @@ import { locations } from '../data/locations'
 import { strategies } from '../data/strategies'
 import useReducedMotion from '../hooks/useReducedMotion'
 import Curtain from '../components/Curtain'
+import useCurtainClock, { curtainProgress, curtainLimit } from '../hooks/useCurtainClock'
 import Board, { type WaterCue } from './Board'
 import GameMenu, { type GameMenuOptions } from './GameMenu'
 import CardFlight, { type CardMotion, type FlightRect } from './CardMotion'
@@ -53,8 +54,8 @@ export default function PlayTable() {
   const [waterCue, setWaterCue] = useState<WaterCue | null>(null)
   const [busy, setBusy] = useState(false)
   const [dealt, setDealt] = useState<Record<string, number> | null>(() => needsDeal ? Object.fromEntries(game.players.map(p => [p.id, 0])) : null)
-  const [loading, setLoading] = useState({ progress: 0, ready: false, failed: false })
-  const [loadAttempt, setLoadAttempt] = useState(0)
+  const [loading, setLoading] = useState({ progress: 0, ready: false })
+  const clock = useCurtainClock()
   const [unlocked, setUnlocked] = useState(false)
   const root = useRef<HTMLDivElement>(null)
   const queue = useRef<FlightStep[]>([])
@@ -74,17 +75,18 @@ export default function PlayTable() {
     document.title = 'Thủy Trận — Game'
     let live = true, finished = 0
     const report = () => { const progress = ++finished / (images.length + 1); if (live) setLoading(s => ({ ...s, progress })) }
-    setLoading({ progress: 0, ready: false, failed: false })
+    setLoading({ progress: 0, ready: false })
     Promise.allSettled([...images.map(src => new Promise<void>((resolve, reject) => {
       const img = new Image(); let done = false
       const complete = (ok: boolean) => { if (done) return; done = true; clearTimeout(timer); report(); ok ? resolve() : reject(Error(src)) }
-      const timer = setTimeout(() => complete(false), 15000)
+      const timer = setTimeout(() => complete(false), curtainLimit)
       img.onload = () => img.decode().then(() => complete(true), () => complete(false)); img.onerror = () => complete(false); img.src = src
     })), document.fonts.ready.then(report)]).then(results => {
-      if (live) setLoading({ progress: 1, ready: results.every(r => r.status === 'fulfilled'), failed: results.some(r => r.status === 'rejected') })
+      // A missing image never blocks the table; the curtain also opens by itself at the time limit.
+      if (live) setLoading({ progress: 1, ready: true })
     })
     return () => { live = false }
-  }, [loadAttempt])
+  }, [])
   useEffect(() => { if (session.started) try { localStorage.setItem(STORAGE, JSON.stringify(game)) } catch { /* Continue in memory. */ } }, [game, session.started])
   useEffect(() => { if (!notice) return; const timer = setTimeout(() => setNotice(''), 2600); return () => clearTimeout(timer) }, [notice])
   useEffect(() => { if (!waterCue || busy) return; const timer = setTimeout(() => setWaterCue(null), 1200); return () => clearTimeout(timer) }, [waterCue, busy])
@@ -271,7 +273,7 @@ export default function PlayTable() {
   const nextLabel = selectedTiles.length ? `Củng cố ${selectedTiles.length} ô` : game.phase === 'actions' ? 'Hết hành động' : game.phase === 'draw' ? `Bốc Kế sách · ${game.drawsRemaining}` : game.phase === 'flood' ? `Bốc Biến động · ${game.floodRemaining}` : 'Chọn ô thoát'
 
   return <div ref={root} className="wg-game" data-ready={unlocked} data-busy={busy || (!menu && needsDeal)} data-menu={menu} data-phase={game.phase} data-tool={tool}>
-    <Curtain ready={loading.ready} progress={loading.progress} failed={loading.failed} onRetry={() => setLoadAttempt(n => n + 1)} onOpen={opened} onComplete={unlock} />
+    <Curtain ready={loading.ready || clock.expired} progress={curtainProgress(loading.progress, clock.fraction, loading.ready || clock.expired)} onOpen={opened} onComplete={unlock} />
     <main className="wg-surface" inert={!unlocked || menu || paused || ended}>
       {unlocked && session.started && <Board key={game.seed} game={game} targets={targets} selected={selectedTiles} onTile={clickTile} waterCue={waterCue} />}
       <section className="wg-turn" aria-label="Lượt chơi"><span>Lượt {game.turn} · Vòng {Math.floor((game.turn - 1) / game.players.length) + 1}</span><strong>{roleName(actor.id)}</strong>

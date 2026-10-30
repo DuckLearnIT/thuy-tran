@@ -47,6 +47,8 @@ export default function Header() {
         brand.inert = !docked
         const scale = Math.min(innerWidth * (innerWidth > innerHeight ? 0.78 : 0.9), innerHeight * 0.77, 900) / brand.offsetWidth
         gsap.set('.site-cta, .chapter-nav', { autoAlpha: docked ? 1 : 0 })
+        // Without the pinned cover there is no morph: the hero keeps its own CTA and the dock appears once it is scrolled away.
+        gsap.set('.preorder-dock', { autoAlpha: window.scrollY > innerHeight * 0.85 ? 1 : 0, x: 0, y: 0, scale: 1 })
         gsap.set(brand, { autoAlpha: 1, scale: docked ? 1 : scale, force3D: false, color: docked ? '#f6e9d7' : '#9c2923', '--brand-outline': docked ? '0px' : '0.6px',
           x: docked ? 0 : (innerWidth - brand.offsetWidth * scale) / 2 - brand.offsetLeft,
           y: docked ? 0 : document.querySelector<HTMLElement>('.hero-copy')!.offsetTop - brand.offsetHeight * scale - 16 - brand.offsetTop })
@@ -106,14 +108,6 @@ export default function Header() {
     setOpen(false)
   }
 
-  const returnToTop = () => {
-    clearHover()
-    setOpen(false)
-    ScrollTrigger.getAll().forEach((trigger) => trigger.getTween(true)?.kill())
-    window.history.replaceState(null, '', `${location.pathname}${location.search}${standalone ? '' : '#top'}`)
-    window.scrollTo({ top: 0, behavior: reduced ? 'instant' : 'smooth' })
-  }
-
   return (
     <>
       <div ref={scrollProgress} className="page-progress" role="progressbar" aria-label="Tiến trình khám phá trang"
@@ -149,7 +143,7 @@ export default function Header() {
       <button ref={toggle} type="button" className="nav-toggle" aria-controls="chapter-menu"
         aria-expanded={open} aria-label={open ? 'Đóng điều hướng' : 'Mở điều hướng'}
         onClick={() => { clearHover(); setOpen((value) => !value) }}>
-        <span aria-hidden="true">{open ? '×' : '◆'}</span><span>{open ? 'Đóng' : 'Menu'}</span>
+        <span className="nav-toggle-mark" aria-hidden="true" /><span>{open ? 'Đóng' : 'Menu'}</span>
       </button>
       <div id="chapter-menu" className="nav-panel" inert={!open} aria-hidden={!open}>
         <div className="nav-inner">
@@ -176,13 +170,16 @@ export default function Header() {
         <div className="nav-stripe" aria-hidden="true" />
       </div>
     </header>
-    <button type="button" className="back-to-top" inert={open}
-      aria-label="Về đầu trang" onClick={returnToTop}>
-      <span className="back-to-top-mark" aria-hidden="true">
-        <svg viewBox="0 0 16 16" fill="none"><path d="M8 12V4m-3 3 3-3 3 3" /></svg>
-      </span>
-      <span>Về đầu</span>
-    </button>
+    {page !== 'dat-truoc' && (
+      <div className="preorder-dock-wrap" inert={open}>
+        {/* On the landing page the hero CTA morphs into this link (see Cover); the pre-order page has no dock. */}
+        <a href="?page=dat-truoc" className="preorder-dock" aria-label="Đặt trước boardgame"
+          style={standalone ? { opacity: 1, visibility: 'visible' } : undefined}>
+          <span>Đặt trước<span className="dock-more"> boardgame</span></span>
+          <span className="nav-diamond" aria-hidden="true" />
+        </a>
+      </div>
+    )}
     </>
   )
 }

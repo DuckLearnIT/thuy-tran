@@ -8,6 +8,8 @@ import SplitChars from "./SplitChars"
 
 import Wave from "./Wave"
 
+import ArtImg, { cardSize } from "./ArtImg"
+
 import { cards } from "../data/cards"
 
 import { priceLabel, sales } from "../data/checkout"
@@ -237,8 +239,9 @@ export default function Finale() {
                   aria-controls="finale-card-detail"
                   onClick={() => setSelected(selected === c.id ? null : c.id)}
                 >
-                  <img
+                  <ArtImg
                     src={c.image}
+                    {...cardSize}
                     alt={`Lá bài ${c.role} — ${c.skill}`}
                     className="hand-card card-shadow w-full rounded-[3%]"
                     style={

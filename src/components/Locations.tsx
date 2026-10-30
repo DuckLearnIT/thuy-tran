@@ -5,6 +5,7 @@ import { locations } from '../data/locations'
 import { byId } from '../data/cards'
 import { strategies } from '../data/strategies'
 import useReducedMotion from '../hooks/useReducedMotion'
+import ArtImg, { spiralSize, squareSize, useImageReady } from './ArtImg'
 
 const entrance = 0.65
 const journey = 4
@@ -19,6 +20,15 @@ const slices = Array.from({ length: 7 }, (_, i) => {
     transform: `translateX(-50%) translateZ(calc(var(--tile) * ${(1 - Math.cos(angle)) / 0.42})) rotateY(${-angle * 180 / Math.PI}deg)`,
   }
 })
+
+function SpiralSlices({ image }: { image: string }) {
+  const ready = useImageReady(image)
+  return (
+    <span className="spiral-art" aria-hidden="true">
+      {slices.map((style, i) => <span className="spiral-slice" key={i} style={{ ...style, backgroundImage: ready ? `url(${image})` : undefined }} />)}
+    </span>
+  )
+}
 
 export default function Locations() {
   const root = useRef<HTMLElement>(null)
@@ -327,10 +337,8 @@ export default function Locations() {
               aria-current={index === active ? 'true' : undefined}
               aria-haspopup="dialog" aria-controls="location-detail"
               onClick={() => index === active ? openDetail() : choose(index)}>
-              <img className="spiral-source" src={card.spiralImage} alt={`${card.name} — tranh toàn cảnh F3`} loading="eager" decoding="async" draggable={false} />
-              <span className="spiral-art" aria-hidden="true">
-                {slices.map((style, i) => <span className="spiral-slice" key={i} style={{ ...style, backgroundImage: `url(${card.spiralImage})` }} />)}
-              </span>
+              <ArtImg className="spiral-source" src={card.spiralImage} {...spiralSize} alt={`${card.name} — tranh toàn cảnh F3`} loading="eager" decoding="async" draggable={false} />
+              <SpiralSlices image={card.spiralImage} />
             </button>
           </div>)}
         </div>
@@ -351,8 +359,8 @@ export default function Locations() {
             <div>
               <div className="location-flip" data-back={showBack}>
                 <div className="location-flip-sheet" id="location-card-faces">
-                  <img src={current.image} alt={`${current.name} — mặt trước`} aria-hidden={showBack} loading="eager" decoding="async" draggable={false} />
-                  <img src={current.back} alt={`${current.name} — mặt sau`} aria-hidden={!showBack} loading="eager" decoding="async" draggable={false} />
+                  <ArtImg src={current.image} {...squareSize} alt={`${current.name} — mặt trước`} aria-hidden={showBack} loading="eager" decoding="async" draggable={false} />
+                  <ArtImg src={current.back} {...squareSize} alt={`${current.name} — mặt sau`} aria-hidden={!showBack} loading="eager" decoding="async" draggable={false} />
                 </div>
               </div>
               <div className="location-face-actions">
@@ -375,8 +383,8 @@ export default function Locations() {
           </div>
         </div>
         <div className="location-flight" aria-hidden="true">
-          <img src={current.spiralImage} alt="" draggable={false} />
-          <img src={showBack ? current.back : current.image} alt="" draggable={false} />
+          <ArtImg src={current.spiralImage} {...spiralSize} alt="" draggable={false} />
+          <ArtImg src={showBack ? current.back : current.image} {...squareSize} alt="" draggable={false} />
         </div>
       </dialog>
     </section>

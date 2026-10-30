@@ -30,6 +30,8 @@ import {
 
 import { preloadAssets } from "../preloadAssets"
 
+import useCurtainClock, { curtainProgress } from "../hooks/useCurtainClock"
+
 import useReducedMotion from "../hooks/useReducedMotion"
 
 import Curtain from "./Curtain"
@@ -84,13 +86,13 @@ export default function Rules() {
 
   const [active, setActive] = useState(toc[0].id)
 
-  const [attempt, setAttempt] = useState(0)
-
   const [ready, setReady] = useState(false)
 
-  const [failed, setFailed] = useState(false)
-
   const [progress, setProgress] = useState(0)
+
+  const clock = useCurtainClock()
+
+  const curtainOpen = ready || clock.expired
 
   const [unlocked, setUnlocked] = useState(false)
 
@@ -113,24 +115,21 @@ export default function Rules() {
   useEffect(() => {
     let cancelled = false
 
-    setFailed(false)
-
+    // A failed or slow file never blocks the page: the curtain also opens by itself at the time limit.
     preloadAssets((value) => {
       if (!cancelled) setProgress(value)
     })
+
+      .catch(() => undefined)
 
       .then(() => {
         if (!cancelled) setReady(true)
       })
 
-      .catch(() => {
-        if (!cancelled) setFailed(true)
-      })
-
     return () => {
       cancelled = true
     }
-  }, [attempt])
+  }, [])
 
   useLayoutEffect(() => {
     if (unlocked) return
@@ -280,22 +279,11 @@ export default function Rules() {
   return (
     <main ref={root} id="cach-choi" className="rules-page grain" tabIndex={-1}>
       <Curtain
-        ready={ready}
-        progress={progress}
-        failed={failed}
-        onRetry={() => setAttempt((value) => value + 1)}
+        ready={curtainOpen}
+        progress={curtainProgress(progress, clock.fraction, curtainOpen)}
         onOpen={onOpen}
         onComplete={onComplete}
       />
-      {failed && !ready && (
-        <button
-          type="button"
-          className="rules-load-fallback"
-          onClick={() => setReady(true)}
-        >
-          Đọc luật không chờ tranh
-        </button>
-      )}
       <div className="rules-shell" inert={!unlocked} aria-hidden={!unlocked}>
         <Cursor />
         <Header />

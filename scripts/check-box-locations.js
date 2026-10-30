@@ -2,12 +2,16 @@
 (async () => {
   const { locations } = await import('/src/data/locations.ts')
   const { preloadedImages } = await import('/src/preloadAssets.ts')
+  // Artwork now streams in after the curtain; read the running queue instance and wait for it.
+  const queueUrl = performance.getEntriesByType('resource').find(entry => new URL(entry.name).pathname === '/src/assetQueue.ts')?.name
+  const { whenBackgroundIdle } = await import(queueUrl ?? '/src/assetQueue.ts')
+  await Promise.race([whenBackgroundIdle(), new Promise((_, reject) => setTimeout(() => reject(new Error('Artwork did not finish streaming')), 60000))])
   const checks = []
   const check = (name, passed) => {
     checks.push({ name, passed })
     if (!passed) throw new Error(name)
   }
-  check('All 24 front/back pairs are distinct and decoded before the scene', locations.length === 24
+  check('All 24 front/back pairs are distinct and decoded once streaming finishes', locations.length === 24
     && new Set(locations.flatMap(card => [card.image, card.back])).size === 48
     && locations.every(card => [card.image, card.back].every(src => preloadedImages.get(src)?.complete)))
   const staticGrid = document.querySelector('.box-locations-grid')

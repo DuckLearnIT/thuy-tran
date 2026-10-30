@@ -11,8 +11,9 @@ import MatchStory from './components/MatchStory'
 import Finale from './components/Finale'
 import Curtain from './components/Curtain'
 import Cursor from './components/Cursor'
-import { preloadAssets } from './preloadAssets'
+import { preloadAssets, streamRemainingArt } from './preloadAssets'
 import useCardFeel from './hooks/useCardFeel'
+import useCurtainClock, { curtainProgress } from './hooks/useCurtainClock'
 
 gsap.registerPlugin(ScrollTrigger)
 if (typeof window !== 'undefined') {
@@ -21,14 +22,13 @@ if (typeof window !== 'undefined') {
 }
 
 export default function App() {
-  const [attempt, setAttempt] = useState(0)
   const [progress, setProgress] = useState(0)
   const [assetsReady, setAssetsReady] = useState(false)
   const [sceneReady, setSceneReady] = useState(false)
   const [ready, setReady] = useState(false)
   const [opening, setOpening] = useState(false)
   const [unlocked, setUnlocked] = useState(false)
-  const [failed, setFailed] = useState(false)
+  const clock = useCurtainClock()
   const experience = useRef<HTMLDivElement>(null)
   useCardFeel(experience, unlocked)
   const onSceneReady = useCallback(() => setSceneReady(true), [])
@@ -60,34 +60,50 @@ export default function App() {
 
   useEffect(() => {
     let cancelled = false
-    setFailed(false)
     setProgress(0)
-    preloadAssets((value) => { if (!cancelled) setProgress(value * 0.9) })
+    // A failed or slow file never blocks the page: the curtain also opens by itself at the time limit.
+    preloadAssets((value) => { if (!cancelled) setProgress(value * 0.9) }, 'landing')
+      .catch(() => undefined)
       .then(() => { if (!cancelled) setAssetsReady(true) })
-      .catch(() => { if (!cancelled) setFailed(true) })
     return () => { cancelled = true }
-  }, [attempt])
+  }, [])
 
   useEffect(() => {
-    if (!assetsReady || !sceneReady) return
+    if (!assetsReady || !sceneReady || clock.expired) return
     let cancelled = false
     let frame = 0
-    Promise.all(Array.from(experience.current!.querySelectorAll('img'), (image) => image.decode().catch(error => {
+    // Streamed artwork (data-art) swaps its src as files arrive, which would reject a pending decode.
+    Promise.all(Array.from(experience.current!.querySelectorAll<HTMLImageElement>('img:not([data-art])'), (image) => image.decode().catch(error => {
       // Optional standee posters must not trap the curtain if a fallback image fails.
       if (!image.closest('.piece-gallery')) throw error
     })))
       .then(() => {
         if (cancelled) return
         ScrollTrigger.refresh()
-        frame = requestAnimationFrame(() => {
-          if (cancelled) return
-          setProgress(1)
-          setReady(true)
-        })
       })
-      .catch(() => { if (!cancelled) setFailed(true) })
+      .catch(() => undefined)
+      .then(() => {
+        if (cancelled) return
+        frame = requestAnimationFrame(() => { if (!cancelled) setReady(true) })
+      })
     return () => { cancelled = true; cancelAnimationFrame(frame) }
-  }, [assetsReady, sceneReady, attempt])
+  }, [assetsReady, sceneReady, clock.expired])
+
+  // The curtain no longer needs the connection: let the rest of the artwork arrive in scroll order.
+  // At the time limit the page mounts first and the curtain opens a couple of frames later, so the heavy
+  // scene setup is not competing with the opening animation.
+  const [settled, setSettled] = useState(false)
+  useEffect(() => {
+    if (!clock.expired) return
+    let inner = 0
+    const outer = requestAnimationFrame(() => { inner = requestAnimationFrame(() => setSettled(true)) })
+    const fallback = setTimeout(() => setSettled(true), 600)
+    return () => { cancelAnimationFrame(outer); cancelAnimationFrame(inner); clearTimeout(fallback) }
+  }, [clock.expired])
+  const open = ready || settled
+  useEffect(() => {
+    if (open) streamRemainingArt()
+  }, [open])
 
   useEffect(() => {
     if (!unlocked) return
@@ -105,9 +121,8 @@ export default function App() {
 
   return (
     <main className="grain relative">
-      <Curtain ready={ready} progress={progress} failed={failed}
-        onRetry={() => setAttempt((value) => value + 1)} onOpen={onOpen} onComplete={onComplete} />
-      {assetsReady && (
+      <Curtain ready={open} progress={curtainProgress(progress, clock.fraction, open)} onOpen={onOpen} onComplete={onComplete} />
+      {(assetsReady || clock.expired) && (
         <div ref={experience} className="landing-experience" inert={!unlocked} aria-hidden={!unlocked}>
           <Cursor />
           <Header />

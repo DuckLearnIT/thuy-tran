@@ -4,15 +4,17 @@ import SplitChars from './SplitChars'
 import { cards, type CardData } from '../data/cards'
 import useReducedMotion from '../hooks/useReducedMotion'
 import { strategies } from '../data/strategies'
+import ArtImg, { cardSize, useImageReady } from './ArtImg'
 
 /* The skill badge is cropped straight out of each card's artwork. */
 function Badge({ image }: { image: string }) {
+  const ready = useImageReady(image)
   return (
     <span
       aria-hidden="true"
       className="block shrink-0 rounded-full size-[clamp(3.4rem,6vw,5.6rem)] bg-no-repeat"
       style={{
-        backgroundImage: `url(${image})`,
+        backgroundImage: ready ? `url(${image})` : undefined,
         backgroundSize: '534.8% auto',
         backgroundPosition: '9.8% 87%',
       }}
@@ -184,7 +186,7 @@ export default function Roles() {
               <div className="grid">
                 <Info card={c} index={i} />
               </div>
-              <img src={c.image} alt={`Lá bài ${c.role}`} className="card-shadow rounded-[3%] w-full max-w-sm justify-self-center" />
+              <ArtImg src={c.image} {...cardSize} alt={`Lá bài ${c.role}`} className="card-shadow rounded-[3%] w-full max-w-sm justify-self-center" />
             </div>
           </section>
         ))}
@@ -218,9 +220,10 @@ export default function Roles() {
           <div className="relative h-full lg:h-[min(78svh,100%)] max-w-full [perspective:1400px]" style={{ aspectRatio: '1500 / 2078' }}>
             <div className="stack-tilt absolute inset-0">
             {cards.map((c) => (
-              <img
+              <ArtImg
                 key={c.id}
                 src={c.image}
+                {...cardSize}
                 alt={`Lá bài ${c.role} — ${c.skill}`}
                 className="stack-card card-feel card-shadow absolute inset-0 w-full h-full rounded-[3%] object-cover will-change-transform"
                 draggable={false}

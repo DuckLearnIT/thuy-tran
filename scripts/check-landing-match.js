@@ -18,7 +18,11 @@
   check(preview.querySelector('a[href="?page=cach-choi#chuan-bi"]'), 'Full rules opens at the reading section')
   check(preview.querySelector('a[href="#nhan-lenh"]') && finale.tabIndex === -1, 'Skip has a focusable destination')
   check(getComputedStyle(preview.querySelector('h2')).textTransform === 'uppercase', 'Heading keeps the landing uppercase style')
-  check([...preview.querySelectorAll('img')].every(img => img.complete && img.naturalWidth > 0), 'Match artwork is prepared by the landing curtain')
+  // Artwork now streams in after the curtain; read the running queue instance and wait for it.
+  const queueUrl = performance.getEntriesByType('resource').find(entry => new URL(entry.name).pathname === '/src/assetQueue.ts')?.name
+  const { whenBackgroundIdle } = await import(queueUrl ?? '/src/assetQueue.ts')
+  await Promise.race([whenBackgroundIdle(), new Promise((_, reject) => setTimeout(() => reject(new Error('Artwork did not finish streaming')), 60000))])
+  check([...preview.querySelectorAll('img')].every(img => img.complete && img.naturalWidth > 1), 'Match artwork finishes streaming in after the curtain')
   const boards = [...preview.querySelectorAll('.match-board')]
   for (const board of boards) {
     check(board.querySelectorAll('.match-tile').length === 24 && new Set([...board.querySelectorAll('.match-tile')].map(tile => tile.dataset.id)).size === 24, 'Board contains 24 distinct locations')

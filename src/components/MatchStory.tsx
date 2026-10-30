@@ -21,6 +21,8 @@ import { boardRows, matchScenes, regularStrategyIds } from "../data/rules"
 
 import useReducedMotion from "../hooks/useReducedMotion"
 
+import ArtImg, { cardSize, squareSize } from "./ArtImg"
+
 import "./rules.css"
 
 gsap.registerPlugin(ScrollTrigger)
@@ -253,10 +255,10 @@ function BasicContext({ phase }: { phase: number }) {
   return <aside className="match-sidebar match-basic-context" aria-label="Minh họa khái niệm">
     <p className="rules-eyebrow">{phase === 0 ? "Mục tiêu chung" : phase === 3 ? "Trao một lá" : phase === 9 ? "Sau nhiều lượt" : "Trong lượt của bạn"}</p>
     {phase === 5 ? <div className="match-basic-faces">
-      <figure><img src={locations[21].image} alt="Bãi Tiếp Lương — Ổn định" /><figcaption>Ổn định</figcaption></figure>
-      <figure><img src={locations[21].back} alt="Bãi Tiếp Lương — Nguy cấp" /><figcaption>Nguy cấp</figcaption></figure>
+      <figure><ArtImg {...squareSize} src={locations[21].image} alt="Bãi Tiếp Lương — Ổn định" /><figcaption>Ổn định</figcaption></figure>
+      <figure><ArtImg {...squareSize} src={locations[21].back} alt="Bãi Tiếp Lương — Nguy cấp" /><figcaption>Nguy cấp</figcaption></figure>
     </div> : <div className="match-basic-art" data-count={art.length}>
-      {art.map(card => <img key={card.id} src={card.image} alt={"name" in card ? card.name : roleName(card.id)} />)}
+      {art.map(card => <ArtImg {...cardSize} key={card.id} src={card.image} alt={"name" in card ? card.name : roleName(card.id)} />)}
     </div>}
     <p className="match-basic-detail">{phase === 0 ? "Cọc Ngầm · Dò Luồng · Mai Phục · Nghi Binh" : phase === 3 ? "Quân Truyền Lệnh và Nha Binh cùng ở Bãi Tập Kết." : phase === 4 ? "Hai lá mới cho lượt tiếp theo." : phase === 9 ? "Cả đội cùng trở về Đại bản doanh." : phase === 5 ? "Lật sang mặt Nguy cấp." : "Mỗi lần đi hoặc củng cố tốn 1 hành động."}</p>
   </aside>
@@ -433,8 +435,8 @@ function MatchBoard({
                 >
                   {landing ? <div className="match-tile-static">
                     <div className="match-tile-paper">
-                      <img src={tile.image} width={896} height={896} alt={`${tile.name} · ${danger ? "Nguy cấp" : "Ổn định"}`} draggable={false} />
-                      <img src={tile.back} width={896} height={896} alt="" aria-hidden="true" draggable={false} />
+                      <ArtImg {...squareSize} src={tile.image} alt={`${tile.name} · ${danger ? "Nguy cấp" : "Ổn định"}`} draggable={false} />
+                      <ArtImg {...squareSize} src={tile.back} alt="" aria-hidden="true" draggable={false} />
                     </div>
                   </div> : <button
                     type="button"
@@ -473,19 +475,15 @@ function MatchBoard({
                     }
                   >
                     <div className="match-tile-paper">
-                      <img
+                      <ArtImg {...squareSize}
                         src={tile.image}
-                        width={896}
-                        height={896}
                         alt={`${tile.name} · ${
                           removed ? "đã mất" : danger ? "Nguy cấp" : "Ổn định"
                         }`}
                         draggable={false}
                       />
-                      <img
+                      <ArtImg {...squareSize}
                         src={tile.back}
-                        width={896}
-                        height={896}
                         alt=""
                         aria-hidden="true"
                         draggable={false}
@@ -511,7 +509,7 @@ function MatchBoard({
             )}
             {animated && (
               <>
-                <img
+                <ArtImg {...cardSize}
                   className="match-flying-card"
                   src={regularCards[0].image}
                   alt=""
@@ -519,7 +517,7 @@ function MatchBoard({
                   style={point(20)}
                 />
                 {regularCards.slice(1, 3).map((card, i) => (
-                  <img
+                  <ArtImg {...cardSize}
                     key={card.id}
                     className={`match-dealt-card match-dealt-${i}`}
                     src={card.image}
@@ -528,7 +526,7 @@ function MatchBoard({
                   />
                 ))}
                 {Array.from({ length: 4 }, (_, i) => (
-                  <img
+                  <ArtImg {...cardSize}
                     key={i}
                     className={`match-spent-card match-spent-${i}`}
                     src={regularCards[0].image}
@@ -578,7 +576,7 @@ function MatchBoard({
                       : locations[tileIndex].name
                   }`}
                 >
-                  <img
+                  <ArtImg {...cardSize}
                     src={card.image}
                     alt=""
                     aria-hidden="true"
@@ -614,7 +612,7 @@ function MatchBoard({
         >
           {regularCards.map((card, i) => (
             <div key={card.id} data-complete={i < completed}>
-              <img src={card.image} alt="" aria-hidden="true" />
+              <ArtImg {...cardSize} src={card.image} alt="" aria-hidden="true" />
               <span className="rules-diamond" aria-hidden="true" />
               <span>{card.name}</span>
               <span className="sr-only">
@@ -650,7 +648,7 @@ function MatchBoard({
                 }
                 aria-haspopup="dialog"
               >
-                <img src={card.image} alt="" />
+                <ArtImg {...cardSize} src={card.image} alt="" />
                 <i style={{ background: card.bg }} />
                 <span>{roleName(card.id)}</span>
               </button>
@@ -696,12 +694,12 @@ function MatchBoard({
               {selected.name}
             </h3>
             <div className="match-inspect-paper" data-back={back}>
-              <img
+              <ArtImg {...squareSize}
                 src={selected.image}
                 alt={`${selected.name} · Ổn định`}
                 aria-hidden={back}
               />
-              <img
+              <ArtImg {...squareSize}
                 src={selected.back}
                 alt={`${selected.name} · Nguy cấp`}
                 aria-hidden={!back}
@@ -720,7 +718,7 @@ function MatchBoard({
             <h3 id={animated ? "match-inspect-title" : undefined}>
               {roleName(person.id)}
             </h3>
-            <img
+            <ArtImg {...cardSize}
               className="match-inspect-person"
               src={person.image}
               alt={roleName(person.id)}
@@ -733,7 +731,7 @@ function MatchBoard({
             <h3 id={animated ? "match-inspect-title" : undefined}>
               {strategy.name}
             </h3>
-            <img
+            <ArtImg {...cardSize}
               className="match-inspect-person"
               src={strategy.image}
               alt={strategy.name}
@@ -786,7 +784,7 @@ function MatchHand({
       aria-disabled={busy}
       onClick={() => !busy && onInspect(card.id)}
     >
-      <img src={card.image} alt={card.name} />
+      <ArtImg {...cardSize} src={card.image} alt={card.name} />
     </button>
   )
 
@@ -804,7 +802,7 @@ function MatchHand({
             onClick={() => !busy && onInspect(coc.id)}
           >
             {Array.from({ length: phase === 3 ? 4 : 3 }, (_, i) => (
-              <img
+              <ArtImg {...cardSize}
                 key={i}
                 src={coc.image}
                 alt=""

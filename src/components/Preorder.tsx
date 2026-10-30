@@ -7,6 +7,7 @@ import { contactFields, DRAFT_KEY, emptyDraft, fieldError, preorderErrors, price
 import { PreorderSubmissionError, submitPreorder } from '../submitPreorder'
 import { preloadAssets } from '../preloadAssets'
 import useReducedMotion from '../hooks/useReducedMotion'
+import useCurtainClock, { curtainProgress } from '../hooks/useCurtainClock'
 import Curtain from './Curtain'
 import Cursor from './Cursor'
 import SplitChars from './SplitChars'
@@ -29,10 +30,10 @@ export default function Preorder() {
   const [saved, setSaved] = useState(true)
   const busy = useRef(false)
   const startedAt = useRef(Date.now())
-  const [attempt, setAttempt] = useState(0)
   const [ready, setReady] = useState(false)
   const [progress, setProgress] = useState(0)
-  const [failed, setFailed] = useState(false)
+  const clock = useCurtainClock()
+  const curtainOpen = ready || clock.expired
   const [opening, setOpening] = useState(false)
   const [unlocked, setUnlocked] = useState(false)
   useCardFeel(root, unlocked)
@@ -121,16 +122,16 @@ export default function Preorder() {
   useEffect(() => {
     document.title = 'Đặt trước — Thủy Trận'
     let cancelled = false
-    setFailed(false)
-    preloadAssets((value) => { if (!cancelled) setProgress(value) })
+    // Nothing here blocks the page: errors fall through and the curtain opens by itself at the time limit.
+    preloadAssets((value) => { if (!cancelled) setProgress(value) }, 'preorder')
       .then(() => {
         if (cancelled) return
         return Promise.all(Array.from(root.current!.querySelectorAll('img'), (image) => image.decode()))
       })
+      .catch(() => undefined)
       .then(() => { if (!cancelled) setReady(true) })
-      .catch(() => { if (!cancelled) setFailed(true) })
     return () => { cancelled = true }
-  }, [attempt])
+  }, [])
 
   useLayoutEffect(() => {
     if (unlocked) return
@@ -152,7 +153,7 @@ export default function Preorder() {
 
   return (
     <main ref={root} id="dat-truoc" className="po-page grain" tabIndex={-1}>
-      <Curtain ready={ready} progress={progress} failed={failed} onRetry={() => setAttempt((value) => value + 1)}
+      <Curtain ready={curtainOpen} progress={curtainProgress(progress, clock.fraction, curtainOpen)}
         onOpen={onOpen} onComplete={onComplete} />
       <div className="po-content" inert={!unlocked} aria-hidden={!unlocked}>
         <Cursor />
