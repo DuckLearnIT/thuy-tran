@@ -46,23 +46,66 @@
     await seek(tl.labels['pieces-showcase'])
     check('All objects settle before controls unlock', state.piecesReveal === 1 && state.piecesExit === 0
       && canvas.dataset.piecesInteractive === 'true' && !stage.inert)
-    const pick = stage.querySelector('.piece-pick')
+    stage.querySelectorAll('.piece-groups button')[1].click(); await frames(4)
+    check('Strategy group exposes four direct named choices', stage.querySelectorAll('.piece-picker button').length === 4
+      && canvas.dataset.activePiece === 'coc-ngam')
+    const labels = [...stage.querySelectorAll('.piece-marker-label')]
+    check('Four names follow their visible models without a panel', labels.length === 4 && labels.every(label => {
+      const r = label.getBoundingClientRect(); return getComputedStyle(label).visibility === 'visible'
+        && r.left >= 0 && r.right <= innerWidth && r.top >= 0 && r.bottom <= innerHeight
+    }) && !stage.querySelector('.piece-picker img'))
+    stage.querySelector('.piece-marker-label[aria-label="Cầm xem Nghi Binh"]').click()
+    await until(() => canvas.dataset.heldPiece === 'nghi-binh'); await frames(35)
+    check('A projected name picks its model directly', canvas.dataset.heldPiece === 'nghi-binh'
+      && stage.querySelector('.piece-picker [aria-pressed="true"]').getAttribute('aria-label') === 'Cầm xem Nghi Binh')
+    const { scene, camera } = canvas.__boxScene
+    const marker = scene.getObjectByName('nghi-binh')
+    marker.updateWorldMatrix(true, true)
+    let bounds
+    marker.traverse(node => {
+      if (!node.geometry) return
+      node.geometry.computeBoundingBox()
+      const box = node.geometry.boundingBox.clone().applyMatrix4(node.matrixWorld)
+      bounds = bounds ? bounds.union(box) : box
+    })
+    const points = []
+    for (const x of [bounds.min.x, bounds.max.x]) for (const y of [bounds.min.y, bounds.max.y]) for (const z of [bounds.min.z, bounds.max.z]) {
+      const point = bounds.min.clone().set(x, y, z).project(camera)
+      points.push({ x: (point.x + 1) * innerWidth / 2, y: (1 - point.y) * innerHeight / 2 })
+    }
+    const footprint = { left: Math.min(...points.map(p => p.x)), right: Math.max(...points.map(p => p.x)), top: Math.min(...points.map(p => p.y)), bottom: Math.max(...points.map(p => p.y)) }
+    check('Held model stays framed and clear of title and actions', footprint.left >= 0 && footprint.right <= innerWidth
+      && footprint.top >= 0 && footprint.bottom <= innerHeight && ['.bx-pieces-heading', '.piece-inspector', '.bx-piece-controls'].every(selector => {
+        const rect = stage.querySelector(selector).getBoundingClientRect()
+        return footprint.right <= rect.left || footprint.left >= rect.right || footprint.bottom <= rect.top || footprint.top >= rect.bottom
+      }))
+    stage.querySelector('[aria-label="Xoay phải"]').click(); await frames(3)
+    check('Rotation control turns the actual model', marker.rotation.y > .3)
+    stage.querySelector('.piece-front').click(); await frames(5)
+    check('Front view resets model rotation', Math.abs(marker.rotation.y) < .01)
+    check('Held controls remain inside the viewport', [...stage.querySelectorAll('button')].filter(b => getComputedStyle(b).visibility === 'visible').every(b => {
+      const r = b.getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth && r.top >= 0 && r.bottom <= innerHeight
+    }))
+    stage.querySelectorAll('.piece-groups button')[0].click()
+    await until(() => canvas.dataset.heldPiece === 'nha-tuong'); await frames(4)
+    check('Changing group returns the marker and picks a character', stage.querySelectorAll('.piece-picker button').length === 6)
+    stage.querySelector('.piece-pick').click(); await until(() => !canvas.dataset.heldPiece); await frames(3)
+    const pick = stage.querySelector('.piece-picker button')
     pick.focus()
     check('Keyboard can focus the pickup control', document.activeElement === pick)
     pick.click(); await until(() => Boolean(canvas.dataset.heldPiece)); await new Promise(resolve => setTimeout(resolve, 650))
-    check('Pickup changes state without opening a modal', Boolean(canvas.dataset.heldPiece) && pick.textContent === 'Đặt xuống'
+    check('Pickup changes state without opening a modal', Boolean(canvas.dataset.heldPiece) && stage.querySelector('.piece-pick')?.textContent === 'Đặt xuống'
       && !document.querySelector('dialog[open]'))
     const first = canvas.dataset.heldPiece
     stage.querySelector('[aria-label="Vật tiếp"]').click(); await until(() => canvas.dataset.heldPiece && canvas.dataset.heldPiece !== first)
     check('Changing objects returns the old object before holding the next', canvas.dataset.heldPiece && canvas.dataset.heldPiece !== first)
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })); await until(() => !canvas.dataset.heldPiece); await frames()
-    check('Escape puts the object back', !canvas.dataset.heldPiece && pick.textContent === 'Cầm lên')
+    check('Escape puts the object back', !canvas.dataset.heldPiece && !stage.querySelector('.piece-pick'))
     pick.click(); await frames(40)
     await seek(tl.labels['pieces-out'] + duration * .13)
     check('Scrolling out returns held object and disables interaction', !canvas.dataset.heldPiece && stage.inert && canvas.dataset.piecesInteractive === 'false')
     await seek(tl.labels['locations-out'] + .55)
     check('Locations pack only after the pieces', state.piecesExit === 1 && state.locationsExit > 0)
-    const scene = canvas.__boxScene.scene
     check('Packed standees remain in the open box instead of disappearing', pieces.every(p => {
       const node = scene.getObjectByName(p.id); return node.visible && node.parent.visible
     }))
@@ -75,7 +118,7 @@
     check('Reverse restores the full display without a held object', state.piecesExit === 0 && state.locationsExit === 0 && !canvas.dataset.heldPiece)
     window.ScrollTrigger.refresh(); await seek(tl.labels['pieces-showcase'])
     check('Refresh preserves the interactive display', canvas.dataset.piecesInteractive === 'true')
-    check('Controls fit in the viewport', [...stage.querySelectorAll('button')].every(b => {
+    check('Controls fit in the viewport', [...stage.querySelectorAll('button')].filter(b => getComputedStyle(b).visibility === 'visible').every(b => {
       const r = b.getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth && r.top >= 0 && r.bottom <= innerHeight
     }))
   } finally { scrollTo(0, original); window.ScrollTrigger.update(); tr.getTween()?.progress(1) }

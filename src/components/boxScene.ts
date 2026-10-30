@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { preloadedImages } from '../preloadAssets'
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
-import { createPieceScene, piecePacking, type PieceSelection } from './pieceScene'
+import { createPieceScene, piecePacking, type PieceSelection, type PieceLabel } from './pieceScene'
 import { pieces } from '../data/pieces'
 
 export type BoxState = {
@@ -34,6 +34,7 @@ type Opts = {
   extra: string[]
   locations: { image: string; back: string }[]
   onPieceChange?: (selection: PieceSelection) => void
+  onPieceLayout?: (positions: PieceLabel[]) => void
 }
 
 const W = 3
@@ -43,7 +44,7 @@ const HL = 0.66
 const WALL = 0.13
 const FLOOR = 0.1
 
-export function createBoxScene({ canvas, cover, cards, extra, locations, onPieceChange }: Opts) {
+export function createBoxScene({ canvas, cover, cards, extra, locations, onPieceChange, onPieceLayout }: Opts) {
   const n = cards.length
   const mid = (n - 1) / 2
   const state: BoxState = {
@@ -339,7 +340,7 @@ export function createBoxScene({ canvas, cover, cards, extra, locations, onPiece
     board.add(group)
     return group
   })
-  const pieceScene = createPieceScene({ canvas, root, camera, assets: pieces, slots, onChange: onPieceChange })
+  const pieceScene = createPieceScene({ canvas, root, camera, assets: pieces, slots, onChange: onPieceChange, onLayout: onPieceLayout })
   // A shared soft paper shadow avoids 24 extra shadow-map passes.
   const shadowCanvas = document.createElement('canvas')
   shadowCanvas.width = shadowCanvas.height = 128
@@ -524,7 +525,9 @@ export function createBoxScene({ canvas, cover, cards, extra, locations, onPiece
     const focus = pieceScene.focus
     const dimensions = pieceScene.dimensions
     if (dimensions) {
-      const heldDistance = Math.max(1.9 / (2 * tangent * 0.72), (dimensions.width + dimensions.depth) * 1.32 / dimensions.height / (2 * tangent * aspect * 0.8))
+      const narrow = canvas.clientWidth <= 600
+      const heldDistance = Math.max((narrow ? 2 / 0.68 : 1.8 / 0.8) / (2 * tangent),
+        (dimensions.width + dimensions.depth) * 1.32 / dimensions.height / (2 * tangent * aspect * (narrow ? 0.82 : 0.6)))
       dist = THREE.MathUtils.lerp(dist, heldDistance, focus)
       look.lerp(heldLook, focus)
     }
@@ -533,8 +536,11 @@ export function createBoxScene({ canvas, cover, cards, extra, locations, onPiece
     camera.position.lerp(cameraTarget, focus)
     camera.lookAt(look)
     const offsetX = THREE.MathUtils.lerp(-state.shift * (aspect > 1.3 ? 1 : 0) * 110 * aspect, wideBoard ? -155 * aspect : 0, transfer) * (1 - tabletop)
-    camera.setViewOffset(1000 * aspect, 1000, offsetX, boardOffsetY * transfer * (1 - tabletop) + tabletop * 65 * (1 - focus), 1000 * aspect, 1000)
+      - focus * (canvas.clientWidth > 600 ? 160 * aspect : 0)
+    camera.setViewOffset(1000 * aspect, 1000, offsetX, boardOffsetY * transfer * (1 - tabletop)
+      + tabletop * (65 + 35 * (1 - boxReturn)) * (1 - focus) + focus * (canvas.clientWidth <= 600 ? 50 : 0), 1000 * aspect, 1000)
     camera.updateProjectionMatrix()
+    pieceScene.projectLabels()
     renderer.render(scene, camera)
     if (import.meta.env.DEV && inspectionCanvas.__boxScene) inspectionCanvas.__boxScene.frameState = [
       state.locationsReveal, state.piecesReveal, state.piecesExit, state.locationsExit, state.boxClose, state.boxDismiss,

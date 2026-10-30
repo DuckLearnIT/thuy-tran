@@ -10,6 +10,38 @@
 
 ## 1. Đọc phần này trước
 
+**UX showcase 3D — 30/10/2026:** người dùng yêu cầu nâng chất lượng trưng
+bày; bản hiện tại không dùng bảng công cụ nền giấy hoặc dãy thumbnail.
+Bốn dấu có nút tên Yellost đặt theo vị trí đế thật trong camera. `PieceLabel`
+đi từ `pieceScene.projectLabels()` qua boxScene tới ref DOM trong Cover,
+sau khi camera cập nhật projection; không set React state mỗi frame. Nhãn
+ẩn khi cầm, khi chưa lắp xong và khi thu hộp. Bốn dấu giãn hàng 3,1 đơn vị
+ở desktop, vẫn nằm riêng ngoài bàn; không thay asset, màu hoặc kích thước đế.
+
+Chọn trực tiếp mesh/tên dấu hoặc tên quân ở inventory cuối cảnh để cầm;
+tên vật thành heading son lớn, vật tiến gần lệch phải, điều khiển mở ở trái.
+Có xoay trái/phải, Chính diện, Đặt xuống, trước/tiếp trong cùng nhóm, Escape.
+Kéo cả trên nền khi đang cầm cũng xoay được; bấm nền trống đặt xuống. Touch
+kéo dọc vẫn cuộn. Khi đặt xuống hủy capture/inertia; cuộn khỏi lượt trả vật
+theo timeline cũ. Hover chỉ làm nổi đế, không tự đổi nhóm/tên lựa chọn.
+Cursor hình thoi được giấu trong vùng thao tác để không che vật/nút; native
+pointer/grab vẫn hoạt động. Footer tách 6 quân / 4 dấu bằng chữ, không popup.
+
+Camera cầm chừa vùng cho heading/actions và inventory; mobile dùng góc giữa
+gọn hơn, desktop đặt vật bên phải. `check-box-pieces.js` bổ sung nhãn bám
+vật, chọn trực tiếp, reset rotation và bounds mesh thật so với chữ/nút.
+Ảnh đối chiếu `docs/qa/pieces-exhibit-overview-2026-10-30.jpg` và
+`pieces-exhibit-inspect-2026-10-30.jpg`. Pin/timeline/thu hộp không đổi.
+QA Chromium: 26 checks ở CSS 320×844, 920×900 và 1840×1040; 4 checks giảm
+chuyển động. Bounds mesh thật phải nằm trọn khung và không chạm heading,
+actions hoặc inventory (đã sửa đế Nghi Binh chạm inventory ở màn rộng).
+Hero 46, địa danh 15 và packing OBB 7 checks đạt. Đã kéo thật trên nền và
+bấm ra ngoài đặt xuống. Typecheck/build:site đạt; gói site không có playable
+hoặc dev hook. Chưa xác nhận engine/thiết bị thật khác Chromium. QA IAB trên
+Windows 125% cần đọc innerWidth/innerHeight thực, không lấy kích thước API
+yêu cầu làm bằng chứng. Sau đổi hàm scene nên reload trước QA để dùng đúng
+camera mới, tránh closure của cảnh đang sống trong HMR.
+
 **Đổi nút Về đầu sang cuộn mượt — 30/10/2026:** yêu cầu mới nhất thay thế
 hành vi instant bên dưới. Nút dùng native `scrollTo({ top: 0, behavior:
 'smooth' })`, để GSAP/ScrollTrigger tự chạy ngược theo cuộn; không ép scrub

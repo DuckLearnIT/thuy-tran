@@ -17,11 +17,22 @@ const locationColumns = [2, 4, 6, 6, 4, 2].flatMap(count => Array.from({ length:
 export default function Cover({ playIntro, onReady }: { playIntro: boolean; onReady: () => void }) {
   const root = useRef<HTMLElement>(null)
   const canvas = useRef<HTMLCanvasElement>(null)
+  const markerLabels = useRef<(HTMLButtonElement | null)[]>([])
   const reduced = useReducedMotion()
   const [fallback, setFallback] = useState(false)
   const [piecesFailed, setPiecesFailed] = useState(false)
   const [selection, setSelection] = useState<PieceSelection>({ index: 0, held: false })
   const controller = useRef<ReturnType<typeof createBoxScene> | null>(null)
+  const selected = pieces[selection.index]
+  const group = pieces.map((piece, index) => ({ ...piece, index })).filter(piece => piece.kind === selected.kind)
+  const selectPiece = (index: number, pick = true) => {
+    if (pick || selection.held) controller.current?.pieces.pick(index)
+    else controller.current?.pieces.setActive(index)
+  }
+  const stepPiece = (delta: number) => {
+    const position = group.findIndex(piece => piece.index === selection.index)
+    selectPiece(group[(position + delta + group.length) % group.length].index, selection.held)
+  }
 
   useLayoutEffect(() => {
     if (reduced || fallback) { onReady(); return }
@@ -35,6 +46,12 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
         extra: strategies.map((k) => k.image),
         locations,
         onPieceChange: setSelection,
+        onPieceLayout: positions => positions.forEach(({ index, x, y, visible }) => {
+          const label = markerLabels.current[index - 6]
+          if (!label) return
+          label.style.transform = `translate3d(${x}px, ${y}px, 0)`
+          label.style.visibility = visible ? 'visible' : 'hidden'
+        }),
       })
       controller.current = box
     } catch {
@@ -221,34 +238,52 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
       <div className="bx-pieces-stage" data-held={selection.held} inert>
         {piecesFailed ? <PieceGallery compact /> : <>
           <div className="bx-pieces-heading">
-            <p className="box-inventory">6 quân nhân vật · 4 dấu kế sách</p>
-            <h2 className="display">Dựng quân. Bày kế.</h2>
+            <p className="box-inventory">{selection.held ? (selected.kind === 'character' ? 'Quân nhân vật' : 'Dấu kế sách') : '6 quân nhân vật · 4 dấu kế sách'}</p>
+            <h2 id="pieces-showcase-title" className="display" aria-live="polite">{selection.held ? selected.name : <>Dựng quân.<br />Bày kế.</>}</h2>
+            <p className="piece-intro">{selection.held ? 'Kéo vật để nhìn từ mọi phía.' : 'Chọn một vật. Cầm lên để nhìn gần.'}</p>
           </div>
-          <div className="bx-piece-controls">
-            <p className="piece-kind">{pieces[selection.index].kind === 'character' ? 'Quân nhân vật' : 'Dấu kế sách'}</p>
-            <p className="piece-name" aria-live="polite">{pieces[selection.index].name}</p>
-            <div className="piece-control-row">
-              <button type="button" aria-label="Vật trước" onClick={() => {
-                const next = (selection.index + pieces.length - 1) % pieces.length
-                if (selection.held) controller.current?.pieces.pick(next)
-                else controller.current?.pieces.setActive(next)
-              }}>Trước</button>
-              <button className="piece-pick" type="button" onClick={() => selection.held
-                ? controller.current?.pieces.putDown() : controller.current?.pieces.pick(selection.index)}>
-                {selection.held ? 'Đặt xuống' : 'Cầm lên'}</button>
-              <button type="button" aria-label="Vật tiếp" onClick={() => {
-                const next = (selection.index + 1) % pieces.length
-                if (selection.held) controller.current?.pieces.pick(next)
-                else controller.current?.pieces.setActive(next)
-              }}>Tiếp</button>
+          {pieces.slice(6).map((piece, index) => <button key={piece.id} type="button"
+            ref={node => { markerLabels.current[index] = node }} className="piece-marker-label"
+            aria-label={`Cầm xem ${piece.name}`} onClick={() => selectPiece(index + 6)}
+            onPointerEnter={() => controller.current?.pieces.highlight(index + 6)}
+            onPointerLeave={() => controller.current?.pieces.highlight(-1)}
+            onFocus={() => controller.current?.pieces.setActive(index + 6)}>
+            <span>{piece.name}</span><span aria-hidden="true" className="piece-marker-line" />
+          </button>)}
+          <div className="bx-piece-controls" role="group" aria-label="Chọn và xem vật 3D">
+            <div className="piece-groups" role="group" aria-label="Loại vật trưng bày">
+              <button type="button" aria-pressed={selected.kind === 'character'} onClick={() => selectPiece(0, false)}>
+                Quân nhân vật <span>06</span>
+              </button>
+              <button type="button" aria-pressed={selected.kind === 'strategy'} onClick={() => selectPiece(6, false)}>
+                Dấu kế sách <span>04</span>
+              </button>
             </div>
-            {selection.held ? <div className="piece-control-row">
-              <button type="button" onClick={() => controller.current?.pieces.rotate(-Math.PI / 4)}>Xoay trái</button>
-              <span className="piece-drag-hint">Kéo để xoay</span>
-              <button type="button" onClick={() => controller.current?.pieces.rotate(Math.PI / 4)}>Xoay phải</button>
-            </div> : <p className="piece-drag-hint">Chọn một vật để cầm xem</p>}
-            <p className="piece-note">Bố trí trưng bày minh họa.</p>
+            <div className="piece-picker" role="group" aria-label={selected.kind === 'character' ? 'Sáu quân nhân vật' : 'Bốn dấu kế sách'}>
+              {group.map(piece => <button key={piece.id} type="button" aria-label={`Cầm xem ${piece.name}`}
+                aria-pressed={piece.index === selection.index} onClick={() => selectPiece(piece.index)}
+                onPointerEnter={() => controller.current?.pieces.highlight(piece.index)}
+                onPointerLeave={() => controller.current?.pieces.highlight(-1)}>
+                <span>{piece.name.replace(/^Quân /, '')}</span>
+              </button>)}
+            </div>
           </div>
+          {selection.held && <>
+            <div className="piece-inspector">
+              <div className="piece-rotation" role="group" aria-label="Xoay vật đang cầm">
+                <button type="button" aria-label="Xoay trái" title="Xoay trái" onClick={() => controller.current?.pieces.rotate(-Math.PI / 4)}>↶</button>
+                <button className="piece-front" type="button" onClick={() => controller.current?.pieces.resetRotation()}>Chính diện</button>
+                <button type="button" aria-label="Xoay phải" title="Xoay phải" onClick={() => controller.current?.pieces.rotate(Math.PI / 4)}>↷</button>
+              </div>
+              <button className="piece-pick" type="button" onClick={() => controller.current?.pieces.putDown()}>Đặt xuống</button>
+            </div>
+            <div className="piece-pagination">
+              <button className="piece-step" type="button" aria-label="Vật trước" onClick={() => stepPiece(-1)}>‹</button>
+              <span>{String(group.findIndex(piece => piece.index === selection.index) + 1).padStart(2, '0')} <i>/ {String(group.length).padStart(2, '0')}</i></span>
+              <button className="piece-step" type="button" aria-label="Vật tiếp" onClick={() => stepPiece(1)}>›</button>
+            </div>
+          </>}
+          <p className="piece-scene-note">Bố trí trưng bày minh họa.</p>
         </>}
       </div>
 

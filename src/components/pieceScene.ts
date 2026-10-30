@@ -3,6 +3,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import type { PieceAsset } from '../data/pieces'
 
 export type PieceSelection = { index: number; held: boolean }
+export type PieceLabel = { index: number; x: number; y: number; visible: boolean }
 export const piecePacking = { boxZ: 5.8, portraitOffsetZ: 3.1, deckZ: 4.5, deckY: 0.655, deckFirstX: -1.3, cardStep: 0.017 }
 export function disposePiece(object: THREE.Object3D) {
   const geometries = new Set<THREE.BufferGeometry>(), materials = new Set<THREE.Material>(), textures = new Set<THREE.Texture>()
@@ -75,7 +76,8 @@ export async function loadPiece(asset: PieceAsset, signal?: AbortSignal) {
 type LoadedPiece = Awaited<ReturnType<typeof loadPiece>> & { group: THREE.Group; slot: THREE.Vector3; baseY: number }
 export function createPieceScene(options: {
   canvas: HTMLCanvasElement; root: THREE.Group; camera: THREE.PerspectiveCamera; assets: PieceAsset[];
-  slots: { x: number; y: number }[]; onChange?: (selection: PieceSelection) => void
+  slots: { x: number; y: number }[]; onChange?: (selection: PieceSelection) => void;
+  onLayout?: (positions: PieceLabel[]) => void
 }) {
   const { canvas, root, camera, assets, slots, onChange } = options
   const collection = new THREE.Group()
@@ -96,7 +98,7 @@ export function createPieceScene(options: {
   const smooth = (value: number) => { const t = clamp(value, 0, 1); return t * t * (3 - 2 * t) }
   const notify = () => { onChange?.({ index: held >= 0 ? held : active, held: held >= 0 }); canvas.dataset.heldPiece = held >= 0 ? assets[held].id : ''; canvas.dataset.activePiece = assets[active].id }
   const setActive = (index: number) => { active = clamp(index, 0, assets.length - 1); notify() }
-  const putDown = () => { desired = -1; pending = -1; velocityX = velocityY = 0 }
+  const putDown = () => { desired = -1; pending = -1; cancel() }
   const pick = (index: number) => {
     if (!interactive || !loaded[index]) return
     active = index
@@ -115,7 +117,7 @@ export function createPieceScene(options: {
   const down = (event: PointerEvent) => {
     if (!interactive || event.button !== 0) return
     const index = hit(event)
-    if (index < 0) return
+    if (index < 0 && held < 0) return
     drag = { id: event.pointerId, x: event.clientX, y: event.clientY, lastX: event.clientX, lastY: event.clientY, moved: false, touch: event.pointerType === 'touch', hit: index }
     velocityX = velocityY = 0
   }
@@ -124,7 +126,6 @@ export function createPieceScene(options: {
     if (!drag || drag.id !== event.pointerId) {
       hover = event.pointerType === 'mouse' ? hit(event) : -1
       canvas.style.cursor = hover >= 0 ? (held === hover ? 'grab' : 'pointer') : ''
-      if (hover >= 0 && held < 0 && active !== hover) setActive(hover)
       return
     }
     const dx = event.clientX - drag.x, dy = event.clientY - drag.y
@@ -132,10 +133,10 @@ export function createPieceScene(options: {
       if (drag.touch && Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 8) { drag = null; return }
       if (Math.hypot(dx, dy) < 8) return
       drag.moved = true
-      if (held !== drag.hit) return
+      if (held < 0) return
       canvas.setPointerCapture(event.pointerId)
     }
-    if (held !== drag.hit) return
+    if (held < 0) return
     velocityX = clamp((event.clientX - drag.lastX) * 0.01, -0.14, 0.14)
     velocityY = drag.touch ? 0 : clamp((event.clientY - drag.lastY) * 0.006, -0.06, 0.06)
     yaw += velocityX
@@ -149,7 +150,7 @@ export function createPieceScene(options: {
     drag = null
     if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId)
     canvas.style.cursor = ''
-    if (!previous.moved) pick(previous.hit)
+    if (!previous.moved) { if (previous.hit < 0) putDown(); else pick(previous.hit) }
   }
   const cancel = () => { if (drag && canvas.hasPointerCapture(drag.id)) canvas.releasePointerCapture(drag.id); drag = null; hover = -1; velocityX = velocityY = 0; canvas.style.cursor = '' }
   const leave = () => { hover = -1 }
@@ -172,7 +173,7 @@ export function createPieceScene(options: {
     const slot = slots[asset.slot]
     // Strategy markers are a separate display beside the board, never gameplay pieces on tiles.
     const position = asset.kind === 'character' ? new THREE.Vector3(slot.x - 1, 0.04, -slot.y)
-      : new THREE.Vector3(3.3 + (index - 6) % 2 * 1.15, 0.04, (Math.floor((index - 6) / 2) - 0.5) * 2.1)
+      : new THREE.Vector3(3.3 + (index - 6) % 2 * 1.15, 0.04, (Math.floor((index - 6) / 2) - 0.5) * 3.1)
     loaded[index] = { ...piece, group, slot: position, baseY: piece.plate.position.y }
     piece.object.traverse(node => {
       if (node instanceof THREE.Mesh && ['AcrylicSilhouette', 'RoundBaseWithSlot'].includes(node.name)) {
@@ -206,10 +207,11 @@ export function createPieceScene(options: {
     }
     collection.visible = usable && reveal > 0.001 && !sceneGone
     selectionRing.visible = interactive && held < 0
-    if (loaded[active]) {
-      selectionRing.position.copy(loaded[active].slot)
+    const highlighted = hover >= 0 ? hover : active
+    if (loaded[highlighted]) {
+      selectionRing.position.copy(loaded[highlighted].slot)
       selectionRing.position.y = 0.045
-      selectionRing.scale.setScalar(assets[active].kind === 'character' ? 0.19 : 0.46)
+      selectionRing.scale.setScalar(assets[highlighted].kind === 'character' ? 0.19 : 0.46)
     }
     mix += ((desired >= 0 ? 1 : 0) - mix) * (1 - Math.exp(-dt * 12))
     if (held >= 0 && desired < 0 && mix < 0.002) {
@@ -225,7 +227,7 @@ export function createPieceScene(options: {
       const asset = assets[index]
       if (asset.kind === 'character') piece.slot.set(slots[asset.slot].x - (portrait ? 0 : 1), 0.04, -slots[asset.slot].y)
       else piece.slot.set(portrait ? (index - 7.5) * 1.8 : 3.3 + (index - 6) % 2 * 1.15,
-        0.04, portrait ? 5.3 : (Math.floor((index - 6) / 2) - 0.5) * 2.1)
+        0.04, portrait ? 5.3 : (Math.floor((index - 6) / 2) - 0.5) * 3.1)
       const enter = smooth((reveal - 0.2 - index * 0.035) / 0.45)
       const seat = smooth((reveal - 0.38 - index * 0.035) / 0.27)
       // One object moves at a time, after the box has arrived. Clear the rim
@@ -266,7 +268,20 @@ export function createPieceScene(options: {
   }
   return {
     ready, collection, update, pick, putDown, setActive,
+    highlight(index: number) { hover = index },
+    projectLabels() {
+      if (!options.onLayout) return
+      collection.updateMatrixWorld(true)
+      camera.updateMatrixWorld()
+      options.onLayout(loaded.flatMap((piece, index) => {
+        if (assets[index].kind !== 'strategy') return []
+        const point = piece.group.localToWorld(new THREE.Vector3()).project(camera)
+        return [{ index, x: (point.x + 1) * canvas.clientWidth / 2, y: (1 - point.y) * canvas.clientHeight / 2,
+          visible: interactive && held < 0 && point.z > -1 && point.z < 1 }]
+      }))
+    },
     rotate(delta: number) { if (held >= 0) yaw += delta },
+    resetRotation() { yaw = pitch = velocityX = velocityY = 0 },
     get focus() { return mix },
     get dimensions() { return held >= 0 ? loaded[held] : null },
     get interactive() { return interactive },
