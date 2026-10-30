@@ -10,6 +10,15 @@
 
 ## 1. Đọc phần này trước
 
+**Đổi nút Về đầu sang cuộn mượt — 30/10/2026:** yêu cầu mới nhất thay thế
+hành vi instant bên dưới. Nút dùng native `scrollTo({ top: 0, behavior:
+'smooth' })`, để GSAP/ScrollTrigger tự chạy ngược theo cuộn; không ép scrub
+về cuối. Vẫn hủy snap đang chạy trước khi cuộn; chỉ reduced motion dùng
+instant. Giữ kiểu son đỏ, query trang và vùng bấm như trước.
+QA Chromium: bấm từ bộ nhân vật có snap ghi nhận nhiều vị trí trung gian
+từ khoảng 15.134px về 0, hero cuối về progress 0; Enter với reduced motion
+về ngay 0. Typecheck/build:site đạt. Không đổi artwork hoặc kiểu nút.
+
 **Nút về đầu ngay — 30/10/2026:** Header dùng chung có nút nhỏ “Về đầu”
 cố định góc dưới trái, vùng bấm 44px. Nền son cắt góc, chữ NVN Yellost
 uppercase và mũi tên trong khung hình

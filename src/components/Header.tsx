@@ -111,9 +111,7 @@ export default function Header() {
     setOpen(false)
     ScrollTrigger.getAll().forEach((trigger) => trigger.getTween(true)?.kill())
     window.history.replaceState(null, '', `${location.pathname}${location.search}${standalone ? '' : '#top'}`)
-    window.scrollTo({ top: 0, behavior: 'instant' })
-    ScrollTrigger.update()
-    ScrollTrigger.getAll().forEach((trigger) => trigger.getTween()?.progress(1))
+    window.scrollTo({ top: 0, behavior: reduced ? 'instant' : 'smooth' })
   }
 
   return (
@@ -179,7 +177,7 @@ export default function Header() {
       </div>
     </header>
     <button type="button" className="back-to-top" inert={open}
-      aria-label="Về đầu trang ngay" onClick={returnToTop}>
+      aria-label="Về đầu trang" onClick={returnToTop}>
       <span className="back-to-top-mark" aria-hidden="true">
         <svg viewBox="0 0 16 16" fill="none"><path d="M8 12V4m-3 3 3-3 3 3" /></svg>
       </span>
