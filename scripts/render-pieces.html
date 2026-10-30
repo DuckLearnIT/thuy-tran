@@ -1,0 +1,35 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Standee render preparation</title></head>
+<body style="margin:0;background:#e6cfa6"><canvas width="720" height="720"></canvas>
+<script type="module">
+import * as THREE from 'three'
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
+import { pieces } from '/src/data/pieces.ts'
+import { loadPiece, disposePiece } from '/src/components/pieceScene.ts'
+const canvas = document.querySelector('canvas')
+const renderer = new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,preserveDrawingBuffer:true})
+renderer.setSize(720,720); renderer.setPixelRatio(1)
+renderer.outputColorSpace=THREE.SRGBColorSpace
+renderer.toneMapping=THREE.ACESFilmicToneMapping
+renderer.toneMappingExposure=1.05
+const scene = new THREE.Scene()
+const pmrem=new THREE.PMREMGenerator(renderer)
+scene.environment=pmrem.fromScene(new RoomEnvironment(),.04).texture
+scene.environmentIntensity=.55
+const light=new THREE.DirectionalLight(0xfff2dd,2.6); light.position.set(-3,8,4); scene.add(light)
+scene.add(new THREE.HemisphereLight(0xfff4dc,0x6a3a10,.5))
+const rim=new THREE.DirectionalLight(0xe4eeff,3.2);rim.position.set(0,5,-9);scene.add(rim)
+const camera=new THREE.PerspectiveCamera(30,1,.01,100)
+let current
+window.renderPiece=async(index,view)=>{
+ if(current){scene.remove(current);disposePiece(current)}
+ const piece=await loadPiece(pieces[index]);current=piece.object;current.scale.multiplyScalar(1.32/piece.height);scene.add(current)
+ current.rotation.y=[0,.65,Math.PI][view]
+ camera.position.set(0,1.12,3.8);camera.lookAt(0,.64,0)
+ await renderer.compileAsync(scene,camera)
+ renderer.render(scene,camera)
+ return {id:pieces[index].id,view,image:canvas.toDataURL('image/webp',.94)}
+}
+window.pieceCount=pieces.length
+await window.renderPiece(0,0)
+window.renderReady=true
+</script></body></html>

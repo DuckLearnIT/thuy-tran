@@ -35,7 +35,7 @@
   const copy = trigger.trigger.querySelector('.bx-locations-copy')
   const start = timeline.labels['locations-in']
   const out = timeline.labels['locations-out']
-  const phase = (out - start) / 0.8
+  const phase = (timeline.labels['pieces-in'] - start) / 0.8
   const originalScroll = scrollY
   const seek = async time => {
     window.scrollTo(0, trigger.start + (trigger.end - trigger.start) * time / timeline.duration())
@@ -78,8 +78,8 @@
     return boxes
   }
   try {
-    check('Cover keeps one pin with twelve screens of scrolling', Math.abs((trigger.end - trigger.start) / innerHeight - 12) < 0.05)
-    check('New location beat adds exactly two screens', Math.abs(phase / timeline.duration() * 12 - 2) < 0.01)
+    check('Cover keeps one pin with sixteen screens of scrolling', Math.abs((trigger.end - trigger.start) / innerHeight - 16) < 0.05)
+    check('Location beat retains exactly two screens', Math.abs(phase / timeline.duration() * 16 - 2) < 0.01)
     await seek(start - 0.05)
     check('All seven strategies finish before the location reveal', state.fan2.length === 7 && state.fan2.every(value => value > 0.95)
       && state.locationsReveal === 0)
@@ -117,8 +117,8 @@
     check('Text never overlaps card artwork', text.right < board.left || text.bottom < board.top)
     check('Showcase has no individual card interaction', getComputedStyle(copy).pointerEvents === 'none'
       && !trigger.trigger.querySelector('[data-location-button]'))
-    await seek(start + phase + 0.02)
-    check('Cards gather and leave before the following chapter', state.locationsExit === 1)
+    await seek(out + phase * 0.2 + 0.02)
+    check('Cards are fully packed before the lid closes', state.locationsExit === 1 && state.boxClose < 1)
     await seek(timeline.labels['locations-showcase'])
     window.ScrollTrigger.refresh()
     await seek(timeline.labels['locations-showcase'])

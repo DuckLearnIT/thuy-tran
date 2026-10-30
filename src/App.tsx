@@ -72,7 +72,10 @@ export default function App() {
     if (!assetsReady || !sceneReady) return
     let cancelled = false
     let frame = 0
-    Promise.all(Array.from(experience.current!.querySelectorAll('img'), (image) => image.decode()))
+    Promise.all(Array.from(experience.current!.querySelectorAll('img'), (image) => image.decode().catch(error => {
+      // Optional standee posters must not trap the curtain if a fallback image fails.
+      if (!image.closest('.piece-gallery')) throw error
+    })))
       .then(() => {
         if (cancelled) return
         ScrollTrigger.refresh()

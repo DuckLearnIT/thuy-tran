@@ -87,7 +87,7 @@
   const hidden = el => getComputedStyle(el).visibility === 'hidden'
   const timeline = trigger.animation
   const canvas = trigger.trigger.querySelector('canvas')
-  const entrance = timeline.getChildren().find(t => t.targets?.().includes(canvas))
+  const entrance = timeline.getChildren().find(t => t.targets?.().includes(canvas) && 'yPercent' in t.vars)
   const seek = async time => {
     window.scrollTo(0, trigger.start + (trigger.end - trigger.start) * time / timeline.duration())
     window.ScrollTrigger.update()

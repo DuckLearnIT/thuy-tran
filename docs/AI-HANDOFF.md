@@ -10,6 +10,73 @@
 
 ## 1. Đọc phần này trước
 
+**Showcase quân/dấu mica — 30/10/2026:** thêm lượt sau 24 địa danh trong cùng
+`Cover.tsx` / `boxScene.ts`, cùng renderer và ScrollTrigger; pin 16 màn thay
+12, giữ mật độ cuộn các phần trước. `pieces-in/showcase/out` nằm trước
+`locations-out`: bàn hạ ngang, đế đáp trước rồi thân cùng hai mặt tranh gắn
+vào khe; lúc ra, nắp hộp né sang bên, cả quân/dấu nghiêng thu về, địa danh
+theo sau, nắp khép rồi hộp đi xuống. Không fade vật thể giữa đường.
+
+**Sửa animation out theo phản hồi ngày 30/10:** không gom thẳng ở độ cao mặt
+bàn và không đặt `visible=false` khi quân vừa chạm hộp. Hộp trượt đến khi
+còn dưới bàn rồi mới nâng lên; mười vật thu **tuần tự**, nhấc cao qua các vật
+còn lại, di chuyển rồi hạ vào ô chứa. Sáu quân đứng trên đế trong hộp; bốn
+dấu quay cạnh và nghiêng 60°, giữ nguyên thân/đế và nằm lọt dưới nắp.
+Các lớp địa danh cách nhau 0,017, nhấc khỏi bàn trước khi gom; cả chồng quay
+như một khối rồi hạ vào ngăn dựng bên trái. Mesh giữ nguyên đến khi nắp
+che kín. `boxClose` (0,45) chạy sau `locationsExit`, rồi `boxDismiss` (0,65)
+đưa hộp và toàn bộ nội dung xuống ngoài frustum; canvas chỉ ẩn ở `box-gone`
+sau khi khung đã trống. Dùng lại 1,1 đơn vị cuối nên pin/tổng nhịp không tăng.
+
+`scripts/check-box-packing.js` dùng OBB từ geometry/matrixWorld thật, quét
+các pha quân, thẻ, thành/đáy hộp và nắp; 7 checks đạt ở desktop và portrait
+390px. Có kiểm tra mười vật vẫn hiện khi đóng gói, khung WebGL rỗng trước
+lúc ẩn canvas và cuộn ngược. Dev-only `canvas.__boxScene` cung cấp scene và
+dấu trạng thái frame đã render để tránh kiểm tra nhầm pose cũ; hook bị loại
+khỏi production. Ảnh đối chiếu cuối có hậu tố `-final-2026-10-30`.
+
+Đã thay cả sáu quân bằng bộ mới trong Downloads theo yêu cầu ngày 30/10:
+`tuong`, `nhabinh`, `hoatieu`, `thuyenvien`, `truyenlenh`, `trinhsat`.
+Chú ý artwork **hoatieu là Thám Quân vàng, trinhsat là Hướng Đạo xanh**;
+giữ tên vai theo thẻ hiện tại, không đoán theo tên file. Bốn dấu không đổi,
+đã đối chiếu hash GLB và 12 ảnh dự phòng. Nghi Binh dùng bản Photoroom.
+Danh sách nguồn ở `src/assets/pieces/README.md`, dữ liệu tên từ cards/strategies
+ở `src/data/pieces.ts`. GLB 28,37 MB được đóng texture WebP còn 3,22 MB;
+geometry/UV đối chiếu byte-identical. Không Draco, dependency hoặc model giả.
+
+**Điều chỉnh mới của người dùng:** chỉ sáu quân đứng trên bàn, **bốn dấu kế
+sách đặt riêng cạnh bàn** (portrait đặt thành hàng dưới bàn). Đế sáu quân
+bằng **30% cạnh địa danh**, đã đo cả sáu đúng 30%; không thu nhỏ bốn dấu.
+Giữ vật liệu/màu nguồn, thêm ánh xiên và Fresnel cạnh mica; bản in unlit
+không bị đổi màu. Bố trí chỉ trưng bày, không phải setup bắt buộc.
+
+`pieceScene.ts` sở hữu tải GLB, gom CharacterPlate + ArtworkFront/Back,
+raycast, cầm/xoay/quán tính và dọn tài nguyên. Trạng thái cầm tách khỏi
+timeline; kéo ngang tự do, dọc giới hạn ±20°, touch giữ pan-y. Có Trước/Tiếp,
+Cầm lên/Đặt xuống, nút xoay, Escape và vòng chọn trên đế. Đổi vật trả vật
+cũ trước, cuộn khỏi khoảng đứng yên tự đặt xuống, không khóa cuộn. Resize
+giữa lượt mới giữ tiến trình trước refresh; đã thử reveal 0,5002 → 0,4999.
+
+Chỉ landing fetch dữ liệu GLB; model lỗi hoặc quá 15 giây dùng
+`PieceGallery.tsx` trong đúng khoảng mới, các cảnh cũ tiếp tục. Giảm chuyển
+động hoặc thiếu WebGL hiện 24 địa danh rồi đủ 10 ảnh model có chọn góc.
+Ba mươi poster là render thật, 720×720 RGBA, đủ đế/mặt sau, tổng 1,40 MB.
+Ảnh dự phòng lỗi không được chặn curtain. Khi tháo cảnh, hủy fetch/listener,
+dispose geometry/material/texture và đóng ImageBitmap sở hữu bởi model.
+
+QA Chromium trong Codex: `check-box-pieces.js` 18 checks ở 320/390/920/1280/
+1840px; `check-box-locations.js` 15 checks, hero/logo 46, đặt trước 23
+(không gửi đơn, không tải GLB). Đã thử kéo thật, quán tính, Escape, đổi vật,
+cuộn khi đang cầm, quay ngược/refresh, resize giữa lắp quân, thiếu WebGL và
+giả lập fetch model lỗi. Fallback đủ 10 vật/đổi mặt; model lỗi vẫn qua 15
+checks địa danh. Typecheck, build thường và build:site đạt; cảnh báo Vite
+config cũ còn nguyên. Chưa xác nhận engine/thiết bị thật khác Chromium.
+Ảnh ở `docs/qa/pieces-*2026-10-30.jpg`; 1840px dùng ảnh lấy trực tiếp canvas
+`pieces-render-1840...` vì screenshot cửa sổ IAB lớn hơn panel bị lặp vùng;
+bố cục/nút DOM vẫn được kiểm tra ở đúng kích thước CSS. Các chỉnh tạm trong
+tab QA đã được khôi phục, không ghi vào sản phẩm. Playable tiếp tục không
+được đưa vào build site hoặc deploy.
+
 **Phát hành nhận đặt trước — 29/10/2026:** nguồn `ce2ab15`, sửa khoảng dừng
 cuộn ở `17fb3ea`; release Pages `ff7ba261af13e721be1ad1b2fc53a28223c15cdb`
 trên origin/gh-pages, trạng thái `built`. Website chính đã nạp

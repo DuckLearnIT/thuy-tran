@@ -2,6 +2,8 @@ import * as THREE from 'three'
 import { preloadedImages } from '../preloadAssets'
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
+import { createPieceScene, piecePacking, type PieceSelection } from './pieceScene'
+import { pieces } from '../data/pieces'
 
 export type BoxState = {
   elev: number
@@ -19,6 +21,10 @@ export type BoxState = {
   fan: number[]
   locationsReveal: number
   locationsExit: number
+  piecesReveal: number
+  piecesExit: number
+  boxClose: number
+  boxDismiss: number
 }
 
 type Opts = {
@@ -27,6 +33,7 @@ type Opts = {
   cards: string[]
   extra: string[]
   locations: { image: string; back: string }[]
+  onPieceChange?: (selection: PieceSelection) => void
 }
 
 const W = 3
@@ -36,7 +43,7 @@ const HL = 0.66
 const WALL = 0.13
 const FLOOR = 0.1
 
-export function createBoxScene({ canvas, cover, cards, extra, locations }: Opts) {
+export function createBoxScene({ canvas, cover, cards, extra, locations, onPieceChange }: Opts) {
   const n = cards.length
   const mid = (n - 1) / 2
   const state: BoxState = {
@@ -55,6 +62,10 @@ export function createBoxScene({ canvas, cover, cards, extra, locations }: Opts)
     fan: Array.from({ length: n }, () => 0),
     locationsReveal: 0,
     locationsExit: 0,
+    piecesReveal: 0,
+    piecesExit: 0,
+    boxClose: 0,
+    boxDismiss: 0,
   }
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' })
@@ -72,6 +83,8 @@ export function createBoxScene({ canvas, cover, cards, extra, locations }: Opts)
   scene.environmentIntensity = 0.55
 
   const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100)
+  const inspectionCanvas = canvas as HTMLCanvasElement & { __boxScene?: { scene: THREE.Scene; camera: THREE.PerspectiveCamera; frameState: number[] } }
+  if (import.meta.env.DEV) inspectionCanvas.__boxScene = { scene, camera, frameState: [] }
 
   const sun = new THREE.DirectionalLight(0xfff2dd, 2.6)
   sun.position.set(-3, 11, 4)
@@ -88,6 +101,11 @@ export function createBoxScene({ canvas, cover, cards, extra, locations }: Opts)
   sun.shadow.normalBias = 0.02
   scene.add(sun)
   scene.add(new THREE.HemisphereLight(0xfff4dc, 0x6a3a10, 0.5))
+  // A cool grazing light reveals the acrylic edge without recolouring the unlit prints.
+  const rim = new THREE.DirectionalLight(0xe4eeff, 3.2)
+  rim.position.set(0, 5, -9)
+  rim.visible = false
+  scene.add(rim)
 
   const anis = renderer.capabilities.getMaxAnisotropy()
   const textureTasks: Promise<void>[] = []
@@ -130,14 +148,17 @@ export function createBoxScene({ canvas, cover, cards, extra, locations }: Opts)
 
   // base: floor + 4 walls + inner liner
   const base = new THREE.Group()
+  base.name = 'box-base'
   root.add(base)
   const floor = shadowed(new THREE.Mesh(new RoundedBoxGeometry(W, FLOOR, D, 3, 0.03), blue))
+  floor.name = 'box-floor'
   floor.position.y = FLOOR / 2
   base.add(floor)
   const wallH = HB - FLOOR
   const wy = FLOOR + wallH / 2
   const mkWall = (w: number, d: number, x: number, z: number) => {
     const m = shadowed(new THREE.Mesh(new RoundedBoxGeometry(w, wallH, d, 3, 0.03), blue))
+    m.name = 'box-wall'
     m.position.set(x, wy, z)
     base.add(m)
   }
@@ -149,12 +170,14 @@ export function createBoxScene({ canvas, cover, cards, extra, locations }: Opts)
   const iw = W - WALL * 2
   const id = D - WALL * 2
   const pad = new THREE.Mesh(new THREE.BoxGeometry(iw, 0.02, id), liner)
+  pad.name = 'box-floor'
   pad.position.y = FLOOR + 0.01
   pad.receiveShadow = true
   base.add(pad)
   const lw = 0.03
   const mkLiner = (w: number, d: number, x: number, z: number) => {
     const m = new THREE.Mesh(new THREE.BoxGeometry(w, wallH - 0.1, d), linerWall)
+    m.name = 'box-wall'
     m.position.set(x, FLOOR + (wallH - 0.1) / 2 + 0.02, z)
     m.receiveShadow = true
     base.add(m)
@@ -166,6 +189,7 @@ export function createBoxScene({ canvas, cover, cards, extra, locations }: Opts)
 
   // lid: top plate (cover art) + skirt
   const lid = new THREE.Group()
+  lid.name = 'box-lid'
   root.add(lid)
   const ow = W + 0.1
   const od = D + 0.1
@@ -173,12 +197,14 @@ export function createBoxScene({ canvas, cover, cards, extra, locations }: Opts)
   const coverTex = loadTex(cover)
   const plateMats = [deep, deep, new THREE.MeshStandardMaterial({ map: coverTex, roughness: 0.42, metalness: 0 }), deep, deep, deep]
   const plate = shadowed(new THREE.Mesh(new THREE.BoxGeometry(ow, plateT, od), plateMats))
+  plate.name = 'box-ceiling'
   plate.position.y = HL - plateT / 2
   lid.add(plate)
   const sk = 0.07
   const skH = HL - plateT
   const mkSkirt = (w: number, d: number, x: number, z: number) => {
     const m = shadowed(new THREE.Mesh(new RoundedBoxGeometry(w, skH, d, 3, 0.02), deep))
+    m.name = 'box-wall'
     m.position.set(x, skH / 2, z)
     lid.add(m)
   }
@@ -287,6 +313,7 @@ export function createBoxScene({ canvas, cover, cards, extra, locations }: Opts)
   paperGeometry.translate(0, 0, -0.007)
   const paperMaterial = new THREE.MeshStandardMaterial({ color: 0xf3e6cd, roughness: 0.85 })
   const board = new THREE.Group()
+  board.name = 'location-board'
   board.position.y = 1.75
   board.visible = false
   root.add(board)
@@ -295,10 +322,13 @@ export function createBoxScene({ canvas, cover, cards, extra, locations }: Opts)
     x: (column - (count - 1) / 2) * pitch,
     y: (2.5 - row) * pitch,
   })))
-  const tiles = locations.map((card) => {
+  const tiles = locations.map((card, index) => {
     const group = new THREE.Group()
+    group.name = `location-${index}`
     group.rotation.order = 'YXZ'
-    group.add(new THREE.Mesh(paperGeometry, paperMaterial))
+    const paper = new THREE.Mesh(paperGeometry, paperMaterial)
+    paper.name = 'paper'
+    group.add(paper)
     // Discard transparent artwork corners so black RGB padding cannot cover the paper.
     const front = new THREE.Mesh(faceGeometry, new THREE.MeshBasicMaterial({ map: loadTex(card.image), alphaTest: 0.5, toneMapped: false }))
     front.position.z = 0.008
@@ -309,6 +339,7 @@ export function createBoxScene({ canvas, cover, cards, extra, locations }: Opts)
     board.add(group)
     return group
   })
+  const pieceScene = createPieceScene({ canvas, root, camera, assets: pieces, slots, onChange: onPieceChange })
   // A shared soft paper shadow avoids 24 extra shadow-map passes.
   const shadowCanvas = document.createElement('canvas')
   shadowCanvas.width = shadowCanvas.height = 128
@@ -327,8 +358,15 @@ export function createBoxScene({ canvas, cover, cards, extra, locations }: Opts)
     shadow.position.set(0.035, -0.045, -0.045)
     group.add(shadow)
   })
+  const tableShadow = new THREE.Mesh(new THREE.PlaneGeometry(7.2, 7.2), new THREE.ShadowMaterial({ opacity: 0.2, color: 0x3a2200 }))
+  tableShadow.position.z = 0.009
+  tableShadow.receiveShadow = true
+  tableShadow.visible = false
+  board.add(tableShadow)
   let pointerX = 0
   let pointerY = 0
+  let parallaxX = 0
+  let parallaxY = 0
   const pointerMedia = matchMedia('(hover: hover) and (pointer: fine)')
   const pointerMove = (event: PointerEvent) => {
     if (!pointerMedia.matches) return
@@ -347,7 +385,12 @@ export function createBoxScene({ canvas, cover, cards, extra, locations }: Opts)
   let boardHeight = 0.64
   let boardOffsetY = -100
   const look = new THREE.Vector3()
+  const cameraTarget = new THREE.Vector3()
+  const heldLook = new THREE.Vector3(0, 2.22, 5.3)
+  let lastFrame = performance.now()
   const ease = (t: number) => 1 - Math.pow(1 - t, 3)
+  const smooth = (value: number) => { const t = THREE.MathUtils.clamp(value, 0, 1); return t * t * (3 - 2 * t) }
+  const exitOffsetY = () => -smooth(state.boxDismiss) * Math.max(28, 16 / aspect)
 
   const place = () => {
     const r = ease(THREE.MathUtils.clamp(state.rise, 0, 1))
@@ -391,53 +434,111 @@ export function createBoxScene({ canvas, cover, cards, extra, locations }: Opts)
       g.rotation.z = -d * 0.13 * f * (1 - rg)
     }
     const spread = THREE.MathUtils.clamp((state.locationsReveal - 3 / 11) / (8 / 11), 0, 1)
-    const sink = ease(THREE.MathUtils.clamp((state.locationsExit - 0.65) / 0.35, 0, 1))
-    board.visible = state.locationsReveal > 0.001 && state.locationsExit < 0.999
-    board.rotation.x += (-0.08 + pointerY - board.rotation.x) * 0.12
-    board.rotation.y += (-0.04 + pointerX - board.rotation.y) * 0.12
+    const tabletop = smooth(state.piecesReveal / 0.3)
+    tableShadow.visible = tabletop > 0.99 && state.locationsExit < 0.001
+    shadowMaterial.opacity = 0.15 * (1 - smooth(state.locationsExit / 0.18))
+    board.visible = state.locationsReveal > 0.001 && state.boxDismiss < 1
+    board.position.y = THREE.MathUtils.lerp(1.75, 0.025, tabletop) + exitOffsetY()
+    board.position.x = -tabletop * (aspect < 0.8 ? 0 : 1)
+    board.position.z = 0
+    parallaxX += (pointerX - parallaxX) * 0.12
+    parallaxY += (pointerY - parallaxY) * 0.12
+    board.rotation.x = THREE.MathUtils.lerp(-0.08 + parallaxY, -Math.PI / 2, tabletop)
+    board.rotation.y = (-0.04 + parallaxX) * (1 - tabletop)
     tiles.forEach((group, i) => {
       const slot = slots[i]
       const wave = (slot.x / pitch + 2.5) / 5
       const opening = ease(THREE.MathUtils.clamp((spread - wave * 0.2) / 0.8, 0, 1))
-      const closing = ease(THREE.MathUtils.clamp((state.locationsExit - (1 - wave) * 0.12) / 0.53, 0, 1))
-      const amount = opening * (1 - closing)
-      group.position.set(slot.x * amount, slot.y * amount - (1 - transfer) * 12 - sink * 14,
-        (1 - amount) * i * 0.018)
-      group.rotation.y = (1 - amount) * Math.PI * 0.88
-      group.rotation.z = (1 - amount) * (i - 11.5) * 0.008
+      group.position.set(slot.x * opening, slot.y * opening - (1 - transfer) * 12, (1 - opening) * i * 0.018)
+      group.rotation.y = (1 - opening) * Math.PI * 0.88
+      group.rotation.z = (1 - opening) * (i - 11.5) * 0.008
+      if (state.locationsExit > 0) {
+        // Separate the paper layers before gathering. Carry the entire stack
+        // above the rim, then lower it vertically into the free rear compartment.
+        const lift = smooth(state.locationsExit / 0.18)
+        const gather = smooth((state.locationsExit - 0.18) / 0.27)
+        const turn = smooth((state.locationsExit - 0.45) / 0.17) * Math.PI / 2
+        const travel = smooth((state.locationsExit - 0.62) / 0.2)
+        const lower = smooth((state.locationsExit - 0.82) / 0.18)
+        const midLayer = (tiles.length - 1) * piecePacking.cardStep / 2
+        const layer = i * piecePacking.cardStep - midLayer
+        const stackX = piecePacking.deckFirstX + midLayer - board.position.x
+        group.position.x = THREE.MathUtils.lerp(slot.x, stackX, gather) + Math.sin(turn) * layer * lift
+        group.position.y = slot.y * (1 - gather) - (piecePacking.deckZ + (aspect < 0.8 ? piecePacking.portraitOffsetZ : 0)) * travel
+        group.position.z = THREE.MathUtils.lerp((1.3 + midLayer) * lift, piecePacking.deckY - 0.025, lower) + Math.cos(turn) * layer * lift
+        group.rotation.set(0, turn, 0)
+      }
     })
   }
 
   const frame = () => {
     raf = requestAnimationFrame(frame)
-    if (!visible) return
+    if (!visible) {
+      // Pinning and viewport changes can race an IntersectionObserver delivery.
+      const bounds = canvas.getBoundingClientRect()
+      if (bounds.bottom <= 0 || bounds.top >= innerHeight) return
+      visible = true
+    }
+    const now = performance.now()
+    const dt = Math.min((now - lastFrame) / 1000, 0.05)
+    lastFrame = now
     place()
+    pieceScene.update(state.piecesReveal, state.piecesExit, dt, aspect < 0.8, exitOffsetY(), state.boxDismiss >= 1)
 
-    lid.position.y = HB + 0.004 + state.lift
-    sun.castShadow = state.lift < 3.5 && state.rise < 0.05
-    base.position.y = -state.drop
-    ;(ground.material as THREE.ShadowMaterial).opacity = 0.2 * (1 - Math.min(1, state.rise * 2))
-    lid.rotation.x = state.lidTilt
-    lid.rotation.y = state.lidTurn
+    const tabletop = smooth(state.piecesReveal / 0.3)
+    const boxReturn = smooth(state.piecesExit / 0.12)
+    const boxSlide = smooth(state.piecesExit / 0.06)
+    const boxRise = smooth((state.piecesExit - 0.06) / 0.06)
+    const boxZ = piecePacking.boxZ + (aspect < 0.8 ? piecePacking.portraitOffsetZ : 0)
+    const closeLift = smooth(state.boxClose / 0.25)
+    const closeSlide = smooth((state.boxClose - 0.25) / 0.5)
+    const closeLower = smooth((state.boxClose - 0.75) / 0.25)
+    const openLidY = state.piecesExit > 0 ? 0.04 - state.drop * (1 - boxRise) : HB + 0.004 + state.lift
+    const closingLidY = THREE.MathUtils.lerp(openLidY, HB + 1.004, closeLift)
+    rim.visible = tabletop > 0.01
+    lid.position.set(state.piecesExit > 0 ? 3.7 * (1 - closeSlide) : 0,
+      THREE.MathUtils.lerp(closingLidY, HB + 0.004, closeLower) + Math.sin(closeSlide * Math.PI) * 0.2 * (1 - closeLower) + exitOffsetY(), boxSlide * boxZ)
+    sun.castShadow = (state.lift < 3.5 && state.rise < 0.05) || tabletop > 0.1
+    base.position.set(0, -state.drop * (1 - boxRise) + exitOffsetY(), boxSlide * boxZ)
+    ;(ground.material as THREE.ShadowMaterial).opacity = Math.max(0.2 * (1 - Math.min(1, state.rise * 2)), tabletop * 0.17)
+    lid.rotation.x = state.lidTilt * (1 - boxReturn)
+    lid.rotation.y = state.lidTurn * (1 - boxReturn)
+    lid.rotation.z = 0
 
     const transfer = ease(THREE.MathUtils.clamp(state.locationsReveal / (3 / 11), 0, 1))
     // The wider board camera must not bring the already-dismissed box back into view.
-    lid.visible = base.visible = state.locationsReveal <= 0
-    const elev = THREE.MathUtils.lerp(state.elev, 0.05, transfer)
-    const yaw = state.yaw
+    lid.visible = base.visible = state.locationsReveal <= 0 || (boxReturn > 0 && state.boxDismiss < 1)
+    const elev = THREE.MathUtils.lerp(THREE.MathUtils.lerp(state.elev, 0.05, transfer), 0.7 + boxReturn * 0.16, tabletop)
+    const yaw = state.yaw + boxReturn * 0.16
     const fit = Math.max(12.5, 8.4 / aspect)
     const boardExtent = pitch * 6 + 0.35
     const tangent = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))
     const boardDistance = Math.max(boardExtent / (2 * tangent * boardHeight),
       boardExtent / (2 * tangent * aspect * (wideBoard ? 0.62 : 0.9)))
-    const dist = THREE.MathUtils.lerp(fit / state.zoom, boardDistance, transfer)
+    const tableDistance = Math.max((aspect < 0.8 ? 7.2 : 6.2) / (2 * tangent * 0.76), (aspect < 0.8 ? 7.5 : 11.3) / (2 * tangent * aspect * 0.93))
+    const returnDistance = Math.max(tableDistance + 5.5, 10.5 / (2 * tangent * aspect * 0.92))
+    let dist = THREE.MathUtils.lerp(THREE.MathUtils.lerp(fit / state.zoom, boardDistance, transfer), THREE.MathUtils.lerp(tableDistance, returnDistance, boxReturn), tabletop)
     look.set(0, 0.35 + THREE.MathUtils.lerp(0, 1.4, ease(THREE.MathUtils.clamp(state.rise, 0, 1))), 0)
-    camera.position.set(Math.sin(yaw) * Math.cos(elev) * dist, Math.sin(elev) * dist + look.y, Math.cos(yaw) * Math.cos(elev) * dist)
+    look.y = THREE.MathUtils.lerp(look.y, 0.4, tabletop)
+    look.z = (aspect < 0.8 ? tabletop * 1.2 : 0) * (1 - boxReturn) + boxReturn * (2.1 + (aspect < 0.8 ? piecePacking.portraitOffsetZ * 0.5 : 0))
+    const focus = pieceScene.focus
+    const dimensions = pieceScene.dimensions
+    if (dimensions) {
+      const heldDistance = Math.max(1.9 / (2 * tangent * 0.72), (dimensions.width + dimensions.depth) * 1.32 / dimensions.height / (2 * tangent * aspect * 0.8))
+      dist = THREE.MathUtils.lerp(dist, heldDistance, focus)
+      look.lerp(heldLook, focus)
+    }
+    camera.position.set(Math.sin(yaw) * Math.cos(elev) * dist, Math.sin(elev) * dist + look.y, Math.cos(yaw) * Math.cos(elev) * dist + look.z)
+    cameraTarget.set(0, look.y + Math.sin(0.24) * dist, look.z + Math.cos(0.24) * dist)
+    camera.position.lerp(cameraTarget, focus)
     camera.lookAt(look)
-    const offsetX = THREE.MathUtils.lerp(-state.shift * (aspect > 1.3 ? 1 : 0) * 110 * aspect, wideBoard ? -155 * aspect : 0, transfer)
-    camera.setViewOffset(1000 * aspect, 1000, offsetX, boardOffsetY * transfer, 1000 * aspect, 1000)
+    const offsetX = THREE.MathUtils.lerp(-state.shift * (aspect > 1.3 ? 1 : 0) * 110 * aspect, wideBoard ? -155 * aspect : 0, transfer) * (1 - tabletop)
+    camera.setViewOffset(1000 * aspect, 1000, offsetX, boardOffsetY * transfer * (1 - tabletop) + tabletop * 65 * (1 - focus), 1000 * aspect, 1000)
     camera.updateProjectionMatrix()
     renderer.render(scene, camera)
+    if (import.meta.env.DEV && inspectionCanvas.__boxScene) inspectionCanvas.__boxScene.frameState = [
+      state.locationsReveal, state.piecesReveal, state.piecesExit, state.locationsExit, state.boxClose, state.boxDismiss,
+    ]
   }
 
   const resize = () => {
@@ -465,25 +566,31 @@ export function createBoxScene({ canvas, cover, cards, extra, locations }: Opts)
 
   frame()
 
-  const ready = Promise.all(textureTasks).then(async () => {
+  const ready = Promise.all([Promise.all(textureTasks), pieceScene.ready]).then(async () => {
     if (disposed) return
     renderer.initTexture(backTex)
     renderer.initTexture(tileShadow)
     board.visible = true
+    pieceScene.collection.visible = true
     await renderer.compileAsync(scene, camera)
-    board.visible = state.locationsReveal > 0.001 && state.locationsExit < 0.999
+    pieceScene.collection.visible = false
+    board.visible = state.locationsReveal > 0.001 && state.boxDismiss < 1
   })
 
   return {
     state,
     ready,
+    piecesReady: pieceScene.ready,
+    pieces: pieceScene,
     dispose() {
       disposed = true
+      if (import.meta.env.DEV) delete inspectionCanvas.__boxScene
       cancelAnimationFrame(raf)
       ro.disconnect()
       io.disconnect()
       canvas.removeEventListener('pointermove', pointerMove)
       canvas.removeEventListener('pointerleave', pointerLeave)
+      pieceScene.dispose()
       const geometries = new Set<THREE.BufferGeometry>()
       const materials = new Set<THREE.Material>()
       const textures = new Set<THREE.Texture>()
