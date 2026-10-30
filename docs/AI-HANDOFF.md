@@ -17,6 +17,9 @@ Giữ query của trang luật/đặt trước; landing về `#top`. Đã thử 
 bộ nhân vật có snap, Enter và trang đặt trước (không gửi form); sau một giây
 vẫn scrollY 0, hero về progress 0. Nút nằm trong viewport 390px và desktop.
 Typecheck/build:site đạt; tiếp tục loại playable khỏi bản public.
+Nguồn `6dc5b05`, Pages `4fa7472d7f73b40b4760f5e01fe5a921b2effdc3`
+đã built. Đã thử nút thật trên web: scrollY/hero progress về 0 ngay;
+ảnh `docs/qa/back-to-top-main-2026-10-30.jpg`.
 
 **Phát hành showcase 3D — 30/10/2026:** nguồn `aad5ee2`, release
 `a28586de5c1e045b757e458bb17d15c595d0ec44` trên origin/gh-pages, Pages
