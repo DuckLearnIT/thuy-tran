@@ -11,6 +11,17 @@ function doGet(e) {
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
+// Anonymous POST path for browsers signed in to several Google accounts, where Google redirects the HTML bridge
+// to /u/N/ and refuses it. Same validation, rate limit and retry id as the bridge; the reply is plain JSON.
+function doPost(e) {
+  let result = { ok: false, code: 'invalid' };
+  const body = e && e.postData && e.postData.contents;
+  if (typeof body === 'string' && body.length <= 4000) {
+    try { result = submitPreorder(JSON.parse(body)); } catch (error) { /* Keep the invalid answer. */ }
+  }
+  return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+}
+
 function validateRequest_(input) {
   if (!input || typeof input !== 'object' || input.company !== '') return null;
   const name = typeof input.name === 'string' ? input.name.trim() : '';
@@ -30,7 +41,7 @@ function receipt_(row) {
   return { reference: row[0], createdAt: new Date(row[1]).toISOString(), quantity: row[5], unitPrice: row[6], subtotal: row[7] };
 }
 
-// Only public RPC besides doGet: append a validated request, or acknowledge its opaque retry id.
+// Public entry points besides doGet: append a validated request, or acknowledge its opaque retry id.
 // No public endpoint returns contacts, lists orders, edits rows, shares files or sends email.
 function submitPreorder(input) {
   const data = validateRequest_(input);

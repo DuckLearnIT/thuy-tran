@@ -21,10 +21,15 @@ Trận — Nhận đăng ký đặt trước”) đã triển khai **Version 6**
 `https://thuy-tran.pages.dev`, giữ nguyên ID/endpoint. Khi gắn tên miền riêng
 phải thêm origin đó vào `allowed` rồi tạo phiên bản mới. Đã gửi thử một đăng ký
 từ pages.dev bằng trình duyệt sạch và nhận mã xác nhận (hàng thử tên “TEST
-pages.dev - xoa dong nay” trong Sheets do người dùng tự xóa). Lưu ý: trong trình
-duyệt đăng nhập nhiều tài khoản Google (như Cốc Cốc của người dùng), Google
-chuyển endpoint sang `/macros/u/N/` và báo “không thể mở tệp”, nên cầu nối không
-gửi được; đây là hạn chế của Apps Script, có từ trước đợt này, chưa có cách khắc phục.
+pages.dev - xoa dong nay” trong Sheets do người dùng tự xóa). Trong trình duyệt
+đăng nhập nhiều tài khoản Google (như Cốc Cốc của người dùng), Google chuyển
+endpoint sang `/macros/u/N/` và báo “không thể mở tệp”, nên cầu nối iframe không
+tải được. Cách xử lý (Apps Script **Version 7**): `Code.gs` có thêm `doPost`
+(cùng `submitPreorder`, trả JSON, body tối đa 4.000 ký tự) và `submitPreorder.ts`
+gửi lại cùng đơn bằng `fetch` POST ẩn danh (`credentials: 'omit'`, `text/plain`)
+nếu cầu nối chưa trả lời sau 6 giây; mã chống trùng giữ một hàng cho cả hai đường.
+Đổi lại endpoint nhận POST công khai (không còn bị chặn theo origin); biện pháp
+mạnh hơn khi bán thật là Cloudflare Pages Functions + Turnstile làm lớp trung gian.
 
 **Curtain luôn vào được trang + nút menu mobile mới — 30/10/2026 (chưa commit/deploy):**
 mọi curtain (landing, Cách chơi, Đặt trước, game) dùng `hooks/useCurtainClock.ts`:

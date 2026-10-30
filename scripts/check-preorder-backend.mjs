@@ -28,6 +28,8 @@ const context = vm.createContext({
   SpreadsheetApp: { openById: () => ({ getSheetByName: () => sheet }), flush() {} },
   LockService: { getScriptLock: () => ({ tryLock: () => lockAvailable, releaseLock() { released++ } }) },
   CacheService: { getScriptCache: () => ({ get: key => cache.get(key), put: (key, value) => cache.set(key, value) }) },
+  ContentService: { MimeType: { JSON: 'json' }, createTextOutput: text => ({ text, setMimeType(type) { this.type = type; return this } }) },
+  JSON,
   Utilities: { DigestAlgorithm: { SHA_256: 'sha256' }, computeDigest: (_, text) => [...crypto.createHash('sha256').update(text).digest()],
     formatDate: date => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit' }).format(date).replaceAll('-', '') },
 })
@@ -62,4 +64,16 @@ check(send(request()).code === 'retry', 'Missing sheet configuration must never 
 configured = true; lockAvailable = false
 check(send(request()).code === 'retry', 'Concurrent lock pressure is retryable')
 check(released >= 6, 'Acquired locks release on success, rejection and exception')
+// Anonymous POST path (browsers signed in to several Google accounts).
+lockAvailable = true; cache.clear()
+const post = body => { const out = context.doPost({ postData: { contents: body } }); return { type: out.type, json: JSON.parse(out.text) } }
+const viaPost = request()
+const posted = post(JSON.stringify(viaPost))
+check(posted.type === 'json' && posted.json.ok && rows.length === 4, 'POST appends one row and answers with JSON')
+const postedAgain = post(JSON.stringify(viaPost))
+check(postedAgain.json.ok && postedAgain.json.receipt.reference === posted.json.receipt.reference && rows.length === 4, 'POST retry (also after the bridge) acknowledges the same row')
+check(post('not json').json.code === 'invalid' && post('').json.code === 'invalid' && post('x'.repeat(4001)).json.code === 'invalid', 'POST rejects malformed or oversized bodies')
+check(JSON.parse(context.doPost({}).text).code === 'invalid', 'POST without a body is rejected')
+check(post(JSON.stringify({ ...request(), company: 'bot' })).json.code === 'invalid' && rows.length === 4, 'POST honours the honeypot and validation')
+check(!JSON.stringify(posted.json).includes('QA KHÔNG GỌI'), 'POST replies expose no customer fields')
 console.log(`Preorder backend: ${checks} checks passed; no external writes.`)
