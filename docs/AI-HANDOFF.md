@@ -10,6 +10,22 @@
 
 ## 1. Đọc phần này trước
 
+**Cloudflare Pages — 30/10/2026:** dự án `thuy-tran` (tài khoản Cloudflare
+`duckusetowork@gmail.com`) nối repo `DuckLearnIT/thuy-tran`, nhánh `main`, build
+`npm run build:site`, thư mục `dist`, `NODE_VERSION=22`; mỗi lần push `main` tự
+build và deploy tại https://thuy-tran.pages.dev. `public/_headers` cache 1 năm
+cho `/assets/*`. Website chính cũ trên GitHub Pages chưa bị đổi; quy ước deploy
+lên `gh-pages` trong `AGENTS.md` chưa được người dùng cập nhật. Cầu nối đặt
+trước: `Bridge.html` (Apps Script, tài khoản `nguyenducdw@gmail.com`, dự án “Thủy
+Trận — Nhận đăng ký đặt trước”) đã triển khai **Version 6** với origin
+`https://thuy-tran.pages.dev`, giữ nguyên ID/endpoint. Khi gắn tên miền riêng
+phải thêm origin đó vào `allowed` rồi tạo phiên bản mới. Đã gửi thử một đăng ký
+từ pages.dev bằng trình duyệt sạch và nhận mã xác nhận (hàng thử tên “TEST
+pages.dev - xoa dong nay” trong Sheets do người dùng tự xóa). Lưu ý: trong trình
+duyệt đăng nhập nhiều tài khoản Google (như Cốc Cốc của người dùng), Google
+chuyển endpoint sang `/macros/u/N/` và báo “không thể mở tệp”, nên cầu nối không
+gửi được; đây là hạn chế của Apps Script, có từ trước đợt này, chưa có cách khắc phục.
+
 **Curtain luôn vào được trang + nút menu mobile mới — 30/10/2026 (chưa commit/deploy):**
 mọi curtain (landing, Cách chơi, Đặt trước, game) dùng `hooks/useCurtainClock.ts`:
 tổng hạn **10 giây** tính từ lúc bắt đầu điều hướng, trong đó dành 4 giây cho dựng
