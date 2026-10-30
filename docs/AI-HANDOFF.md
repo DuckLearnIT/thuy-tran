@@ -10,6 +10,14 @@
 
 ## 1. Đọc phần này trước
 
+**Nút về đầu ngay — 30/10/2026:** Header dùng chung có nút nhỏ “↑ Về đầu”
+cố định góc dưới trái, vùng bấm 44px. Dùng `scrollTo` instant, hủy snap đang
+chạy và đồng bộ scrub ngay để hero/logo không phải chờ animation cuộn ngược.
+Giữ query của trang luật/đặt trước; landing về `#top`. Đã thử từ cảnh 3D,
+bộ nhân vật có snap, Enter và trang đặt trước (không gửi form); sau một giây
+vẫn scrollY 0, hero về progress 0. Nút nằm trong viewport 390px và desktop.
+Typecheck/build:site đạt; tiếp tục loại playable khỏi bản public.
+
 **Phát hành showcase 3D — 30/10/2026:** nguồn `aad5ee2`, release
 `a28586de5c1e045b757e458bb17d15c595d0ec44` trên origin/gh-pages, Pages
 `built`. Website chính tải JS `index-Qifjcabx.js`, CSS `index-D5GRbewC.css`

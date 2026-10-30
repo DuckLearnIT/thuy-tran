@@ -106,6 +106,16 @@ export default function Header() {
     setOpen(false)
   }
 
+  const returnToTop = () => {
+    clearHover()
+    setOpen(false)
+    ScrollTrigger.getAll().forEach((trigger) => trigger.getTween(true)?.kill())
+    window.history.replaceState(null, '', `${location.pathname}${location.search}${standalone ? '' : '#top'}`)
+    window.scrollTo({ top: 0, behavior: 'instant' })
+    ScrollTrigger.update()
+    ScrollTrigger.getAll().forEach((trigger) => trigger.getTween()?.progress(1))
+  }
+
   return (
     <>
       <div ref={scrollProgress} className="page-progress" role="progressbar" aria-label="Tiến trình khám phá trang"
@@ -168,6 +178,10 @@ export default function Header() {
         <div className="nav-stripe" aria-hidden="true" />
       </div>
     </header>
+    <button type="button" className="back-to-top" inert={open}
+      aria-label="Về đầu trang ngay" onClick={returnToTop}>
+      <span aria-hidden="true">↑</span> Về đầu
+    </button>
     </>
   )
 }
