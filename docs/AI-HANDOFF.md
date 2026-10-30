@@ -18,6 +18,9 @@ instant. Giữ kiểu son đỏ, query trang và vùng bấm như trước.
 QA Chromium: bấm từ bộ nhân vật có snap ghi nhận nhiều vị trí trung gian
 từ khoảng 15.134px về 0, hero cuối về progress 0; Enter với reduced motion
 về ngay 0. Typecheck/build:site đạt. Không đổi artwork hoặc kiểu nút.
+Đã deploy nguồn `ba343b9`, Pages `9b048d371eae57db21f03e95f252176fce7e878d`
+built. QA online ghi nhận 36 vị trí cuộn khác nhau từ 10.000px về 0,
+hero kết thúc progress 0; ảnh `docs/qa/back-to-top-smooth-main-2026-10-30.jpg`.
 
 **Nút về đầu ngay — 30/10/2026:** Header dùng chung có nút nhỏ “Về đầu”
 cố định góc dưới trái, vùng bấm 44px. Nền son cắt góc, chữ NVN Yellost
