@@ -2,7 +2,7 @@
 <html><head><meta charset="utf-8"><title>Thủy Trận</title></head><body>
 <script>
   const nonce = <?!= JSON.stringify(nonce) ?>;
-  const allowed = ['https://ducklearnit.github.io', 'http://127.0.0.1:8443', 'http://localhost:8443'];
+  const allowed = ['https://ducklearnit.github.io', 'https://thuy-tran.pages.dev', 'http://127.0.0.1:8443', 'http://localhost:8443'];
   let sent = false;
   const ready = setInterval(() => window.top.postMessage({ type: 'TT_PREORDER_READY', nonce }, '*'), 500);
   setTimeout(() => clearInterval(ready), 30000);
