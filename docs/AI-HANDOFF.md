@@ -11,6 +11,10 @@
 ## 1. Đọc phần này trước
 
 **Nút về đầu ngay — 30/10/2026:** Header dùng chung có nút nhỏ “↑ Về đầu”
+có nền son cắt góc, chữ NVN Yellost uppercase và mũi tên trong khung hình
+thoi theo phản hồi thẩm mỹ của người dùng; hover nâng nhẹ/đậm son, có focus
+và reduced motion. Render desktop và bounds 390px đạt (116×44px), thao tác
+về đầu instant vẫn đạt, typecheck/build:site đạt.
 cố định góc dưới trái, vùng bấm 44px. Dùng `scrollTo` instant, hủy snap đang
 chạy và đồng bộ scrub ngay để hero/logo không phải chờ animation cuộn ngược.
 Giữ query của trang luật/đặt trước; landing về `#top`. Đã thử từ cảnh 3D,

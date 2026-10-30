@@ -339,10 +339,15 @@ h1, h2, h3, h4, h5, h6, .display, .font-heading {
 .hero-kicker { position: absolute; z-index: 12; left: 5%; top: 4%; width: 90%; margin: 0; text-align: center; font-size: clamp(9px, .8vw, 12px); font-weight: 500; letter-spacing: .18em; text-transform: uppercase; }
 .site-brand, .site-cta, .chapter-nav { opacity: 0; visibility: hidden; }
 .site-header[aria-hidden='true'] { opacity: 0; }
-.back-to-top { position: fixed; z-index: 40; left: max(16px, env(safe-area-inset-left)); bottom: max(16px, env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border: 1px solid #23151155; background: var(--color-card); color: var(--color-ink); font: 500 12px var(--font-body); cursor: pointer; }
-.back-to-top span { font-size: 20px; }
-.back-to-top:hover { border-color: var(--color-vermilion); color: var(--color-vermilion); }
+.back-to-top { position: fixed; z-index: 40; isolation: isolate; left: max(16px, env(safe-area-inset-left)); bottom: max(16px, env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 13px; min-height: 44px; padding: 0 18px 0 15px; border: 0; background: none; color: var(--color-card); font: 400 20px/1 var(--font-display); letter-spacing: .04em; text-transform: uppercase; cursor: pointer; filter: drop-shadow(0 2px 1px #23151130); transition: translate .2s; }
+.back-to-top::before { content: ''; position: absolute; z-index: -1; inset: 0; background: var(--color-vermilion); clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px); transition: background-color .2s; }
+.back-to-top-mark { display: grid; place-items: center; width: 18px; height: 18px; border: 1px solid #f6e9d780; rotate: 45deg; }
+.back-to-top-mark svg { width: 16px; height: 16px; rotate: -45deg; stroke: currentColor; stroke-width: 1.3; stroke-linecap: square; }
+.back-to-top:hover { translate: 0 -2px; }
+.back-to-top:hover::before { background: #90271f; }
 .back-to-top:active { translate: 0 1px; }
+.back-to-top:focus-visible { outline-color: var(--color-vermilion); }
+@media (prefers-reduced-motion: reduce) { .back-to-top, .back-to-top::before { transition: none; } }
 .site-brand { --brand-outline: 0px; color: var(--color-ink); white-space: nowrap; transform-origin: 0 0; -webkit-text-stroke: var(--brand-outline) #f6e9d7; paint-order: stroke fill; }
 .site-brand[inert] { pointer-events: none; cursor: default; }
 .hero-cast { position: absolute; z-index: 2; inset: 0; }
