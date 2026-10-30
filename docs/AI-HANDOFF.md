@@ -10,12 +10,16 @@
 
 ## 1. Đọc phần này trước
 
-**Nút về đầu ngay — 30/10/2026:** Header dùng chung có nút nhỏ “↑ Về đầu”
-có nền son cắt góc, chữ NVN Yellost uppercase và mũi tên trong khung hình
+**Nút về đầu ngay — 30/10/2026:** Header dùng chung có nút nhỏ “Về đầu”
+cố định góc dưới trái, vùng bấm 44px. Nền son cắt góc, chữ NVN Yellost
+uppercase và mũi tên trong khung hình
 thoi theo phản hồi thẩm mỹ của người dùng; hover nâng nhẹ/đậm son, có focus
 và reduced motion. Render desktop và bounds 390px đạt (116×44px), thao tác
 về đầu instant vẫn đạt, typecheck/build:site đạt.
-cố định góc dưới trái, vùng bấm 44px. Dùng `scrollTo` instant, hủy snap đang
+Kiểu mới phát hành từ `febdc78`, Pages
+`48c23aa59f41d9355af5e674a92e982b0dcc9be8` built; ảnh online
+`docs/qa/back-to-top-styled-main-2026-10-30.jpg`.
+Dùng `scrollTo` instant, hủy snap đang
 chạy và đồng bộ scrub ngay để hero/logo không phải chờ animation cuộn ngược.
 Giữ query của trang luật/đặt trước; landing về `#top`. Đã thử từ cảnh 3D,
 bộ nhân vật có snap, Enter và trang đặt trước (không gửi form); sau một giây
