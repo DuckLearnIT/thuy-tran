@@ -46,6 +46,11 @@ camera mới, tránh closure của cảnh đang sống trong HMR.
 verticalRoom theo chiều cao để chừa header/inventory trên laptop. Đã chạy
 lại đủ 26 checks ở CSS 1024×576 sau chỉnh này, gồm bounds vật không che chữ
 và nút, chọn bằng bàn phím, đổi vật, Escape, cuộn ngược và đóng hộp.
+Đã xuất bản nguồn `db63378`, release Pages
+`040b1fb67d4ff69278dde96d571ec73b11cb5eb0` built. Bản công khai dùng
+`index-C-ekmsb8.js` / `index-Db8aYepN.css`; đã thử chọn Dò Luồng bằng tên
+bám model, xác nhận đủ 10 GLB và UI không còn thumbnail/pagination. Hai ảnh
+exhibit phía trên đã thay bằng ảnh production cuối, viewport 1304×895.
 
 **Đổi nút Về đầu sang cuộn mượt — 30/10/2026:** yêu cầu mới nhất thay thế
 hành vi instant bên dưới. Nút dùng native `scrollTo({ top: 0, behavior:
