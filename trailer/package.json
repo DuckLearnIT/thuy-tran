@@ -8,7 +8,9 @@
     "studio": "npm run sync && remotion studio",
     "still": "remotion still Trailer",
     "render": "npm run sync && remotion render Trailer out/thuy-tran-trailer.mp4 --codec=h264 --crf=18 --gl=angle",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "horizon:audio": "node scripts/horizon-audio.mjs",
+    "horizon": "node scripts/horizon-audio.mjs && remotion render Horizon out/opus-horizon.mp4 --codec=h264 --crf=16 --audio-codec=aac --gl=angle"
   },
   "dependencies": {
     "@react-three/fiber": "9.8.2",
@@ -26,6 +28,7 @@
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "remotion": "4.0.539",
+    "roughjs": "4.6.6",
     "three": "0.186.1"
   },
   "devDependencies": {
