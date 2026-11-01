@@ -21,4 +21,13 @@ node scripts/stills.mjs 40 172 300   # render vài khung để duyệt
 
 Hai cảnh 3D tải GLB/texture **trước** khi mount `ThreeCanvas`. Lý do: khi render, R3F chỉ vẽ lúc đổi frame, nên asset về muộn sẽ ra khung trống.
 
-Chữ chỉ dùng thông tin đã chốt: tên game, Bạch Đằng, tên vai (`src/data/cards.ts`), 24 địa danh, giá 599.000₫ và `thuy-tran.pages.dev`.
+## Bài tập `Museum`
+
+`src/museum/` là bản dựng lại 15 giây đầu video "The Museum of What Could Be" của OpenAI (bài đăng X ngày 31/10/2026) để luyện kỹ thuật. Bản này giữ đúng bốn shot, nhịp cắt và cách đặt camera của bản gốc, nhưng nhân vật, đạo cụ và hoa đều dựng thủ tục bằng Three.js. Không dùng asset của bản gốc. Đây là tác phẩm phái sinh, không đăng công khai.
+
+```sh
+npx remotion render Museum out/museum-study.mp4 --codec=h264 --crf=18 --gl=angle
+node scripts/stills.mjs Museum 30 230 320 420
+```
+
+Chữ trong trailer Thủy Trận chỉ dùng thông tin đã chốt: tên game, Bạch Đằng, tên vai (`src/data/cards.ts`), 24 địa danh, giá 599.000₫ và `thuy-tran.pages.dev`.
