@@ -10,6 +10,12 @@
 
 ## 1. Đọc phần này trước
 
+**Studio ảnh bìa sau nội bộ — 04/11/2026:** theo yêu cầu riêng tư, công cụ và
+PNG nằm ngoài repo trong `../Thuy-Tran-Back-Cover-Studio/`, chỉ mở tại
+`127.0.0.1:8444`. Không thêm route/link hoặc deploy studio. Xem
+[hướng dẫn công cụ local](LOCAL-BACK-COVER-STUDIO.md). Chỉ tài liệu vận hành
+được commit; tuyệt đối không đưa ảnh bìa/ảnh QA studio vào `docs/qa` public.
+
 **Cloudflare Pages — 30/10/2026:** dự án `thuy-tran` (tài khoản Cloudflare
 `duckusetowork@gmail.com`) nối repo `DuckLearnIT/thuy-tran`, nhánh `main`, build
 `npm run build:site`, thư mục `dist`, `NODE_VERSION=22`; mỗi lần push `main` tự
