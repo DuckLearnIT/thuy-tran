@@ -10,10 +10,11 @@ const meshes = []; group.traverse(node => { if (node.isMesh) meshes.push(node) }
 assert.equal(meshes.length, 2)
 assert.equal(meshes[0].material, meshes[1].material)
 assert.equal(meshes[0].material.map, texture)
+assert.equal(meshes[0].material.toneMapped, false, 'The stage tone map must not recolour printed artwork')
 assert.equal(meshes.reduce((sum, m) => sum + m.geometry.index.count / 3, 0), 64)
 const bounds = new THREE.Box3().setFromObject(group).getSize(new THREE.Vector3())
-assert.ok(Math.abs(bounds.x / bounds.z - 481.44 / 701.52) < 1e-6)
-assert.ok(Math.abs(bounds.y / bounds.x - 123.84 / 481.44) < 1e-6)
+assert.ok(Math.abs(bounds.x / bounds.z - 481.2 / 701.04) < 1e-6)
+assert.ok(Math.abs(bounds.y / bounds.x - 123.84 / 481.2) < 1e-6)
 assert.ok((size.width - 2 * size.wall - size.baseWidth) > 0)
 assert.ok((size.depth - 2 * size.wall - size.baseDepth) > 0)
 assert.ok(size.baseHeight < size.height - size.floor)
@@ -46,7 +47,7 @@ const old = [
   ...Array.from({ length: 4 }, () => new RoundedBoxGeometry(3, .57, .07, 3, .02)),
 ]
 const before = old.reduce((sum, g) => sum + (g.index?.count ?? g.attributes.position.count) / 3, 0)
-console.log(JSON.stringify({ sourceFacePoints: [481.44, 701.52, 123.84], meshes: 2, materials: 1, textureAtlases: 1,
+console.log(JSON.stringify({ sourceFacePoints: [481.2, 701.04, 123.84], meshes: 2, materials: 1, textureAtlases: 1,
   oldTriangles: before, triangles: 64, oldDrawCalls: 20, drawCalls: 2,
   triangleReductionPercent: Math.round((1 - 64 / before) * 10000) / 100 }, null, 2))
 old.forEach(g => g.dispose())

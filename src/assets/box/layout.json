@@ -1,8 +1,8 @@
 {
   "atlasSize": 2048,
   "millimetres": {
-    "width": 169.841334,
-    "depth": 247.480674,
+    "width": 169.756671,
+    "depth": 247.311326,
     "height": 43.687999
   },
   "frontPixels": [
@@ -93,24 +93,54 @@
   "sourceSha256": "2d0e35b9d12ec9205571de0cc361c83389e8f0986185859809d1da6532adb791",
   "revisedFaces": {
     "front": {
-      "filename": "mattruoc moi copy.pdf",
-      "sha256": "e80110c0ebf12570c5e8fed8df34ff8c02dfe207df66435c6b837077281db9ca"
+      "filename": "mat chinh dien moi han.pdf",
+      "pagePoints": [
+        0.0,
+        0.0,
+        481.20001220703125,
+        701.0399780273438
+      ],
+      "sha256": "10817299bf5cf48fe77f8f6f15999f2a0cc995c6e9908c5cc46f89251f2d6407"
     },
     "left": {
-      "filename": "mattrai moi.pdf",
-      "sha256": "f1b09c12e1f8d382cdf4a7e1238d3bba7e89ec5bf00545d6f7bd3661b82baf61"
+      "filename": "mat trai  moi han.pdf",
+      "pagePoints": [
+        0.0,
+        0.0,
+        123.83999633789062,
+        701.280029296875
+      ],
+      "sha256": "468be1d277d014a3a881531c83219b6195d6b99bb87b7290a57a6f12d28d7f57"
     },
     "right": {
-      "filename": "matphaimoi.pdf",
-      "sha256": "69770d7510715de7e5859fb8560bcc10cf60dc6fb036be5ab4b0143426f635c0"
+      "filename": "mat phai moi han.pdf",
+      "pagePoints": [
+        0.0,
+        0.0,
+        123.83999633789062,
+        701.280029296875
+      ],
+      "sha256": "99ce77805b7a4cc5395e4a7d8099ac8eb83bfdb711f0f10cfac401d20795157d"
     },
     "top": {
-      "filename": "mattren moi.pdf",
-      "sha256": "6ecea89e74e54b4bfebd477c9209fb8ddb583c0d9c87989a209678b0ed26cace"
+      "filename": "mat tren moi han.pdf",
+      "pagePoints": [
+        0.0,
+        0.0,
+        481.44000244140625,
+        123.83999633789062
+      ],
+      "sha256": "73afb6f9f3eb787f97385cf5a8b16c46017eee3d99f0df88e168b2b15146ea59"
     },
     "bottom": {
-      "filename": "matduoi moi.pdf",
-      "sha256": "59dbe0023a54f5d043b77cdc186c8bfd3a34e522c1261c144896d11e3a286efb"
+      "filename": "matduoi moi han.pdf",
+      "pagePoints": [
+        0.0,
+        0.0,
+        481.44000244140625,
+        123.83999633789062
+      ],
+      "sha256": "d2a060e883f81cbe97054861393e9d71c092d8dcab0453db34b95418e68a2034"
     }
   },
   "backFit": "Original back retained completely with edge bleed in the new proportions."

@@ -56,7 +56,7 @@ export function streamRemainingArt() {
 export async function preloadAssets(onProgress: (progress: number) => void, scope: 'full' | 'landing' | 'preorder' = 'full') {
   let completed = 0
   const artwork = scope === 'landing' ? [...new Set(critical)] : scope === 'preorder'
-    ? [boxArt.front, boxArt.right, boxArt.bottom, ...cards.map((card) => card.image)] : everything
+    ? [boxArt.front, ...cards.map((card) => card.image)] : everything
   const total = artwork.length + fontFaces.length
   const track = async (task: Promise<unknown>) => {
     try {

@@ -1,0 +1,869 @@
+{
+  "date": "2026-11-07",
+  "source": "Five moi han PDFs",
+  "checks": [
+    {
+      "name": "motion-and-idle",
+      "result": {
+        "results": [
+          {
+            "name": "Lid lifts clear before sliding sideways",
+            "passed": true
+          },
+          {
+            "name": "Cards wait below the raised lid",
+            "passed": true
+          },
+          {
+            "name": "Reversing mid-motion seats the lid exactly",
+            "passed": true
+          },
+          {
+            "name": "No idle GPU rendering",
+            "passed": true
+          },
+          {
+            "name": "Pixel ratio stays bounded",
+            "passed": true
+          }
+        ],
+        "state": "done"
+      }
+    },
+    {
+      "name": "geometry-layout-920",
+      "result": {
+        "result": {
+          "type": "object",
+          "value": {
+            "results": [
+              {
+                "name": "Closed: actual depth gives the right visibility",
+                "passed": true
+              },
+              {
+                "name": "Closed: artwork fits the scene horizontally",
+                "passed": true
+              },
+              {
+                "name": "Closed: actual geometry is not cropped vertically",
+                "passed": true
+              },
+              {
+                "name": "Closed: artwork clears the heading",
+                "passed": true
+              },
+              {
+                "name": "Closed: artwork leaves a gap above the button",
+                "passed": true
+              },
+              {
+                "name": "Closed: artwork stays clear of the form",
+                "passed": true
+              },
+              {
+                "name": "Open: actual depth gives the right visibility",
+                "passed": true
+              },
+              {
+                "name": "Open lid is physically clear of the base",
+                "passed": true
+              },
+              {
+                "name": "Open: artwork fits the scene horizontally",
+                "passed": true
+              },
+              {
+                "name": "Open: actual geometry is not cropped vertically",
+                "passed": true
+              },
+              {
+                "name": "Open: artwork clears the heading",
+                "passed": true
+              },
+              {
+                "name": "Open: artwork leaves a gap above the button",
+                "passed": true
+              },
+              {
+                "name": "Open: artwork stays clear of the form",
+                "passed": true
+              }
+            ],
+            "viewport": "920x900"
+          }
+        }
+      }
+    },
+    {
+      "name": "geometry-layout-1840",
+      "result": {
+        "result": {
+          "type": "object",
+          "value": {
+            "results": [
+              {
+                "name": "Closed: actual depth gives the right visibility",
+                "passed": true
+              },
+              {
+                "name": "Closed: artwork fits the scene horizontally",
+                "passed": true
+              },
+              {
+                "name": "Closed: actual geometry is not cropped vertically",
+                "passed": true
+              },
+              {
+                "name": "Closed: artwork clears the heading",
+                "passed": true
+              },
+              {
+                "name": "Closed: artwork leaves a gap above the button",
+                "passed": true
+              },
+              {
+                "name": "Closed: artwork stays clear of the form",
+                "passed": true
+              },
+              {
+                "name": "Open: actual depth gives the right visibility",
+                "passed": true
+              },
+              {
+                "name": "Open lid is physically clear of the base",
+                "passed": true
+              },
+              {
+                "name": "Open: artwork fits the scene horizontally",
+                "passed": true
+              },
+              {
+                "name": "Open: actual geometry is not cropped vertically",
+                "passed": true
+              },
+              {
+                "name": "Open: artwork clears the heading",
+                "passed": true
+              },
+              {
+                "name": "Open: artwork leaves a gap above the button",
+                "passed": true
+              },
+              {
+                "name": "Open: artwork stays clear of the form",
+                "passed": true
+              }
+            ],
+            "viewport": "1840x900"
+          }
+        }
+      }
+    },
+    {
+      "name": "geometry-layout-390",
+      "result": {
+        "result": {
+          "type": "object",
+          "value": {
+            "results": [
+              {
+                "name": "Open: actual depth gives the right visibility",
+                "passed": true
+              },
+              {
+                "name": "Open lid is physically clear of the base",
+                "passed": true
+              },
+              {
+                "name": "Open: artwork fits the scene horizontally",
+                "passed": true
+              },
+              {
+                "name": "Open: actual geometry is not cropped vertically",
+                "passed": true
+              },
+              {
+                "name": "Open: artwork clears the heading",
+                "passed": true
+              },
+              {
+                "name": "Open: artwork leaves a gap above the button",
+                "passed": true
+              },
+              {
+                "name": "Open: artwork stays clear of the form",
+                "passed": true
+              }
+            ],
+            "viewport": "390x900"
+          }
+        }
+      }
+    },
+    {
+      "name": "geometry-layout-320",
+      "result": {
+        "result": {
+          "type": "object",
+          "value": {
+            "results": [
+              {
+                "name": "Open: actual depth gives the right visibility",
+                "passed": true
+              },
+              {
+                "name": "Open lid is physically clear of the base",
+                "passed": true
+              },
+              {
+                "name": "Open: artwork fits the scene horizontally",
+                "passed": true
+              },
+              {
+                "name": "Open: actual geometry is not cropped vertically",
+                "passed": true
+              },
+              {
+                "name": "Open: artwork clears the heading",
+                "passed": true
+              },
+              {
+                "name": "Open: artwork leaves a gap above the button",
+                "passed": true
+              },
+              {
+                "name": "Open: artwork stays clear of the form",
+                "passed": true
+              }
+            ],
+            "viewport": "320x900"
+          }
+        }
+      }
+    },
+    {
+      "name": "preorder-form",
+      "result": {
+        "results": {
+          "next": "Reload once, verify name/phone/email/note/quantity, then clear this QA draft.",
+          "passed": 23,
+          "viewport": "1280×900"
+        },
+        "state": "done"
+      }
+    },
+    {
+      "name": "mobile-deferred-final",
+      "result": {
+        "result": {
+          "type": "object",
+          "value": {
+            "after": [
+              {
+                "name": "Checkout uses the revised print face",
+                "passed": true
+              },
+              {
+                "name": "Checkout uses two genuine shells with one shared material",
+                "passed": true
+              },
+              {
+                "name": "Checkout uses the small atlas only",
+                "passed": true
+              },
+              {
+                "name": "Checkout has six separate current character faces",
+                "passed": true
+              },
+              {
+                "name": "GPU card copies are bounded at 512px wide",
+                "passed": true
+              },
+              {
+                "name": "Box geometry follows the new PDF ratio",
+                "passed": true
+              },
+              {
+                "name": "WebGL remains healthy",
+                "passed": true
+              }
+            ],
+            "before": [
+              {
+                "name": "Checkout uses the revised print face",
+                "passed": true
+              },
+              {
+                "name": "Collapsed mobile preview defers WebGL and atlas",
+                "passed": true
+              }
+            ],
+            "layout": {
+              "results": [
+                {
+                  "name": "Open: actual depth gives the right visibility",
+                  "passed": true
+                },
+                {
+                  "name": "Open lid is physically clear of the base",
+                  "passed": true
+                },
+                {
+                  "name": "Open: artwork fits the scene horizontally",
+                  "passed": true
+                },
+                {
+                  "name": "Open: actual geometry is not cropped vertically",
+                  "passed": true
+                },
+                {
+                  "name": "Open: artwork clears the heading",
+                  "passed": true
+                },
+                {
+                  "name": "Open: artwork leaves a gap above the button",
+                  "passed": true
+                },
+                {
+                  "name": "Open: artwork stays clear of the form",
+                  "passed": true
+                }
+              ],
+              "viewport": "390x844"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "webgl-context-loss",
+      "result": {
+        "result": {
+          "type": "object",
+          "value": {
+            "faces": 6,
+            "fallback": "fallback",
+            "layout": {
+              "results": [
+                {
+                  "name": "Open: artwork fits the scene horizontally",
+                  "passed": true
+                },
+                {
+                  "name": "Open: actual geometry is not cropped vertically",
+                  "passed": true
+                },
+                {
+                  "name": "Open: artwork clears the heading",
+                  "passed": true
+                },
+                {
+                  "name": "Open: artwork leaves a gap above the button",
+                  "passed": true
+                },
+                {
+                  "name": "Open: artwork stays clear of the form",
+                  "passed": true
+                }
+              ],
+              "viewport": "390x844"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "unavailable-webgl-constructor",
+      "result": {
+        "result": {
+          "type": "object",
+          "value": {
+            "message": "Error: THREE.WebGLRenderer: Error creating WebGL context.",
+            "rejectsUnavailableWebGL": true
+          }
+        }
+      }
+    },
+    {
+      "name": "reduced-motion",
+      "result": {
+        "result": {
+          "type": "object",
+          "value": {
+            "layout": {
+              "results": [
+                {
+                  "name": "Open: actual depth gives the right visibility",
+                  "passed": true
+                },
+                {
+                  "name": "Open lid is physically clear of the base",
+                  "passed": true
+                },
+                {
+                  "name": "Open: artwork fits the scene horizontally",
+                  "passed": true
+                },
+                {
+                  "name": "Open: actual geometry is not cropped vertically",
+                  "passed": true
+                },
+                {
+                  "name": "Open: artwork clears the heading",
+                  "passed": true
+                },
+                {
+                  "name": "Open: artwork leaves a gap above the button",
+                  "passed": true
+                },
+                {
+                  "name": "Open: artwork stays clear of the form",
+                  "passed": true
+                }
+              ],
+              "viewport": "390x844"
+            },
+            "motion": [
+              {
+                "name": "No idle GPU rendering",
+                "passed": true
+              },
+              {
+                "name": "Pixel ratio stays bounded",
+                "passed": true
+              }
+            ],
+            "reduced": true
+          }
+        }
+      }
+    },
+    {
+      "name": "landing-packing-revision-two",
+      "result": {
+        "results": {
+          "packing": [
+            {
+              "name": "All standees clear walls and one another throughout sequential packing",
+              "passed": true
+            },
+            {
+              "name": "All ten packed objects stay visible before the lid closes",
+              "passed": true
+            },
+            {
+              "name": "Paper layers never overlap and the deck clears the rim before lowering",
+              "passed": true
+            },
+            {
+              "name": "Lid clears every packed mesh",
+              "passed": true
+            },
+            {
+              "name": "Box has left the frustum before the canvas hides",
+              "passed": true
+            },
+            {
+              "name": "No canvas or box remains at the next chapter",
+              "passed": true
+            },
+            {
+              "name": "Reverse restores the full display and canvas",
+              "passed": true
+            }
+          ],
+          "print": [
+            {
+              "name": "Only two opaque shells render the physical box",
+              "passed": true
+            },
+            {
+              "name": "Both shells share one material and atlas",
+              "passed": true
+            },
+            {
+              "name": "The full box has only 64 triangles",
+              "passed": true
+            },
+            {
+              "name": "Initial atlas size matches viewport",
+              "passed": true
+            },
+            {
+              "name": "Physical box retains separate hollow collision parts",
+              "passed": true
+            },
+            {
+              "name": "WebGL context remains healthy",
+              "passed": true
+            }
+          ]
+        },
+        "state": "done"
+      }
+    },
+    {
+      "name": "landing-print-colour",
+      "result": {
+        "result": {
+          "type": "object",
+          "value": {
+            "maxDifference": 2,
+            "samples": [
+              {
+                "maxDifference": 0,
+                "reference": [
+                  252,
+                  226,
+                  189
+                ],
+                "rendered": [
+                  252,
+                  226,
+                  189
+                ]
+              },
+              {
+                "maxDifference": 1,
+                "reference": [
+                  254,
+                  226,
+                  190
+                ],
+                "rendered": [
+                  254,
+                  227,
+                  189
+                ]
+              },
+              {
+                "maxDifference": 2,
+                "reference": [
+                  252,
+                  225,
+                  184
+                ],
+                "rendered": [
+                  251,
+                  223,
+                  183
+                ]
+              },
+              {
+                "maxDifference": 0,
+                "reference": [
+                  253,
+                  227,
+                  190
+                ],
+                "rendered": [
+                  253,
+                  227,
+                  190
+                ]
+              },
+              {
+                "maxDifference": 0,
+                "reference": [
+                  253,
+                  227,
+                  190
+                ],
+                "rendered": [
+                  253,
+                  227,
+                  190
+                ]
+              },
+              {
+                "maxDifference": 1,
+                "reference": [
+                  252,
+                  224,
+                  184
+                ],
+                "rendered": [
+                  252,
+                  225,
+                  184
+                ]
+              },
+              {
+                "maxDifference": 1,
+                "reference": [
+                  253,
+                  224,
+                  183
+                ],
+                "rendered": [
+                  254,
+                  224,
+                  184
+                ]
+              },
+              {
+                "maxDifference": 0,
+                "reference": [
+                  253,
+                  225,
+                  188
+                ],
+                "rendered": [
+                  253,
+                  225,
+                  188
+                ]
+              },
+              {
+                "maxDifference": 1,
+                "reference": [
+                  253,
+                  227,
+                  190
+                ],
+                "rendered": [
+                  252,
+                  226,
+                  189
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "final-desktop-after-colour-fix",
+      "result": {
+        "result": {
+          "type": "object",
+          "value": {
+            "colour": {
+              "maxDifference": 1,
+              "samples": [
+                {
+                  "maxDifference": 1,
+                  "reference": [
+                    253,
+                    227,
+                    190
+                  ],
+                  "rendered": [
+                    252,
+                    226,
+                    189
+                  ]
+                },
+                {
+                  "maxDifference": 0,
+                  "reference": [
+                    253,
+                    225,
+                    187
+                  ],
+                  "rendered": [
+                    253,
+                    225,
+                    187
+                  ]
+                },
+                {
+                  "maxDifference": 0,
+                  "reference": [
+                    254,
+                    224,
+                    184
+                  ],
+                  "rendered": [
+                    254,
+                    224,
+                    184
+                  ]
+                },
+                {
+                  "maxDifference": 1,
+                  "reference": [
+                    253,
+                    227,
+                    190
+                  ],
+                  "rendered": [
+                    254,
+                    228,
+                    191
+                  ]
+                },
+                {
+                  "maxDifference": 0,
+                  "reference": [
+                    252,
+                    226,
+                    189
+                  ],
+                  "rendered": [
+                    252,
+                    226,
+                    189
+                  ]
+                },
+                {
+                  "maxDifference": 0,
+                  "reference": [
+                    251,
+                    225,
+                    186
+                  ],
+                  "rendered": [
+                    251,
+                    225,
+                    186
+                  ]
+                },
+                {
+                  "maxDifference": 1,
+                  "reference": [
+                    252,
+                    224,
+                    185
+                  ],
+                  "rendered": [
+                    252,
+                    225,
+                    184
+                  ]
+                },
+                {
+                  "maxDifference": 0,
+                  "reference": [
+                    253,
+                    225,
+                    189
+                  ],
+                  "rendered": [
+                    253,
+                    225,
+                    189
+                  ]
+                },
+                {
+                  "maxDifference": 0,
+                  "reference": [
+                    252,
+                    226,
+                    189
+                  ],
+                  "rendered": [
+                    252,
+                    226,
+                    189
+                  ]
+                }
+              ]
+            },
+            "layout": {
+              "results": [
+                {
+                  "name": "Closed: actual depth gives the right visibility",
+                  "passed": true
+                },
+                {
+                  "name": "Closed: artwork fits the scene horizontally",
+                  "passed": true
+                },
+                {
+                  "name": "Closed: actual geometry is not cropped vertically",
+                  "passed": true
+                },
+                {
+                  "name": "Closed: artwork clears the heading",
+                  "passed": true
+                },
+                {
+                  "name": "Closed: artwork leaves a gap above the button",
+                  "passed": true
+                },
+                {
+                  "name": "Closed: artwork stays clear of the form",
+                  "passed": true
+                },
+                {
+                  "name": "Open: actual depth gives the right visibility",
+                  "passed": true
+                },
+                {
+                  "name": "Open lid is physically clear of the base",
+                  "passed": true
+                },
+                {
+                  "name": "Open: artwork fits the scene horizontally",
+                  "passed": true
+                },
+                {
+                  "name": "Open: actual geometry is not cropped vertically",
+                  "passed": true
+                },
+                {
+                  "name": "Open: artwork clears the heading",
+                  "passed": true
+                },
+                {
+                  "name": "Open: artwork leaves a gap above the button",
+                  "passed": true
+                },
+                {
+                  "name": "Open: artwork stays clear of the form",
+                  "passed": true
+                }
+              ],
+              "viewport": "1280x900"
+            },
+            "print": [
+              {
+                "name": "Checkout uses the revised print face",
+                "passed": true
+              },
+              {
+                "name": "Checkout uses two genuine shells with one shared material",
+                "passed": true
+              },
+              {
+                "name": "Checkout uses the small atlas only",
+                "passed": true
+              },
+              {
+                "name": "Checkout has six separate current character faces",
+                "passed": true
+              },
+              {
+                "name": "GPU card copies are bounded at 512px wide",
+                "passed": true
+              },
+              {
+                "name": "Box geometry follows the new PDF ratio",
+                "passed": true
+              },
+              {
+                "name": "WebGL remains healthy",
+                "passed": true
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "keyboard-open",
+      "result": {
+        "result": {
+          "type": "object",
+          "value": {
+            "focused": "po-box-toggle",
+            "open": "true",
+            "outline": "1.6px"
+          }
+        }
+      }
+    }
+  ]
+}

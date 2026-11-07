@@ -10,6 +10,13 @@
 
 ## 1. Đọc phần này trước
 
+**Hộp lần 2 — 07/11/2026 (ưu tiên hơn ghi chú hộp bên dưới):** dùng năm PDF
+`*moi han.pdf` mới trong `Downloads/In`. Preview Đặt trước đã bỏ CSS 3D, dùng
+chính geometry hộp của landing và sáu mesh thẻ. Nắp nâng/trượt rồi mới bung thẻ;
+camera fit theo vật thật, không render lúc idle; fallback là ảnh phẳng khi
+WebGL lỗi. Kiểm tra visibility bằng raycast, không chỉ đếm ảnh. Xem
+[nguồn mới và kiến trúc preview](BOX-REVISION2-2026-11-07.md).
+
 **Hộp theo PDF mới + sửa bố cục Đặt trước — 07/11/2026:** landing và Đặt trước
 dùng năm PDF mới trong `Downloads/In`, tỷ lệ do người dùng chọn theo nguồn
 (khoảng 17 × 24,75 × 4,37 cm). Mặt sau giữ PDF in cũ, contain không méo.

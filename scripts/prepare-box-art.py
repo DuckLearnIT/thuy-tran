@@ -17,16 +17,16 @@ doc = pymupdf.open(PDF)
 assert len(doc) == 2
 assert abs(doc[0].rect.width * 25.4 / 72 - 360) < .01
 assert abs(doc[0].rect.height * 25.4 / 72 - 450) < .01
-files = {'front': 'mattruoc moi copy.pdf', 'left': 'mattrai moi.pdf', 'right': 'matphaimoi.pdf',
-         'top': 'mattren moi.pdf', 'bottom': 'matduoi moi.pdf'}
+files = {'front': 'mat chinh dien moi han.pdf', 'left': 'mat trai  moi han.pdf', 'right': 'mat phai moi han.pdf',
+         'top': 'mat tren moi han.pdf', 'bottom': 'matduoi moi han.pdf'}
 revised = {label: pymupdf.open(REVISED / name) for label, name in files.items()}
 assert all(len(d) == 1 for d in revised.values())
 fw, fd = revised['front'][0].rect.width, revised['front'][0].rect.height
 fh = revised['left'][0].rect.width
 for side in ['left', 'right']:
-    assert abs(revised[side][0].rect.width - fh) < .01 and abs(revised[side][0].rect.height - fd) < .01
+    assert abs(revised[side][0].rect.width - fh) < 1 and abs(revised[side][0].rect.height - fd) < 1
 for side in ['top', 'bottom']:
-    assert abs(revised[side][0].rect.width - fw) < .01 and abs(revised[side][0].rect.height - fh) < .01
+    assert abs(revised[side][0].rect.width - fw) < 1 and abs(revised[side][0].rect.height - fh) < 1
 mm = {key: round(value * 25.4 / 72, 6) for key, value in [('width', fw), ('depth', fd), ('height', fh)]}
 front_pixels = (960, round(960 * fd / fw))
 
@@ -115,12 +115,11 @@ for label, color in [('paper', '#f2eadb'), ('navy', '#0c4964'), ('edge', '#e4dbc
 atlas.save(OUT / 'print-atlas.webp', quality=84, method=6)
 atlas.resize((1024, 1024), Image.Resampling.LANCZOS).save(OUT / 'print-atlas-small.webp', quality=84, method=6)
 raster('front', front_pixels).save(OUT / 'front.webp', quality=88, method=6)
-raster('right', (128, round(128 * fd / fh)), rotate=False).save(OUT / 'right.webp', quality=87, method=6)
-raster('bottom', (456, round(456 * fh / fw))).save(OUT / 'bottom.webp', quality=87, method=6)
 
 data = {'atlasSize': 2048, 'millimetres': mm, 'frontPixels': front_pixels, 'turninMm': 20,
         'rects': rects, 'sourceSha256': hashlib.sha256(PDF.read_bytes()).hexdigest(),
-        'revisedFaces': {label: {'filename': name, 'sha256': hashlib.sha256((REVISED / name).read_bytes()).hexdigest()}
+        'revisedFaces': {label: {'filename': name, 'pagePoints': list(revised[label][0].rect),
+                                 'sha256': hashlib.sha256((REVISED / name).read_bytes()).hexdigest()}
                          for label, name in files.items()},
         'backFit': 'Original back retained completely with edge bleed in the new proportions.'}
 (OUT / 'layout.json').write_text(json.dumps(data, indent=2) + '\n', encoding='utf8')

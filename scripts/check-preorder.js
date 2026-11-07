@@ -62,10 +62,10 @@
   }), 'Contact fields and CTA fit the viewport')
   check(root.querySelector('.po-submit').getBoundingClientRect().height >= 44, 'Main action has a usable touch target')
   if (innerWidth > 900) {
-    if (root.querySelector('.po-stage').dataset.open === 'true') await click('.po-lid-front')
-    await click('.po-lid-front')
+    if (root.querySelector('.po-stage').dataset.open === 'true') await click('.po-box-toggle')
+    await click('.po-box-toggle')
     check(root.querySelector('.po-stage').dataset.open === 'true', 'Interactive box preview still opens')
-    await click('.po-lid-front')
+    await click('.po-box-toggle')
   }
   check(!document.querySelector('iframe[title="Kênh gửi đăng ký Thủy Trận"]'), 'The QA script never sends a valid request')
   return { passed, viewport: `${innerWidth}×${innerHeight}`, next: 'Reload once, verify name/phone/email/note/quantity, then clear this QA draft.' }

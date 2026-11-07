@@ -15,7 +15,13 @@ type Collider = { name: string; min: Point; max: Point }
 
 /** Two hollow shells, one print atlas/material, 64 triangles in total. */
 export function createPrintedBox(texture: THREE.Texture) {
-  const material = new THREE.MeshStandardMaterial({ map: texture, roughness: .82, metalness: 0 })
+  const material = new THREE.MeshStandardMaterial({ map: texture, roughness: .82, metalness: 0, toneMapped: false })
+  // Printed ink may darken in shadow, but stage lights must not bleach its RGB.
+  // Keep the physical shadows/normals while capping highlights at the source print.
+  material.onBeforeCompile = shader => {
+    shader.fragmentShader = shader.fragmentShader.replace('#include <opaque_fragment>',
+      'outgoingLight = min(outgoingLight, diffuseColor.rgb);\n#include <opaque_fragment>')
+  }
   function shell(name: string, w: number, d: number, h: number, lid: boolean) {
     const { wall: t, floor } = boxDimensions
     const iw = w - 2 * t, id = d - 2 * t
