@@ -142,8 +142,13 @@
       || openingCta.left > scrollCue.right + 8 || openingCta.bottom + 10 < scrollCue.top)
     if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
       const settleDepth = async () => {
-        const end = performance.now() + 650
-        while (performance.now() < end) await new Promise(requestAnimationFrame)
+        const end = performance.now() + 10000
+        // A background QA tab may advance GSAP more slowly than wall time.
+        // Wait for the real depth tweens, keeping the endpoint assertions intact.
+        do {
+          await new Promise(requestAnimationFrame)
+          if (performance.now() > end) throw Error('Pointer depth tween did not settle')
+        } while ([...hero.querySelectorAll('.hero-person-depth')].some(el => window.gsap.isTweening(el)))
       }
       for (const [x, y] of [[1, 1], [viewportWidth - 1, innerHeight - 1]]) {
         hero.dispatchEvent(new PointerEvent('pointermove', { clientX: x, clientY: y, pointerType: 'mouse' }))

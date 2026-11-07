@@ -1,5 +1,6 @@
 // Local dev only: await (await import('/scripts/check-box-packing.js')).checkBoxPacking()
 import { OBB } from 'three/examples/jsm/math/OBB.js'
+import { Box3, Vector3 } from 'three'
 
 export async function checkBoxPacking() {
   const canvas = document.querySelector('canvas')
@@ -56,7 +57,15 @@ export async function checkBoxPacking() {
   const obstacles = () => {
     const found = []
     for (const id of ['box-base', 'box-lid']) scene.getObjectByName(id).traverse(mesh => {
-      if (mesh.isMesh) found.push({ owner: id, name: mesh.name, box: shape(mesh) })
+      if (!mesh.isMesh) return
+      if (mesh.userData.collisionBoxes) {
+        for (const part of mesh.userData.collisionBoxes) {
+          const box = new OBB().fromBox3(new Box3(new Vector3().fromArray(part.min), new Vector3().fromArray(part.max)))
+          const center = box.center.clone().applyMatrix4(mesh.matrixWorld)
+          box.center.set(0, 0, 0); box.applyMatrix4(mesh.matrixWorld); box.center.copy(center)
+          found.push({ owner: id, name: part.name, box })
+        }
+      } else found.push({ owner: id, name: mesh.name, box: shape(mesh) })
     })
     return found
   }

@@ -10,6 +10,14 @@
 
 ## 1. Đọc phần này trước
 
+**Hộp theo PDF mới + sửa bố cục Đặt trước — 07/11/2026:** landing và Đặt trước
+dùng năm PDF mới trong `Downloads/In`, tỷ lệ do người dùng chọn theo nguồn
+(khoảng 17 × 24,75 × 4,37 cm). Mặt sau giữ PDF in cũ, contain không méo.
+Hai vỏ rỗng/1 atlas/64 tam giác thay mô hình cũ; atlas 1K/2K theo màn hình.
+Đặt trước giữ CSS 3D, tách lớp thẻ khỏi nắp và đặt nút ngoài vùng ảnh để không
+overlap. Không đổi form/endpoint hoặc studio nội bộ. Xem
+[nguồn, tối ưu và QA hộp](BOX-PRINT-2026-11-07.md).
+
 **Studio ảnh bìa sau nội bộ — 04–05/11/2026:** theo yêu cầu riêng tư, công cụ và
 PNG nằm ngoài repo trong `../Thuy-Tran-Back-Cover-Studio/`, chỉ mở tại
 `127.0.0.1:8444`. Không thêm route/link hoặc deploy studio. Xem

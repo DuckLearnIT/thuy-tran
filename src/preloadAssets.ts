@@ -1,4 +1,4 @@
-import cover from './assets/bia-thuy-tran.webp'
+import { boxArt } from './data/box'
 import heroPaper from './assets/hero/hero-paper.webp'
 import { cards } from './data/cards'
 import { strategies } from './data/strategies'
@@ -10,7 +10,7 @@ import { curtainLimit } from './hooks/useCurtainClock'
 export { preloadedImages }
 
 // What the first screen needs before the curtain can open.
-const critical = [cover, heroPaper, ...heroCast.map((person) => person.image)]
+const critical = [heroPaper, ...heroCast.map((person) => person.image)]
 // Everything else, in the order the page reaches it: box cards, strategy cards, the 24 tiles, then spiral art.
 const background = [
   ...cards.map((card) => card.image),
@@ -19,7 +19,7 @@ const background = [
   ...locations.map((card) => card.back),
   ...locations.map((card) => card.spiralImage),
 ]
-const everything = [...new Set([...critical, ...background])]
+const everything = [...new Set([boxArt.front, ...critical, ...background])]
 const fontFaces = [
   '700 16px "NVN Yellost"',
   '300 16px "Futura"',
@@ -55,7 +55,8 @@ export function streamRemainingArt() {
  */
 export async function preloadAssets(onProgress: (progress: number) => void, scope: 'full' | 'landing' | 'preorder' = 'full') {
   let completed = 0
-  const artwork = scope === 'landing' ? [...new Set(critical)] : scope === 'preorder' ? [cover, ...cards.map((card) => card.image)] : everything
+  const artwork = scope === 'landing' ? [...new Set(critical)] : scope === 'preorder'
+    ? [boxArt.front, boxArt.right, boxArt.bottom, ...cards.map((card) => card.image)] : everything
   const total = artwork.length + fontFaces.length
   const track = async (task: Promise<unknown>) => {
     try {

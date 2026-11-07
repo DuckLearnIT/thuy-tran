@@ -4,7 +4,7 @@ import type { PieceAsset } from '../data/pieces'
 
 export type PieceSelection = { index: number; held: boolean }
 export type PieceLabel = { index: number; x: number; y: number; visible: boolean }
-export const piecePacking = { boxZ: 5.8, portraitOffsetZ: 3.1, deckZ: 4.5, deckY: 0.655, deckFirstX: -1.3, cardStep: 0.017 }
+export const piecePacking = { boxZ: 5.8, portraitOffsetZ: 3.1, deckZ: 4.5, deckY: 0.06, deckFirstX: -.75, cardStep: 0.017 }
 export function disposePiece(object: THREE.Object3D) {
   const geometries = new Set<THREE.BufferGeometry>(), materials = new Set<THREE.Material>(), textures = new Set<THREE.Texture>()
   object.traverse(node => {
@@ -70,7 +70,8 @@ export async function loadPiece(asset: PieceAsset, signal?: AbortSignal) {
   })
   normalized.updateMatrixWorld(true)
   const plateDepth = new THREE.Box3().setFromObject(plate).getSize(new THREE.Vector3()).z
-  return { object: normalized, plate, plateDepth, height: size.y * scale, width: size.x * scale, depth: size.z * scale }
+  return { object: normalized, plate, plateDepth, height: size.y * scale, width: size.x * scale, depth: size.z * scale,
+    packingScale: .315 / (baseWidth * scale) }
 }
 
 type LoadedPiece = Awaited<ReturnType<typeof loadPiece>> & { group: THREE.Group; slot: THREE.Vector3; baseY: number }
@@ -182,10 +183,7 @@ export function createPieceScene(options: {
       }
     })
   }))
-  let markerShift = 0.12
   const ready = Promise.race([loading, timeout]).then(() => {
-    const depth = Math.max(...loaded.filter((_, i) => assets[i].kind === 'strategy').map(piece => piece.plateDepth))
-    markerShift = Math.max(0.12, (depth + 0.006) / 0.5)
     usable = true; return true
   }).catch(() => {
     abort.abort()
@@ -243,17 +241,19 @@ export function createPieceScene(options: {
       piece.plate.rotation.x = (1 - seat) * -0.25
       if (hover === index && held < 0 && interactive) { g.position.y += 0.025; g.rotation.y += 0.04 }
       if (leave > 0) {
-        if (asset.kind === 'character') boxTarget.set(index % 2 ? 0.85 : -0.85, 0.13, 5.25 + Math.floor(index / 2) * 0.95)
-        else boxTarget.set(0.11 - (index - 6) * markerShift, 0.124 + Math.sin(Math.PI / 3) * piece.depth / 2, 4.46 + (index - 6) * 0.91)
+        if (asset.kind === 'character') boxTarget.set(index % 2 ? 0.85 : -0.85, .045, 5.25 + Math.floor(index / 2) * 0.95)
+        else boxTarget.set(0, .045, 4.46 + (index - 6) * .91)
         if (portrait) boxTarget.z += piecePacking.portraitOffsetZ
         const lift = smooth(leave / 0.25)
         const travel = smooth((leave - 0.25) / 0.47)
         const lower = smooth((leave - 0.72) / 0.28)
+        // Markers are enlarged for inspection beside the board; return to the
+        // same physical base diameter as the pawns while travelling into the box.
+        g.scale.setScalar(THREE.MathUtils.lerp(1, piece.packingScale, travel))
         g.position.copy(piece.slot).lerp(boxTarget, travel)
         g.position.y = THREE.MathUtils.lerp(THREE.MathUtils.lerp(piece.slot.y, 2.3, lift), boxTarget.y, lower)
           + Math.sin(travel * Math.PI) * 0.25 * (1 - lower)
-        if (asset.kind === 'character') g.rotation.set(-Math.sin(travel * Math.PI) * 0.35, 0, Math.sin(travel * Math.PI) * 0.08, 'XYZ')
-        else g.rotation.set(0, travel * Math.PI / 2, -travel * Math.PI / 3, 'ZYX')
+        g.rotation.set(-Math.sin(travel * Math.PI) * .35, 0, Math.sin(travel * Math.PI) * .08, 'XYZ')
       }
       if (index === held) {
         g.scale.setScalar(THREE.MathUtils.lerp(1, 1.32 / piece.height, mix))

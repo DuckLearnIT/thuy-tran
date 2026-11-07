@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
-import cover from '../assets/bia-thuy-tran.webp'
+import { boxArt, boxPrint } from '../data/box'
 import { cards } from '../data/cards'
 import { contactFields, DRAFT_KEY, emptyDraft, fieldError, preorderErrors, priceLabel, readPreorderSession, sales, totals,
   type PreorderField, type PreorderRequest } from '../data/checkout'
@@ -15,6 +15,12 @@ import Wave from './Wave'
 import useCardFeel from '../hooks/useCardFeel'
 import SiteFooter from './SiteFooter'
 import Header from './Header'
+
+const cover = boxArt.front
+const boxStyle = {
+  '--po-box-aspect': `${boxPrint.millimetres.width} / ${boxPrint.millimetres.depth}`,
+  '--po-box-depth-ratio': boxPrint.millimetres.height / boxPrint.millimetres.width,
+} as React.CSSProperties
 
 export default function Preorder() {
   const root = useRef<HTMLElement>(null)
@@ -152,7 +158,7 @@ export default function Preorder() {
   }, [opening, reduced])
 
   return (
-    <main ref={root} id="dat-truoc" className="po-page grain" tabIndex={-1}>
+    <main ref={root} id="dat-truoc" className="po-page grain" tabIndex={-1} style={boxStyle}>
       <Curtain ready={curtainOpen} progress={curtainProgress(progress, clock.fraction, curtainOpen)}
         onOpen={onOpen} onComplete={onComplete} />
       <div className="po-content" inert={!unlocked} aria-hidden={!unlocked}>
@@ -169,22 +175,28 @@ export default function Preorder() {
               {open ? 'Thu gọn hộp game' : 'Xem hộp game & đội hình'} <span aria-hidden="true">{open ? '−' : '+'}</span>
             </button>
             <div id="po-product-preview" className="po-stage" data-open={open}>
-              <div className="po-sun" aria-hidden="true" />
-              <div className="po-box" onPointerMove={(event) => {
-                if (reduced || event.pointerType !== 'mouse') return
-                const bounds = event.currentTarget.getBoundingClientRect()
-                event.currentTarget.style.setProperty('--tilt', `${((event.clientX - bounds.left) / bounds.width - 0.5) * 8}deg`)
-              }} onPointerLeave={(event) => event.currentTarget.style.removeProperty('--tilt')}>
-                <div className="po-box-base" aria-hidden="true" />
+              <div className="po-tableau">
+                <div className="po-sun" aria-hidden="true" />
+                <div className="po-box" onPointerMove={(event) => {
+                  if (reduced || event.pointerType !== 'mouse') return
+                  const bounds = event.currentTarget.getBoundingClientRect()
+                  event.currentTarget.style.setProperty('--tilt', `${((event.clientX - bounds.left) / bounds.width - 0.5) * 8}deg`)
+                }} onPointerLeave={(event) => event.currentTarget.style.removeProperty('--tilt')}>
+                  <div className="po-box-base" aria-hidden="true" />
+                  <div className="po-lid">
+                    <span className="po-lid-side po-lid-right" aria-hidden="true" style={{ backgroundImage: `url("${boxArt.right}")` }} />
+                    <span className="po-lid-side po-lid-bottom" aria-hidden="true" style={{ backgroundImage: `url("${boxArt.bottom}")` }} />
+                    <button className="po-lid-front" type="button" aria-label={open ? 'Đóng hộp Thủy Trận' : 'Mở hộp Thủy Trận'}
+                      aria-expanded={open} aria-controls="preorder-hand" onClick={() => setOpen((value) => !value)}>
+                      <img src={cover} width={boxPrint.frontPixels[0]} height={boxPrint.frontPixels[1]} alt="Bìa hộp Thủy Trận — Bạch Đằng" loading="eager" decoding="async" draggable={false} />
+                    </button>
+                  </div>
+                </div>
                 <div id="preorder-hand" className="po-hand" aria-hidden={!open}>
                   {cards.map((card, i) => <img key={card.id} className="card-feel" src={card.image} alt={`Nhân vật ${card.role}`}
-                    style={{ '--i': i, '--r': `${(i - 2.5) * 12}deg`, '--x': `${(i - 2.5) * 37}px` } as React.CSSProperties}
+                    style={{ '--i': i, '--r': `${(i - 2.5) * 9}deg`, '--x': `${(i - 2.5) * 31}px` } as React.CSSProperties}
                     loading="eager" decoding="async" draggable={false} />)}
                 </div>
-                <button className="po-lid" type="button" aria-label={open ? 'Đóng hộp Thủy Trận' : 'Mở hộp Thủy Trận'}
-                  aria-expanded={open} aria-controls="preorder-hand" onClick={() => setOpen((value) => !value)}>
-                  <img src={cover} alt="Bìa hộp Thủy Trận — Bạch Đằng" loading="eager" decoding="async" draggable={false} />
-                </button>
               </div>
               <button className="po-open" type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-controls="preorder-hand">
                 {open ? 'Gấp lại, hẹn ra quân' : 'Mở hộp, xem đội hình'} <span aria-hidden="true">↗</span>

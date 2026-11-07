@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import Hero from './Hero'
-import cover from '../assets/bia-thuy-tran.webp'
+import { boxArt, boxPrint } from '../data/box'
 import { cards } from '../data/cards'
 import { strategies } from '../data/strategies'
 import { locations } from '../data/locations'
@@ -13,6 +13,7 @@ import ArtImg, { squareSize } from './ArtImg'
 import type { PieceSelection } from './pieceScene'
 
 const alt = 'Bìa board game Thủy trận Bạch Đằng: thuyền nhẹ cầm cờ len giữa bãi cọc nhọn, chiến thuyền buồm đỏ phía xa'
+const cover = boxArt.front
 const locationColumns = [2, 4, 6, 6, 4, 2].flatMap(count => Array.from({ length: count }, (_, i) => (6 - count) / 2 + i + 1))
 
 export default function Cover({ playIntro, onReady }: { playIntro: boolean; onReady: () => void }) {
@@ -38,7 +39,6 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
     try {
       box = createBoxScene({
         canvas: canvas.current,
-        cover,
         cards: cards.map((c) => c.image),
         extra: strategies.map((k) => k.image),
         locations,
@@ -61,7 +61,9 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
       .catch(() => { if (!cancelled) setFallback(true) })
     const st = box.state
     let previousWidth = innerWidth, previousHeight = innerHeight
+    let settledProgress = 0
     let resizeProgress: number | null = null
+    let resizeFrame = 0
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({
         scrollTrigger: {
@@ -71,17 +73,29 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
           invalidateOnRefresh: true,
           pin: true,
           scrub: 0.6,
-          onRefreshInit(self) {
+          onUpdate(self) {
+            if (previousWidth === innerWidth && previousHeight === innerHeight) settledProgress = self.progress
+          },
+          onRefreshInit() {
             const resized = previousWidth !== innerWidth || previousHeight !== innerHeight
-            if (resized && self.isActive && st.piecesReveal > 0 && st.boxDismiss < 1) resizeProgress = self.progress
+            // A global refresh temporarily reverts the trigger/state before this
+            // callback; use the last progress recorded at the previous size.
+            if (resized && settledProgress > 0 && settledProgress < 1) resizeProgress = settledProgress
             previousWidth = innerWidth; previousHeight = innerHeight
           },
           onRefresh(self) {
             if (resizeProgress === null) return
             const progress = resizeProgress
             resizeProgress = null
-            self.scroll(self.start + (self.end - self.start) * progress)
-            self.animation?.progress(progress)
+            // Global refresh restores the old scroll position after this callback.
+            // Restore our scene on the next frame, once that refresh has finished.
+            cancelAnimationFrame(resizeFrame)
+            resizeFrame = requestAnimationFrame(() => {
+              self.scroll(self.start + (self.end - self.start) * progress)
+              self.update()
+              self.getTween()?.progress(1)
+              self.animation?.progress(progress)
+            })
           },
         },
       })
@@ -213,6 +227,7 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
 
     const stageElement = root.current
     return () => {
+      cancelAnimationFrame(resizeFrame)
       cancelled = true
       ctx.revert()
       if (stageElement) {
@@ -231,7 +246,7 @@ export default function Cover({ playIntro, onReady }: { playIntro: boolean; onRe
       <section ref={root} className="relative bg-[#ffb627] text-ink" aria-label="Hộp Thủy trận Bạch Đằng">
         <Hero playIntro={playIntro} />
         <section className="bg-[#ffb627] px-4 py-16 text-ink" aria-label="Bìa hộp">
-          <img src={cover} alt={alt} className="mx-auto w-full max-w-xl" />
+          <img src={cover} width={boxPrint.frontPixels[0]} height={boxPrint.frontPixels[1]} alt={alt} className="mx-auto w-full max-w-xl" />
         </section>
         <section className="box-locations-static" aria-label="24 địa danh trong hộp">
           <p className="box-inventory">6 nhân vật · 7 kế sách · 24 địa danh</p>

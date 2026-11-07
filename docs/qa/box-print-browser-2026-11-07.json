@@ -1,0 +1,1026 @@
+{
+  "date": "2026-11-06",
+  "source": "Downloads/In — five revised PDFs",
+  "checks": [
+    {
+      "viewport": "1280x900",
+      "name": "hero",
+      "result": {
+        "results": [
+          {
+            "name": "Page opts out of automatic dark recoloring",
+            "passed": true
+          },
+          {
+            "name": "Six characters are decoded",
+            "passed": true
+          },
+          {
+            "name": "Artwork has no color filters",
+            "passed": true
+          },
+          {
+            "name": "Only the hero paper texture is softened to 70 percent",
+            "passed": true
+          },
+          {
+            "name": "Six characters have only a soft silhouette shadow",
+            "passed": true
+          },
+          {
+            "name": "Reading progress stays above the grain and has no pointer target",
+            "passed": true
+          },
+          {
+            "name": "Section backgrounds bleed across fractional pixel boundaries",
+            "passed": true
+          },
+          {
+            "name": "Bottom water has been removed",
+            "passed": true
+          },
+          {
+            "name": "Opening CTA leads to preorder",
+            "passed": true
+          },
+          {
+            "name": "Opening title is already visible and navigation waits",
+            "passed": true
+          },
+          {
+            "name": "Opening heading has no pointer or keyboard interaction",
+            "passed": true
+          },
+          {
+            "name": "Title has strong contrast against the paper",
+            "passed": true
+          },
+          {
+            "name": "Six hand anchors frame an enlarged central sun",
+            "passed": true
+          },
+          {
+            "name": "Commander stays smaller than the opposite blue character",
+            "passed": true
+          },
+          {
+            "name": "Unfinished portrait backs stay hidden beyond the edges",
+            "passed": true
+          },
+          {
+            "name": "Commander cut hem stays below the desktop viewport",
+            "passed": true
+          },
+          {
+            "name": "Hand anchors stay inside the viewport",
+            "passed": true
+          },
+          {
+            "name": "Heading and subheading have their own space below the sun",
+            "passed": true
+          },
+          {
+            "name": "Hero CTA keeps only its layout slot while the dock stands in",
+            "passed": true
+          },
+          {
+            "name": "Dock starts exactly over the hero CTA slot",
+            "passed": true
+          },
+          {
+            "name": "Opening CTA is visible, legible and fits the viewport",
+            "passed": true
+          },
+          {
+            "name": "Opening CTA stays clear of the scroll cue",
+            "passed": true
+          },
+          {
+            "name": "Parallax preserves the framing at both pointer extremes",
+            "passed": true
+          },
+          {
+            "name": "Parallax preserves the framing at both pointer extremes",
+            "passed": true
+          },
+          {
+            "name": "Pointer depth is visible and differs between layers",
+            "passed": true
+          },
+          {
+            "name": "Pointer leave restores the composition",
+            "passed": true
+          },
+          {
+            "name": "Large title fits the viewport before docking",
+            "passed": true
+          },
+          {
+            "name": "Navigation waits for the title to dock",
+            "passed": true
+          },
+          {
+            "name": "Heading outline shrinks with the title instead of piling onto the logo",
+            "passed": true
+          },
+          {
+            "name": "Heading waits until docking is complete before becoming interactive",
+            "passed": true
+          },
+          {
+            "name": "Characters sweep outward through their own three edges",
+            "passed": true
+          },
+          {
+            "name": "Dock is still travelling toward the corner while the hero leaves",
+            "passed": true
+          },
+          {
+            "name": "Reading progress follows the real document including pinned chapters",
+            "passed": true
+          },
+          {
+            "name": "The same title docks as the header logo",
+            "passed": true
+          },
+          {
+            "name": "CTA and navigation appear after docking",
+            "passed": true
+          },
+          {
+            "name": "Docked logo supports pointer and keyboard interaction",
+            "passed": true
+          },
+          {
+            "name": "Docked logo has no heading outline",
+            "passed": true
+          },
+          {
+            "name": "Menu replaces the header without a second logo underneath",
+            "passed": true
+          },
+          {
+            "name": "Docked CTA fits without clipping or colliding with the logo",
+            "passed": true
+          },
+          {
+            "name": "Docked pre-order CTA sits bottom-left, at least 44px tall and fully in the viewport",
+            "passed": true
+          },
+          {
+            "name": "Docked pre-order CTA keeps a link to the pre-order page",
+            "passed": true
+          },
+          {
+            "name": "Sun covers all four corners before the box enters",
+            "passed": true
+          },
+          {
+            "name": "Characters leave before the box enters",
+            "passed": true
+          },
+          {
+            "name": "Box reaches the viewport",
+            "passed": true
+          },
+          {
+            "name": "Hero gives way to the box",
+            "passed": true
+          },
+          {
+            "name": "Docked logo stays visible after the handoff",
+            "passed": true
+          },
+          {
+            "name": "Scrolling back restores the hero",
+            "passed": true
+          },
+          {
+            "name": "Scrolling back returns the dock to the hero CTA slot",
+            "passed": true
+          },
+          {
+            "name": "Refresh mid-transition does not leave an enlarged sun",
+            "passed": true
+          },
+          {
+            "name": "Reverse restores all character positions",
+            "passed": true
+          },
+          {
+            "name": "Reverse restores the large title and hides navigation",
+            "passed": true
+          },
+          {
+            "name": "Reverse disables the hero heading again",
+            "passed": true
+          }
+        ],
+        "state": "done"
+      }
+    },
+    {
+      "viewport": "1280x900",
+      "name": "print",
+      "result": {
+        "results": [
+          {
+            "name": "Only two opaque shells render the physical box",
+            "passed": true
+          },
+          {
+            "name": "Both shells share one material and atlas",
+            "passed": true
+          },
+          {
+            "name": "The full box has only 64 triangles",
+            "passed": true
+          },
+          {
+            "name": "Initial atlas size matches viewport",
+            "passed": true
+          },
+          {
+            "name": "Physical box retains separate hollow collision parts",
+            "passed": true
+          },
+          {
+            "name": "WebGL context remains healthy",
+            "passed": true
+          }
+        ],
+        "state": "done"
+      }
+    },
+    {
+      "viewport": "1280x900",
+      "name": "locations",
+      "result": {
+        "results": [
+          {
+            "name": "All 24 front/back pairs are distinct and decoded once streaming finishes",
+            "passed": true
+          },
+          {
+            "name": "Cover keeps one pin with sixteen screens of scrolling",
+            "passed": true
+          },
+          {
+            "name": "Location beat retains exactly two screens",
+            "passed": true
+          },
+          {
+            "name": "All seven strategies finish before the location reveal",
+            "passed": true
+          },
+          {
+            "name": "Location stack arrives before the board spreads",
+            "passed": true
+          },
+          {
+            "name": "Rendered canvas shows 24 separated faces at once (found 24)",
+            "passed": true
+          },
+          {
+            "name": "Rounded tile corners contain no black texture pixels (found 0)",
+            "passed": true
+          },
+          {
+            "name": "All 24 faces fit inside the viewport",
+            "passed": true
+          },
+          {
+            "name": "Card artwork stays approximately square in the slightly tilted board",
+            "passed": true
+          },
+          {
+            "name": "Showcase text is visible and clear of the entire board",
+            "passed": true
+          },
+          {
+            "name": "Text never overlaps card artwork",
+            "passed": true
+          },
+          {
+            "name": "Showcase has no individual card interaction",
+            "passed": true
+          },
+          {
+            "name": "Cards are fully packed before the lid closes",
+            "passed": true
+          },
+          {
+            "name": "Reverse and refresh restore all 24 faces",
+            "passed": true
+          },
+          {
+            "name": "Reverse restores the strategy hand",
+            "passed": true
+          }
+        ],
+        "state": "done"
+      }
+    },
+    {
+      "viewport": "1280x900",
+      "name": "packing",
+      "result": {
+        "results": [
+          {
+            "name": "All standees clear walls and one another throughout sequential packing",
+            "passed": true
+          },
+          {
+            "name": "All ten packed objects stay visible before the lid closes",
+            "passed": true
+          },
+          {
+            "name": "Paper layers never overlap and the deck clears the rim before lowering",
+            "passed": true
+          },
+          {
+            "name": "Lid clears every packed mesh",
+            "passed": true
+          },
+          {
+            "name": "Box has left the frustum before the canvas hides",
+            "passed": true
+          },
+          {
+            "name": "No canvas or box remains at the next chapter",
+            "passed": true
+          },
+          {
+            "name": "Reverse restores the full display and canvas",
+            "passed": true
+          }
+        ],
+        "state": "done"
+      }
+    },
+    {
+      "name": "preorder-print",
+      "result": {
+        "results": [
+          {
+            "name": "Checkout uses the revised print face",
+            "passed": true
+          },
+          {
+            "name": "Checkout displays both printed edges",
+            "passed": true
+          },
+          {
+            "name": "Checkout keeps lightweight CSS 3D without allocating a canvas",
+            "passed": true
+          },
+          {
+            "name": "Checkout image geometry follows the print ratio",
+            "passed": true
+          }
+        ],
+        "state": "done"
+      }
+    },
+    {
+      "name": "pieces-1280",
+      "result": {
+        "results": [
+          {
+            "name": "Ten unique models with names from the current cards",
+            "passed": true
+          },
+          {
+            "name": "Each model has three rendered fallback views",
+            "passed": true
+          },
+          {
+            "name": "New piece beat adds four screens",
+            "passed": true
+          },
+          {
+            "name": "Locations show before assembly, controls stay inert",
+            "passed": true
+          },
+          {
+            "name": "Board tilts and pieces assemble before interaction",
+            "passed": true
+          },
+          {
+            "name": "All objects settle before controls unlock",
+            "passed": true
+          },
+          {
+            "name": "Strategy group exposes four direct named choices",
+            "passed": true
+          },
+          {
+            "name": "Four names follow their visible models without a panel",
+            "passed": true
+          },
+          {
+            "name": "A projected name picks its model directly",
+            "passed": true
+          },
+          {
+            "name": "Held model stays framed and clear of title and actions",
+            "passed": true
+          },
+          {
+            "name": "Rotation control turns the actual model",
+            "passed": true
+          },
+          {
+            "name": "Front view resets model rotation",
+            "passed": true
+          },
+          {
+            "name": "Held controls remain inside the viewport",
+            "passed": true
+          },
+          {
+            "name": "Changing group returns the marker and picks a character",
+            "passed": true
+          },
+          {
+            "name": "Keyboard can focus the pickup control",
+            "passed": true
+          },
+          {
+            "name": "Pickup changes state without opening a modal",
+            "passed": true
+          },
+          {
+            "name": "Changing objects returns the old object before holding the next",
+            "passed": true
+          },
+          {
+            "name": "Escape puts the object back",
+            "passed": true
+          },
+          {
+            "name": "Scrolling out returns held object and disables interaction",
+            "passed": true
+          },
+          {
+            "name": "Locations pack only after the pieces",
+            "passed": true
+          },
+          {
+            "name": "Packed standees remain in the open box instead of disappearing",
+            "passed": true
+          },
+          {
+            "name": "Dismissal waits until the deck is packed and the lid is closed",
+            "passed": true
+          },
+          {
+            "name": "The next chapter cannot retain a box or stale canvas",
+            "passed": true
+          },
+          {
+            "name": "Reverse restores the full display without a held object",
+            "passed": true
+          },
+          {
+            "name": "Refresh preserves the interactive display",
+            "passed": true
+          },
+          {
+            "name": "Controls fit in the viewport",
+            "passed": true
+          }
+        ],
+        "state": "done"
+      }
+    },
+    {
+      "name": "preorder-layout",
+      "result": {
+        "results": {
+          "results": [
+            {
+              "name": "Closed: artwork fits the scene horizontally",
+              "passed": true
+            },
+            {
+              "name": "Closed: artwork clears the heading",
+              "passed": true
+            },
+            {
+              "name": "Closed: artwork leaves a gap above the button",
+              "passed": true
+            },
+            {
+              "name": "Closed: artwork stays clear of the form",
+              "passed": true
+            },
+            {
+              "name": "Open: artwork fits the scene horizontally",
+              "passed": true
+            },
+            {
+              "name": "Open: artwork clears the heading",
+              "passed": true
+            },
+            {
+              "name": "Open: artwork leaves a gap above the button",
+              "passed": true
+            },
+            {
+              "name": "Open: artwork stays clear of the form",
+              "passed": true
+            }
+          ],
+          "viewport": "1280x900"
+        },
+        "state": "done"
+      }
+    },
+    {
+      "name": "preorder-layout-920",
+      "result": {
+        "result": {
+          "type": "object",
+          "value": {
+            "results": [
+              {
+                "name": "Closed: artwork fits the scene horizontally",
+                "passed": true
+              },
+              {
+                "name": "Closed: artwork clears the heading",
+                "passed": true
+              },
+              {
+                "name": "Closed: artwork leaves a gap above the button",
+                "passed": true
+              },
+              {
+                "name": "Closed: artwork stays clear of the form",
+                "passed": true
+              },
+              {
+                "name": "Open: artwork fits the scene horizontally",
+                "passed": true
+              },
+              {
+                "name": "Open: artwork clears the heading",
+                "passed": true
+              },
+              {
+                "name": "Open: artwork leaves a gap above the button",
+                "passed": true
+              },
+              {
+                "name": "Open: artwork stays clear of the form",
+                "passed": true
+              }
+            ],
+            "viewport": "920x900"
+          }
+        }
+      }
+    },
+    {
+      "name": "preorder-layout-1840",
+      "result": {
+        "result": {
+          "type": "object",
+          "value": {
+            "results": [
+              {
+                "name": "Closed: artwork fits the scene horizontally",
+                "passed": true
+              },
+              {
+                "name": "Closed: artwork clears the heading",
+                "passed": true
+              },
+              {
+                "name": "Closed: artwork leaves a gap above the button",
+                "passed": true
+              },
+              {
+                "name": "Closed: artwork stays clear of the form",
+                "passed": true
+              },
+              {
+                "name": "Open: artwork fits the scene horizontally",
+                "passed": true
+              },
+              {
+                "name": "Open: artwork clears the heading",
+                "passed": true
+              },
+              {
+                "name": "Open: artwork leaves a gap above the button",
+                "passed": true
+              },
+              {
+                "name": "Open: artwork stays clear of the form",
+                "passed": true
+              }
+            ],
+            "viewport": "1840x900"
+          }
+        }
+      }
+    },
+    {
+      "name": "preorder-layout-390",
+      "result": {
+        "result": {
+          "type": "object",
+          "value": {
+            "results": [
+              {
+                "name": "Open: artwork fits the scene horizontally",
+                "passed": true
+              },
+              {
+                "name": "Open: artwork clears the heading",
+                "passed": true
+              },
+              {
+                "name": "Open: artwork leaves a gap above the button",
+                "passed": true
+              },
+              {
+                "name": "Open: artwork stays clear of the form",
+                "passed": true
+              }
+            ],
+            "viewport": "390x900"
+          }
+        }
+      }
+    },
+    {
+      "name": "preorder-layout-320",
+      "result": {
+        "result": {
+          "type": "object",
+          "value": {
+            "results": [
+              {
+                "name": "Open: artwork fits the scene horizontally",
+                "passed": true
+              },
+              {
+                "name": "Open: artwork clears the heading",
+                "passed": true
+              },
+              {
+                "name": "Open: artwork leaves a gap above the button",
+                "passed": true
+              },
+              {
+                "name": "Open: artwork stays clear of the form",
+                "passed": true
+              }
+            ],
+            "viewport": "320x900"
+          }
+        }
+      }
+    },
+    {
+      "name": "preorder-form-mobile",
+      "result": {
+        "results": {
+          "next": "Reload once, verify name/phone/email/note/quantity, then clear this QA draft.",
+          "passed": 22,
+          "viewport": "390×844"
+        },
+        "state": "done"
+      }
+    },
+    {
+      "name": "main-mobile",
+      "result": {
+        "results": {
+          "packing": [
+            {
+              "name": "All standees clear walls and one another throughout sequential packing",
+              "passed": true
+            },
+            {
+              "name": "All ten packed objects stay visible before the lid closes",
+              "passed": true
+            },
+            {
+              "name": "Paper layers never overlap and the deck clears the rim before lowering",
+              "passed": true
+            },
+            {
+              "name": "Lid clears every packed mesh",
+              "passed": true
+            },
+            {
+              "name": "Box has left the frustum before the canvas hides",
+              "passed": true
+            },
+            {
+              "name": "No canvas or box remains at the next chapter",
+              "passed": true
+            },
+            {
+              "name": "Reverse restores the full display and canvas",
+              "passed": true
+            }
+          ],
+          "print": [
+            {
+              "name": "Only two opaque shells render the physical box",
+              "passed": true
+            },
+            {
+              "name": "Both shells share one material and atlas",
+              "passed": true
+            },
+            {
+              "name": "The full box has only 64 triangles",
+              "passed": true
+            },
+            {
+              "name": "Initial atlas size matches viewport",
+              "passed": true
+            },
+            {
+              "name": "Physical box retains separate hollow collision parts",
+              "passed": true
+            },
+            {
+              "name": "WebGL context remains healthy",
+              "passed": true
+            }
+          ],
+          "viewport": [
+            390,
+            844
+          ]
+        },
+        "state": "done"
+      }
+    },
+    {
+      "name": "resize-final",
+      "result": {
+        "result": {
+          "type": "object",
+          "value": {
+            "after": 15.967857,
+            "before": 15.9676361,
+            "passed": true,
+            "width": 920
+          }
+        }
+      }
+    },
+    {
+      "name": "hero-after-resize-fix-920",
+      "result": {
+        "results": [
+          {
+            "name": "Page opts out of automatic dark recoloring",
+            "passed": true
+          },
+          {
+            "name": "Six characters are decoded",
+            "passed": true
+          },
+          {
+            "name": "Artwork has no color filters",
+            "passed": true
+          },
+          {
+            "name": "Only the hero paper texture is softened to 70 percent",
+            "passed": true
+          },
+          {
+            "name": "Six characters have only a soft silhouette shadow",
+            "passed": true
+          },
+          {
+            "name": "Reading progress stays above the grain and has no pointer target",
+            "passed": true
+          },
+          {
+            "name": "Section backgrounds bleed across fractional pixel boundaries",
+            "passed": true
+          },
+          {
+            "name": "Bottom water has been removed",
+            "passed": true
+          },
+          {
+            "name": "Opening CTA leads to preorder",
+            "passed": true
+          },
+          {
+            "name": "Opening title is already visible and navigation waits",
+            "passed": true
+          },
+          {
+            "name": "Opening heading has no pointer or keyboard interaction",
+            "passed": true
+          },
+          {
+            "name": "Title has strong contrast against the paper",
+            "passed": true
+          },
+          {
+            "name": "Six hand anchors frame an enlarged central sun",
+            "passed": true
+          },
+          {
+            "name": "Commander stays smaller than the opposite blue character",
+            "passed": true
+          },
+          {
+            "name": "Unfinished portrait backs stay hidden beyond the edges",
+            "passed": true
+          },
+          {
+            "name": "Commander cut hem stays below the desktop viewport",
+            "passed": true
+          },
+          {
+            "name": "Hand anchors stay inside the viewport",
+            "passed": true
+          },
+          {
+            "name": "Heading and subheading have their own space below the sun",
+            "passed": true
+          },
+          {
+            "name": "Hero CTA keeps only its layout slot while the dock stands in",
+            "passed": true
+          },
+          {
+            "name": "Dock starts exactly over the hero CTA slot",
+            "passed": true
+          },
+          {
+            "name": "Opening CTA is visible, legible and fits the viewport",
+            "passed": true
+          },
+          {
+            "name": "Opening CTA stays clear of the scroll cue",
+            "passed": true
+          },
+          {
+            "name": "Parallax preserves the framing at both pointer extremes",
+            "passed": true
+          },
+          {
+            "name": "Parallax preserves the framing at both pointer extremes",
+            "passed": true
+          },
+          {
+            "name": "Pointer depth is visible and differs between layers",
+            "passed": true
+          },
+          {
+            "name": "Pointer leave restores the composition",
+            "passed": true
+          },
+          {
+            "name": "Large title fits the viewport before docking",
+            "passed": true
+          },
+          {
+            "name": "Navigation waits for the title to dock",
+            "passed": true
+          },
+          {
+            "name": "Heading outline shrinks with the title instead of piling onto the logo",
+            "passed": true
+          },
+          {
+            "name": "Heading waits until docking is complete before becoming interactive",
+            "passed": true
+          },
+          {
+            "name": "Characters sweep outward through their own three edges",
+            "passed": true
+          },
+          {
+            "name": "Dock is still travelling toward the corner while the hero leaves",
+            "passed": true
+          },
+          {
+            "name": "Reading progress follows the real document including pinned chapters",
+            "passed": true
+          },
+          {
+            "name": "The same title docks as the header logo",
+            "passed": true
+          },
+          {
+            "name": "CTA and navigation appear after docking",
+            "passed": true
+          },
+          {
+            "name": "Docked logo supports pointer and keyboard interaction",
+            "passed": true
+          },
+          {
+            "name": "Docked logo has no heading outline",
+            "passed": true
+          },
+          {
+            "name": "Menu replaces the header without a second logo underneath",
+            "passed": true
+          },
+          {
+            "name": "Docked CTA fits without clipping or colliding with the logo",
+            "passed": true
+          },
+          {
+            "name": "Docked pre-order CTA sits bottom-left, at least 44px tall and fully in the viewport",
+            "passed": true
+          },
+          {
+            "name": "Docked pre-order CTA keeps a link to the pre-order page",
+            "passed": true
+          },
+          {
+            "name": "Sun covers all four corners before the box enters",
+            "passed": true
+          },
+          {
+            "name": "Characters leave before the box enters",
+            "passed": true
+          },
+          {
+            "name": "Box reaches the viewport",
+            "passed": true
+          },
+          {
+            "name": "Hero gives way to the box",
+            "passed": true
+          },
+          {
+            "name": "Docked logo stays visible after the handoff",
+            "passed": true
+          },
+          {
+            "name": "Scrolling back restores the hero",
+            "passed": true
+          },
+          {
+            "name": "Scrolling back returns the dock to the hero CTA slot",
+            "passed": true
+          },
+          {
+            "name": "Refresh mid-transition does not leave an enlarged sun",
+            "passed": true
+          },
+          {
+            "name": "Reverse restores all character positions",
+            "passed": true
+          },
+          {
+            "name": "Reverse restores the large title and hides navigation",
+            "passed": true
+          },
+          {
+            "name": "Reverse disables the hero heading again",
+            "passed": true
+          }
+        ],
+        "state": "done"
+      }
+    },
+    {
+      "name": "preorder-form-desktop",
+      "result": {
+        "state": "done",
+        "results": {
+          "passed": 23,
+          "viewport": "1280x900",
+          "validSubmission": false
+        }
+      }
+    },
+    {
+      "name": "reduced-motion",
+      "result": {
+        "state": "done",
+        "results": [
+          {
+            "name": "New flat print face",
+            "passed": true
+          },
+          {
+            "name": "No raw 3D atlas request",
+            "passed": true
+          }
+        ]
+      }
+    }
+  ],
+  "completed": "2026-11-07"
+}

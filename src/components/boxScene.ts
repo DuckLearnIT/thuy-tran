@@ -1,9 +1,10 @@
 import * as THREE from 'three'
-import { preloadedImages, whenLoaded } from '../assetQueue'
-import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
+import { preloadedImages, whenLoaded, prioritize } from '../assetQueue'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 import { createPieceScene, piecePacking, type PieceSelection, type PieceLabel } from './pieceScene'
 import { pieces } from '../data/pieces'
+import { boxArt } from '../data/box'
+import { createPrintedBox, boxDimensions } from './printedBox'
 
 export type BoxState = {
   elev: number
@@ -29,7 +30,6 @@ export type BoxState = {
 
 type Opts = {
   canvas: HTMLCanvasElement
-  cover: string
   cards: string[]
   extra: string[]
   locations: { image: string; back: string }[]
@@ -39,14 +39,10 @@ type Opts = {
 
 // All 13 character and strategy cards share this pixel size, so late files do not resize the meshes.
 const cardArt = { width: 1500, height: 2078 }
-const W = 3
-const D = 4
-const HB = 0.62
-const HL = 0.66
-const WALL = 0.13
-const FLOOR = 0.1
+const HB = boxDimensions.baseHeight
+const FLOOR = boxDimensions.floor
 
-export function createBoxScene({ canvas, cover, cards, extra, locations, onPieceChange, onPieceLayout }: Opts) {
+export function createBoxScene({ canvas, cards, extra, locations, onPieceChange, onPieceLayout }: Opts) {
   const n = cards.length
   const mid = (n - 1) / 2
   const state: BoxState = {
@@ -78,6 +74,10 @@ export function createBoxScene({ canvas, cover, cards, extra, locations, onPiece
   renderer.toneMappingExposure = 1.05
   renderer.shadowMap.enabled = true
   renderer.shadowMap.type = THREE.PCFShadowMap
+  // Only a functioning landing WebGL scene needs the atlas; fallback/checkout
+  // use smaller flat faces and never allocate this texture.
+  const atlasSource = canvas.clientWidth > 0 && canvas.clientWidth < 700 ? boxArt.atlasSmall : boxArt.atlas
+  prioritize(atlasSource)
 
   const scene = new THREE.Scene()
   const pmrem = new THREE.PMREMGenerator(renderer)
@@ -86,8 +86,8 @@ export function createBoxScene({ canvas, cover, cards, extra, locations, onPiece
   scene.environmentIntensity = 0.55
 
   const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100)
-  const inspectionCanvas = canvas as HTMLCanvasElement & { __boxScene?: { scene: THREE.Scene; camera: THREE.PerspectiveCamera; frameState: number[] } }
-  if (import.meta.env.DEV) inspectionCanvas.__boxScene = { scene, camera, frameState: [] }
+  const inspectionCanvas = canvas as HTMLCanvasElement & { __boxScene?: { scene: THREE.Scene; camera: THREE.PerspectiveCamera; renderer: THREE.WebGLRenderer; frameState: number[] } }
+  if (import.meta.env.DEV) inspectionCanvas.__boxScene = { scene, camera, renderer, frameState: [] }
 
   const sun = new THREE.DirectionalLight(0xfff2dd, 2.6)
   sun.position.set(-3, 11, 4)
@@ -171,84 +171,17 @@ export function createBoxScene({ canvas, cover, cards, extra, locations, onPiece
   ground.receiveShadow = true
   root.add(ground)
 
-  const blue = new THREE.MeshStandardMaterial({ color: 0x1f55a0, roughness: 0.55, metalness: 0.02 })
-  const deep = new THREE.MeshStandardMaterial({ color: 0x15345f, roughness: 0.6 })
-  const liner = new THREE.MeshStandardMaterial({ color: 0xb5362b, roughness: 0.85 })
-  const linerWall = new THREE.MeshStandardMaterial({ color: 0x8e2a21, roughness: 0.9 })
-
   const shadowed = (m: THREE.Mesh) => {
     m.castShadow = true
     m.receiveShadow = true
     return m
   }
 
-  // base: floor + 4 walls + inner liner
-  const base = new THREE.Group()
-  base.name = 'box-base'
-  root.add(base)
-  const floor = shadowed(new THREE.Mesh(new RoundedBoxGeometry(W, FLOOR, D, 3, 0.03), blue))
-  floor.name = 'box-floor'
-  floor.position.y = FLOOR / 2
-  base.add(floor)
-  const wallH = HB - FLOOR
-  const wy = FLOOR + wallH / 2
-  const mkWall = (w: number, d: number, x: number, z: number) => {
-    const m = shadowed(new THREE.Mesh(new RoundedBoxGeometry(w, wallH, d, 3, 0.03), blue))
-    m.name = 'box-wall'
-    m.position.set(x, wy, z)
-    base.add(m)
-  }
-  mkWall(W, WALL, 0, (D - WALL) / 2)
-  mkWall(W, WALL, 0, -(D - WALL) / 2)
-  mkWall(WALL, D - WALL * 2, (W - WALL) / 2, 0)
-  mkWall(WALL, D - WALL * 2, -(W - WALL) / 2, 0)
-
-  const iw = W - WALL * 2
-  const id = D - WALL * 2
-  const pad = new THREE.Mesh(new THREE.BoxGeometry(iw, 0.02, id), liner)
-  pad.name = 'box-floor'
-  pad.position.y = FLOOR + 0.01
-  pad.receiveShadow = true
-  base.add(pad)
-  const lw = 0.03
-  const mkLiner = (w: number, d: number, x: number, z: number) => {
-    const m = new THREE.Mesh(new THREE.BoxGeometry(w, wallH - 0.1, d), linerWall)
-    m.name = 'box-wall'
-    m.position.set(x, FLOOR + (wallH - 0.1) / 2 + 0.02, z)
-    m.receiveShadow = true
-    base.add(m)
-  }
-  mkLiner(iw, lw, 0, id / 2 - lw / 2)
-  mkLiner(iw, lw, 0, -id / 2 + lw / 2)
-  mkLiner(lw, id, iw / 2 - lw / 2, 0)
-  mkLiner(lw, id, -iw / 2 + lw / 2, 0)
-
-  // lid: top plate (cover art) + skirt
-  const lid = new THREE.Group()
-  lid.name = 'box-lid'
-  root.add(lid)
-  const ow = W + 0.1
-  const od = D + 0.1
-  const plateT = 0.09
-  const coverTex = loadTex(cover)
-  const plateMats = [deep, deep, new THREE.MeshStandardMaterial({ map: coverTex, roughness: 0.42, metalness: 0 }), deep, deep, deep]
-  const plate = shadowed(new THREE.Mesh(new THREE.BoxGeometry(ow, plateT, od), plateMats))
-  plate.name = 'box-ceiling'
-  plate.position.y = HL - plateT / 2
-  lid.add(plate)
-  const sk = 0.07
-  const skH = HL - plateT
-  const mkSkirt = (w: number, d: number, x: number, z: number) => {
-    const m = shadowed(new THREE.Mesh(new RoundedBoxGeometry(w, skH, d, 3, 0.02), deep))
-    m.name = 'box-wall'
-    m.position.set(x, skH / 2, z)
-    lid.add(m)
-  }
-  mkSkirt(ow, sk, 0, (od - sk) / 2)
-  mkSkirt(ow, sk, 0, -(od - sk) / 2)
-  mkSkirt(sk, od - sk * 2, (ow - sk) / 2, 0)
-  mkSkirt(sk, od - sk * 2, -(ow - sk) / 2, 0)
-  lid.position.y = HB + 0.004
+  const atlas = loadTex(atlasSource)
+  let fullAtlas = atlasSource === boxArt.atlas
+  atlas.anisotropy = Math.min(anis, 8)
+  const { base, lid } = createPrintedBox(atlas)
+  root.add(base, lid)
 
   // cards
   const cardMeshes: THREE.Mesh[] = []
@@ -447,7 +380,7 @@ export function createBoxScene({ canvas, cover, cards, extra, locations, onPiece
       g.rotation.x = THREE.MathUtils.lerp(-Math.PI / 2, -0.1, r)
       g.rotation.y = 0
       g.rotation.z = -d * 0.15 * f
-      g.visible = sw < 0.999
+      g.visible = sw < 0.999 && (state.lift > .015 || state.rise > .001)
     }
     const R = 3.7
     for (let j = 0; j < m; j++) {
@@ -491,16 +424,16 @@ export function createBoxScene({ canvas, cover, cards, extra, locations, onPiece
         // above the rim, then lower it vertically into the free rear compartment.
         const lift = smooth(state.locationsExit / 0.18)
         const gather = smooth((state.locationsExit - 0.18) / 0.27)
-        const turn = smooth((state.locationsExit - 0.45) / 0.17) * Math.PI / 2
+        const turn = smooth((state.locationsExit - 0.45) / 0.17)
         const travel = smooth((state.locationsExit - 0.62) / 0.2)
         const lower = smooth((state.locationsExit - 0.82) / 0.18)
         const midLayer = (tiles.length - 1) * piecePacking.cardStep / 2
         const layer = i * piecePacking.cardStep - midLayer
-        const stackX = piecePacking.deckFirstX + midLayer - board.position.x
-        group.position.x = THREE.MathUtils.lerp(slot.x, stackX, gather) + Math.sin(turn) * layer * lift
+        const stackX = piecePacking.deckFirstX - board.position.x
+        group.position.x = THREE.MathUtils.lerp(slot.x, stackX, gather)
         group.position.y = slot.y * (1 - gather) - (piecePacking.deckZ + (aspect < 0.8 ? piecePacking.portraitOffsetZ : 0)) * travel
-        group.position.z = THREE.MathUtils.lerp((1.3 + midLayer) * lift, piecePacking.deckY - 0.025, lower) + Math.cos(turn) * layer * lift
-        group.rotation.set(0, turn, 0)
+        group.position.z = THREE.MathUtils.lerp((1.3 + midLayer) * lift, piecePacking.deckY - 0.025 + midLayer, lower) + layer * lift
+        group.rotation.set(0, 0, Math.sin(turn * Math.PI) * .08)
       }
     })
   }
@@ -527,11 +460,11 @@ export function createBoxScene({ canvas, cover, cards, extra, locations, onPiece
     const closeLift = smooth(state.boxClose / 0.25)
     const closeSlide = smooth((state.boxClose - 0.25) / 0.5)
     const closeLower = smooth((state.boxClose - 0.75) / 0.25)
-    const openLidY = state.piecesExit > 0 ? 0.04 - state.drop * (1 - boxRise) : HB + 0.004 + state.lift
+    const openLidY = state.piecesExit > 0 ? 0.04 - state.drop * (1 - boxRise) : boxDimensions.closedY + state.lift
     const closingLidY = THREE.MathUtils.lerp(openLidY, HB + 1.004, closeLift)
     rim.visible = tabletop > 0.01
     lid.position.set(state.piecesExit > 0 ? 3.7 * (1 - closeSlide) : 0,
-      THREE.MathUtils.lerp(closingLidY, HB + 0.004, closeLower) + Math.sin(closeSlide * Math.PI) * 0.2 * (1 - closeLower) + exitOffsetY(), boxSlide * boxZ)
+      THREE.MathUtils.lerp(closingLidY, boxDimensions.closedY, closeLower) + Math.sin(closeSlide * Math.PI) * 0.2 * (1 - closeLower) + exitOffsetY(), boxSlide * boxZ)
     sun.castShadow = (state.lift < 3.5 && state.rise < 0.05) || tabletop > 0.1
     base.position.set(0, -state.drop * (1 - boxRise) + exitOffsetY(), boxSlide * boxZ)
     ;(ground.material as THREE.ShadowMaterial).opacity = Math.max(0.2 * (1 - Math.min(1, state.rise * 2)), tabletop * 0.17)
@@ -576,7 +509,9 @@ export function createBoxScene({ canvas, cover, cards, extra, locations, onPiece
       + tabletop * (65 + 35 * (1 - boxReturn)) * (1 - focus) + focus * (canvas.clientWidth <= 600 ? 50 : 0), 1000 * aspect, 1000)
     camera.updateProjectionMatrix()
     pieceScene.projectLabels()
-    renderer.render(scene, camera)
+    // GSAP hides the canvas during the hero and after dismissal. Keep timeline
+    // bookkeeping current, but issue no GPU draw for an invisible canvas.
+    if (canvas.style.visibility !== 'hidden') renderer.render(scene, camera)
     if (import.meta.env.DEV && inspectionCanvas.__boxScene) inspectionCanvas.__boxScene.frameState = [
       state.locationsReveal, state.piecesReveal, state.piecesExit, state.locationsExit, state.boxClose, state.boxDismiss,
     ]
@@ -587,6 +522,16 @@ export function createBoxScene({ canvas, cover, cards, extra, locations, onPiece
     const h = canvas.clientHeight
     if (!w || !h) return
     aspect = w / h
+    if (w >= 700 && !fullAtlas) {
+      fullAtlas = true
+      prioritize(boxArt.atlas)
+      // Finish any pending 1K swap first, so a resize cannot downgrade the 2K file.
+      whenLoaded(atlasSource).catch(() => undefined).then(() => whenLoaded(boxArt.atlas)).then(image => {
+        if (disposed) return
+        atlas.dispose(); atlas.image = image; atlas.needsUpdate = true
+        uploads.push(atlas); pumpUploads()
+      }).catch(() => { fullAtlas = false })
+    }
     wideBoard = w >= 1000 && aspect > 1.35
     const caption = canvas.parentElement?.querySelector<HTMLElement>('.bx-locations-copy')
     const boardTop = caption ? (caption.offsetTop + caption.offsetHeight + 24) / h : 0.29

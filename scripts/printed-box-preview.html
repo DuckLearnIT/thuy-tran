@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="vi"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kiểm tra hộp in — chỉ dùng khi chạy Vite</title>
+<style>
+  *{box-sizing:border-box}body{margin:0;background:#eadfc9;color:#17394a;font:14px system-ui}header{display:flex;align-items:center;justify-content:space-between;padding:20px 28px;border-bottom:1px solid #17394a30}h1{font-size:18px;margin:0}nav{display:flex;gap:8px}button{border:1px solid #17394a55;background:transparent;padding:10px 16px;color:inherit;cursor:pointer}button:focus-visible{outline:2px solid #ad392f;outline-offset:3px}button[aria-pressed=true]{background:#17394a;color:#fff}canvas{width:100%;height:calc(100vh - 100px);display:block}footer{position:fixed;bottom:12px;left:28px;font-size:12px}#error{position:absolute;inset:120px 20px auto;text-align:center;color:#a03227}
+</style>
+<header><h1>Hộp theo bộ thiết kế mới</h1><nav aria-label="Góc kiểm tra"><button data-view="front" aria-pressed="true">Mặt trước</button><button data-view="left">Cạnh trái</button><button data-view="back">Mặt sau</button><button data-view="open">Mở hộp</button></nav></header>
+<canvas aria-label="Hộp Thủy Trận theo file in"></canvas><div id="error" role="status"></div><footer id="stats"></footer>
+<script type="module">
+import * as THREE from 'three'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import { createPrintedBox, boxDimensions } from '/src/components/printedBox.ts'
+import { boxArt } from '/src/data/box.ts'
+try {
+  const canvas=document.querySelector('canvas')
+  const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,preserveDrawingBuffer:true})
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputColorSpace=THREE.SRGBColorSpace
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05
+  const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(30,1,.1,100)
+  scene.add(new THREE.HemisphereLight(0xfff4dc,0x6a3a10,.8))
+  const light=new THREE.DirectionalLight(0xfff2dd,2.6);light.position.set(-3,11,4);scene.add(light)
+  const texture=await new THREE.TextureLoader().loadAsync(boxArt.atlas)
+  texture.colorSpace=THREE.SRGBColorSpace;texture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy())
+  const box=createPrintedBox(texture);scene.add(box.base,box.lid)
+  const controls=new OrbitControls(camera,canvas);controls.enableDamping=false
+  function render(){renderer.render(scene,camera);document.querySelector('#stats').textContent=`${renderer.info.render.calls} lượt vẽ · ${renderer.info.render.triangles} tam giác · 1 atlas 2048²`}
+  function view(mode){
+    box.lid.position.set(0,boxDimensions.closedY,0);box.lid.rotation.set(0,0,0)
+    camera.up.set(0,1,0);controls.target.set(0,.35,0);light.position.set(-3,11,4)
+    if(mode==='back'){camera.position.set(0,-10,-3);camera.up.set(0,0,1);light.position.set(-3,-11,-4)}
+    else if(mode==='left')camera.position.set(-10,5,5)
+    else if(mode==='open'){box.lid.position.set(3.7,1.4,0);box.lid.rotation.z=-.08;camera.position.set(8,9,12);controls.target.set(1.2,.5,0)}
+    else camera.position.set(6,8,11)
+    camera.lookAt(controls.target);controls.update();render()
+    document.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===mode)))
+  }
+  controls.addEventListener('change',render)
+  function resize(){const r=canvas.getBoundingClientRect();renderer.setSize(r.width,r.height,false);camera.aspect=r.width/r.height;camera.updateProjectionMatrix();render()}
+  window.addEventListener('resize',resize)
+  document.querySelectorAll('button').forEach(b=>b.onclick=()=>view(b.dataset.view))
+  resize();view('front')
+  window.boxPrintQA={renderer,scene,camera,box,view}
+  window.addEventListener('pagehide',()=>{controls.dispose();box.base.children[0].geometry.dispose();box.lid.children[0].geometry.dispose();box.base.children[0].material.dispose();texture.dispose();renderer.dispose();renderer.forceContextLoss()},{once:true})
+}catch(error){document.querySelector('#error').textContent=String(error)}
+</script></html>
